@@ -1,0 +1,60 @@
+"use client";
+
+import { Container } from "@/components/ui/contaner";
+import { useCart } from "@/hooks/use-cart";
+import { useMemo } from "react";
+import { CartItem } from "./cart-item";
+import { EmptyCart } from "./empty-cart";
+import { OrderSummary } from "./order-summary";
+import { LoadingSpinner } from "./ui/loading-spinner";
+import { useAuth } from "@clerk/nextjs";
+
+export function CartManagement() {
+  const { items } = useCart();
+  const { isSignedIn } = useAuth();
+
+  const totalPrice = useMemo(() => {
+    return items?.reduce((total, item) => total + item.total, 0);
+  }, [items]);
+
+  const itemCount = useMemo(() => {
+    return items?.reduce((total, item) => total + item.quantity, 0);
+  }, [items]);
+
+  if (items && items?.length === 0 && !isSignedIn) {
+    return <EmptyCart />;
+  }
+
+  const isLoading = isSignedIn && items === undefined;
+
+  return (
+    <div className="min-h-screen bg-background">
+      <Container className="container mx-auto px-4 py-8">
+        <h1 className="text-3xl font-bold mb-8">Shopping Cart</h1>
+
+        {isLoading && (
+          <div>
+            <LoadingSpinner className="!h-5 !w-5" />
+          </div>
+        )}
+
+        {!isLoading && (
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <div className="lg:col-span-2 space-y-4">
+              {items?.map((item) => (
+                <CartItem key={item._id} cartItem={item} />
+              ))}
+            </div>
+
+            <div>
+              <OrderSummary
+                totalPrice={totalPrice ?? 0}
+                itemCount={itemCount ?? 0}
+              />
+            </div>
+          </div>
+        )}
+      </Container>
+    </div>
+  );
+}

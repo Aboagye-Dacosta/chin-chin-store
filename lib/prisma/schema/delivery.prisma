@@ -1,0 +1,8 @@
+model DeliveryCharge {
+    id String @id @default(cuid())
+    amount Float
+    storeId String @unique
+    store Store @relation(fields: [storeId], references: [id], onDelete: Cascade)
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+}

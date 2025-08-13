@@ -1,0 +1,20 @@
+model Store {
+    id             String          @id @default(cuid())
+    name           String          @unique
+    locationId     String 
+    location       Location        @relation(fields: [locationId], references: [id], onDelete: Cascade)
+    products       Product[]
+    carts          Cart[]
+    vendors        User[]
+    deliveryCharge DeliveryCharge?
+    createdAt      DateTime        @default(now())
+    updatedAt      DateTime        @updatedAt
+}
+
+model Location {
+    id        String   @id @default(cuid())
+    name      String   @unique
+    store     Store[]
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+}
