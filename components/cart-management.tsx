@@ -8,6 +8,7 @@ import { EmptyCart } from "./empty-cart";
 import { OrderSummary } from "./order-summary";
 import { LoadingSpinner } from "./ui/loading-spinner";
 import { useAuth } from "@clerk/nextjs";
+import { Skeleton } from "./ui/skeleton";
 
 export function CartManagement() {
   const { items } = useCart();
@@ -21,7 +22,9 @@ export function CartManagement() {
     return items?.reduce((total, item) => total + item.quantity, 0);
   }, [items]);
 
-  if (items && items?.length === 0 && !isSignedIn) {
+  console.log(items);
+
+  if (items && items?.length === 0) {
     return <EmptyCart />;
   }
 
@@ -30,29 +33,32 @@ export function CartManagement() {
   return (
     <div className="min-h-screen bg-background">
       <Container className="container mx-auto px-4 py-8">
-        <h1 className="text-3xl font-bold mb-8">Shopping Cart</h1>
-
         {isLoading && (
-          <div>
-            <LoadingSpinner className="!h-5 !w-5" />
+          <div className="space-y-4">
+            {Array.from({ length: 4 }).map((_, index) => (
+              <Skeleton key={index} className="h-[100px] w-full max-w-md mx-auto" />
+            ))}
           </div>
         )}
 
         {!isLoading && (
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            <div className="lg:col-span-2 space-y-4">
-              {items?.map((item) => (
-                <CartItem key={item._id} cartItem={item} />
-              ))}
-            </div>
+          <>
+            <h1 className="text-3xl font-bold mb-8">Shopping Cart</h1>
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+              <div className="lg:col-span-2 space-y-4">
+                {items?.map((item) => (
+                  <CartItem key={item._id} cartItem={item} />
+                ))}
+              </div>
 
-            <div>
-              <OrderSummary
-                totalPrice={totalPrice ?? 0}
-                itemCount={itemCount ?? 0}
-              />
+              <div>
+                <OrderSummary
+                  totalPrice={totalPrice ?? 0}
+                  itemCount={itemCount ?? 0}
+                />
+              </div>
             </div>
-          </div>
+          </>
         )}
       </Container>
     </div>

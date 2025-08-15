@@ -21,19 +21,19 @@ export default function SideBarItem({
     isActive = false;
   }
   return (
-    <Button
-      variant={isActive ? "default" : "ghost"}
-      size="icon"
-      className="flex items-center justify-start w-full"
-      asChild
+    <Link
+      href={href}
+      className="flex w-full items-center justify-start "
     >
-      <Link
-        href={href}
-        className="flex w-full items-center justify-start gap-2 px-3"
+      <Button
+        variant={isActive ? "default" : "ghost"}
+        size="icon"
+        className="flex items-center justify-start w-full gap-2 px-3"
+        asChild
       >
         <Icon className="h-5 w-5" />
         {label}
-      </Link>
-    </Button>
+      </Button>
+    </Link>
   );
 }

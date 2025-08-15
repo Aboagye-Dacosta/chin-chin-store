@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import {
@@ -10,27 +10,26 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { Circle, MenuIcon, Pencil, Plus, Trash, Trash2 } from "lucide-react";
+import { MenuIcon, Pencil, Plus, Trash, Trash2 } from "lucide-react";
 import { ProductsTable } from "./ProductTable/products-table";
 import { Flex } from "@/components/ui/flex";
 import { CreateProductForm } from "./create-product-form";
-import { useStoreStore } from "@/store/use-store-store";
 import { CardHeaderFilters } from "./card-header-with-filters";
-import { useQuery } from "convex/react";
+import { useMutation, useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
-import LocationForm from "./store/location-form";
 import { ScrollableCard } from "./ScrollableCard";
 import { Separator } from "./ui/separator";
 import { cn } from "@/lib/utils";
-import { PRODUCT_COLORS } from "@/constants/product-colors";
 import CategoryForm from "./product-category-form";
+import { ColorPicker } from "./color-picker";
 
 export function ProductManagement() {
   const [showMore, setShowMore] = useState(false);
-  const { store } = useStoreStore();
   const products = useQuery(api.products.getAllProducts);
   const stores = useQuery(api.stores.getStores);
   const categories = useQuery(api.categories.getCategories);
+  const updateCategory = useMutation(api.categories.updateCategory);
+  const deleteCategory = useMutation(api.categories.deleteCategory);
 
   const [filters, setFilters] = useState<Record<string, string>>({});
   const [selectedRows, setSelectedRows] = useState<Set<string>>(new Set());
@@ -145,22 +144,36 @@ export function ProductManagement() {
                             className="w-full not-last:border-b p-2 px-4 flex justify-between items-center"
                           >
                             <Flex direction="row" gap="md" align="center">
-                              <div
-                                className={cn(
-                                  "h-5 w-5 rounded-full text-muted-foreground capitalize",
-                                  PRODUCT_COLORS[category.name]
-                                )}
+                              <ColorPicker
+                                variant="ghost"
+                                value={category.color ?? "#000000"}
+                                onChange={(val) =>
+                                  updateCategory({
+                                    id: category._id,
+                                    color: val,
+                                  })
+                                }
+                                showLabel={false}
+                                showValue={false}
                               />
                               <p>{category.name}</p>
                             </Flex>
                             {productCount > 0 && (
                               <Flex direction="row" gap="md" align="center">
-                                <p>{productCount} products</p>
+                                <p>
+                                  {productCount} product
+                                  {productCount === 1 ? "" : "s"}
+                                </p>
                               </Flex>
                             )}
                             {productCount === 0 && (
-                              <Button variant={"ghost"}>
-                                <Trash2 className="h-4 w-4 mr-2 text-red-500" />
+                              <Button
+                                variant="ghost"
+                                onClick={() =>
+                                  deleteCategory({ id: category._id })
+                                }
+                              >
+                                <Trash2 className="h-4 w-4" />
                               </Button>
                             )}
                           </div>

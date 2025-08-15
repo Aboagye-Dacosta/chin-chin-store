@@ -10,13 +10,13 @@ export const getAllDeliveryCharges = query({
 
 export const getDeliveryCharge = query({
   args: {
-    storeId: v.string(),
+    storeId: v.optional(v.id("stores")),
   },
   handler: async (ctx, args) => {
     if (!args.storeId) return null;
     const deliveryCharge = await ctx.db
       .query("deliveryCharges")
-      .filter((q) => q.eq("storeId", args.storeId))
+      .withIndex("byStore", (q) => q.eq("storeId", args.storeId!))
       .first();
     return deliveryCharge;
   },

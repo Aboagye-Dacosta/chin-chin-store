@@ -2,6 +2,7 @@ import { z } from "zod";
 
 export const PaymentSchema = z.object({
   orderId: z.string(),
+  vendorId: z.string(),
   amount: z.number(),
   currency: z.string(),
   method: z.enum(["MOBILE_MONEY", "PAYMENT_ON_DELIVERY", "CARD"]),

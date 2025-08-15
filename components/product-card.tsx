@@ -14,17 +14,20 @@ import Scene from "./model";
 import { toast } from "sonner";
 import { useCallback, useTransition } from "react";
 import { cn } from "@/lib/utils";
-import { PRODUCT_COLORS } from "@/constants/product-colors";
 import { displayMoney } from "@/lib/display-money";
 import { Product } from "@/types/convex-types";
+import { useAppThemeStore } from "@/store/use-app-theme";
+import { useAuth } from "@clerk/nextjs";
 
 interface ProductCardProps {
   product: Product;
 }
 
 export function ProductCard({ product }: Readonly<ProductCardProps>) {
-  const { addItem ,categories} = useCart();
+  const { addItem, categories } = useCart();
   const [isAdding, startTransition] = useTransition();
+  const { categoryColors } = useAppThemeStore();
+  const { isSignedIn } = useAuth();
 
   const handleAddToCart = () => {
     startTransition(async () => {
@@ -44,7 +47,11 @@ export function ProductCard({ product }: Readonly<ProductCardProps>) {
     }
   }, []);
 
-  const category = categories?.find((category) => category._id === product.categoryId);
+  const category = categories?.find(
+    (category) => category._id === product.categoryId
+  );
+
+  const isLoading = isAdding && isSignedIn;
 
   return (
     <Card className="overflow-hidden border-none shadow-none p-1 rounded-lg">
@@ -52,16 +59,23 @@ export function ProductCard({ product }: Readonly<ProductCardProps>) {
         <div className="relative h-[300px] w-full z-1">
           <div
             className={cn(
-              "absolute rounded-[30%_70%_70%_30%_/_30%_30%_70%_70%] -z-1 top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-2/3 h-2/3 bg-amber-600 shadow-lg",
-              PRODUCT_COLORS[category?.name.toLowerCase() ?? ""]
+              "absolute rounded-[30%_70%_70%_30%_/_30%_30%_70%_70%] -z-1 top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-2/3 h-2/3 bg-amber-600 shadow-lg"
             )}
+            style={{
+              backgroundColor:
+                categoryColors[category?.name ?? ""] ?? category?.color,
+            }}
           ></div>
           <Scene
             modelUrl={getModelUrl(product.packaging, category?.name ?? "")}
           />
           <div className="absolute top-2 left-2 flex gap-2">
             <Badge
-              className={PRODUCT_COLORS[category?.name.toLowerCase() ?? ""]}
+              style={{
+                backgroundColor:
+                  categoryColors[category?.name ?? ""] ?? category?.color,
+                color: "white",
+              }}
             >
               {category?.name}
             </Badge>
@@ -92,14 +106,15 @@ export function ProductCard({ product }: Readonly<ProductCardProps>) {
           <CardFooter className="p-4 pt-0">
             <Button
               onClick={handleAddToCart}
-              className={cn(
-                "w-full",
-                PRODUCT_COLORS[category?.name.toLowerCase() ?? ""]
-              )}
+              className={cn("w-full flex items-center justify-center")}
+              style={{
+                backgroundColor:
+                  categoryColors[category?.name ?? ""] ?? category?.color,
+              }}
               disabled={product.stock === 0 || isAdding}
-              loading={isAdding}
+              loading={isLoading}
             >
-              <ShoppingCart className="h-4 w-4 mr-2" />
+              {!isLoading && <ShoppingCart className="h-4 w-4 mr-2" />}
               {product.stock === 0 ? "Out of Stock" : "Add to Cart"}
             </Button>
           </CardFooter>

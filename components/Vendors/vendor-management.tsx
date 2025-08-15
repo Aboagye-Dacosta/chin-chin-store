@@ -3,29 +3,20 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 import { Plus } from "lucide-react";
-import { Vendors } from "@/lib/fetch/fetch-vendors";
 import { Flex } from "../ui/flex";
 import { CardHeaderFilters } from "../card-header-with-filters";
 import { DataTable } from "../DataTable";
 import { VendorColumns } from "./vendor-table-columns";
-import { Store } from "@/lib/fetch/fetch-stores";
+import { useQuery } from "convex/react";
+import { api } from "@/convex/_generated/api";
+import { CreateVendorForm } from "./vendor-form";
 
-export function VendorManagement({
-  vendors,
-  stores,
-}: Readonly<{
-  vendors: Vendors;
-  stores: Store;
-}>) {
+export function VendorManagement() {
   const [filter, setFilter] = useState<Record<string, string>>({});
+  const vendors = useQuery(api.vendors.getAllVendors);
+  const stores = useQuery(api.stores.getStores);
 
   return (
     <Flex direction="col" gap="lg" className="w-full">
@@ -38,10 +29,8 @@ export function VendorManagement({
               Add Vendor
             </Button>
           </DialogTrigger>
-          <DialogContent className="max-w-md">
-            <DialogHeader>
-              <DialogTitle>Add New Vendor</DialogTitle>
-            </DialogHeader>
+          <DialogContent className="!max-w-[700px] w-full">
+            <CreateVendorForm />
           </DialogContent>
         </Dialog>
       </Flex>
@@ -52,16 +41,21 @@ export function VendorManagement({
             {
               key: "store",
               label: "Store",
-              options: stores.map((store) => ({
-                label: store.name,
-                value: store.id,
-              })),
+              options:
+                stores?.map((store) => ({
+                  label: store.name,
+                  value: store._id,
+                })) ?? [],
             },
           ]}
           onFilterChange={(filter) => setFilter(filter)}
         />
         <CardContent>
-          <DataTable data={vendors} columns={VendorColumns} filterBy={filter} />
+          <DataTable
+            data={vendors ?? []}
+            columns={VendorColumns}
+            filterBy={filter}
+          />
         </CardContent>
       </Card>
     </Flex>

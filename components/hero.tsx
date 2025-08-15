@@ -9,7 +9,7 @@ import Image from "next/image";
 
 export function Hero() {
   return (
-    <section className="relative bg-gradient-to-r bg-[#8B4513]  text-white  h-screen overflow-hidden z-2 flex items-center justify-center">
+    <section className="relative bg-gradient-to-r bg-primary  text-primary-foreground  h-screen overflow-hidden z-2 flex items-center justify-center">
       <div className="h-screen relative z-3 flex items-center justify-center">
         <div className="absolute -bottom-2/4 left-0 w-full h-full -z-1">
           <Image
@@ -36,16 +36,16 @@ export function Hero() {
               />
             </div>
             <h1 className="text-4xl md:text-6xl font-bold mb-6 text-center">
-              What&apos;s there not like about it.
+              What&apos;s there not to like about it.
             </h1>
 
             <div className="flex gap-4 items-center justify-center">
               <Button
                 size="lg"
                 asChild
-                className="bg-[#8c4913] hover:bg-[#8B4513] shadow-lg h-[50px] w-[50px] animate-bounce rounded-full"
+                className="bg-primary bg-opacity-50 shadow-xl border  h-[50px] w-[50px] animate-bounce rounded-full"
               >
-                <Link href="#products">
+                <Link href="products">
                   <ArrowDown className="w-6 h-6" />
                 </Link>
               </Button>

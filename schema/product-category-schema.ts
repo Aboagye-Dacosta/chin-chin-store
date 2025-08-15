@@ -5,6 +5,7 @@ export const productCategorySchema = z.object({
     .string()
     .min(2, "Category name must be at least 2 characters")
     .max(100, "Category name must be at most 100 characters"),
+  color: z.string().optional(),
 });
 
-export type ProductCategorySchema = z.infer<typeof productCategorySchema>;
+export type ProductCategorySchemaType = z.infer<typeof productCategorySchema>;

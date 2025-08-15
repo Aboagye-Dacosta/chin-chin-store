@@ -13,15 +13,17 @@ export const syncCartToDB = mutation({
   handler: async (ctx, args) => {
     const existing = await ctx.db
       .query("cartItems")
-      .withIndex("byCart", (q) => q.eq("cartId", args.cartId))
-      .filter((q) => q.eq("productId", args.productId as string))
+      .withIndex("byCartAndProduct", (q) =>
+        q.eq("cartId", args.cartId).eq("productId", args.productId)
+      )
       .first();
 
     if (existing) {
       return await ctx.db.patch(existing._id, {
-        quantity: existing.quantity + (args.quantity - args.existingQuantity),
+        quantity:
+          args.existingQuantity + (args.quantity - args.existingQuantity),
         total:
-          (existing.quantity + (args.quantity - args.existingQuantity)) *
+          (args.existingQuantity + (args.quantity - args.existingQuantity)) *
           args.productPrice,
       });
     }
@@ -34,5 +36,19 @@ export const syncCartToDB = mutation({
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     });
+  },
+});
+
+export const syncRemovedItems = mutation({
+  args: {
+    removedItems: v.array(v.id("cartItems")),
+  },
+  handler: async (ctx, args) => {
+    const hasRemovedItems = args.removedItems.some(Boolean);
+    if (hasRemovedItems) {
+      args.removedItems.forEach(async (item) => {
+        await ctx.db.delete(item);
+      });
+    }
   },
 });

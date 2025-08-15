@@ -9,7 +9,6 @@ export const orderSchema = z.object({
     })),
     total: z.number().min(1, "Total must be at least 1"),
     deliveryAddressLabel: z.string().min(1, "Please enter a delivery address label"),
-    deliveryCity: z.string().min(1, "Please enter a delivery city"),
     deliveryNote: z.string().optional(),
 });
 

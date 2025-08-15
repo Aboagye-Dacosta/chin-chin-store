@@ -1,10 +1,10 @@
 "use client";
 
-import { useMemo, useTransition } from "react";
+import { useTransition } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import type { z } from "zod";
 import { MapPin, Save } from "lucide-react";
+import { HexColorPicker } from "react-colorful";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -23,12 +23,26 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { cn } from "@/lib/utils";
-import { locationFormSchema } from "@/schema/location-schema";
 import { Input } from "./ui/input";
 import { useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { Category } from "@/types/convex-types";
 import { handleStatus } from "@/lib/handle-status";
+import { Flex } from "./ui/flex";
+import {
+  productCategorySchema,
+  ProductCategorySchemaType,
+} from "@/schema/product-category-schema";
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+} from "@radix-ui/react-dropdown-menu";
+import {
+  DropdownMenuContent,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+} from "./ui/dropdown-menu";
+import { ColorPicker } from "./color-picker";
 
 type Props = {
   title?: string;
@@ -43,29 +57,30 @@ export default function CategoryForm({
   defaultCategory,
   className,
 }: Readonly<Props>) {
-  const schema = useMemo(() => locationFormSchema, []);
-  type FormValues = z.infer<typeof schema>;
   const [isPending, startTransition] = useTransition();
   const addCategory = useMutation(api.categories.addCategory);
 
-  const form = useForm<FormValues>({
-    resolver: zodResolver(schema),
+  const form = useForm<ProductCategorySchemaType>({
+    resolver: zodResolver(productCategorySchema),
     defaultValues: {
       name: defaultCategory?.name ?? "",
+      color: defaultCategory?.color ?? "#000000",
     },
     mode: "onChange",
   });
 
   const isEditing = !!defaultCategory;
 
-  const onSubmit = (values: FormValues) => {
+  const onSubmit = (values: ProductCategorySchemaType) => {
     startTransition(async () => {
       const response = await addCategory({
         name: values.name.trim().toLowerCase(),
+        color: values.color,
       });
       if (response.success) {
         form.reset({
           name: "",
+          color: "#000000",
         });
       }
       handleStatus(response);
@@ -81,6 +96,7 @@ export default function CategoryForm({
         </div>
         <CardDescription>{description}</CardDescription>
       </CardHeader>
+
       <CardContent>
         <Form {...form}>
           <form
@@ -95,7 +111,25 @@ export default function CategoryForm({
                 <FormItem>
                   <FormLabel>Category name</FormLabel>
                   <Input placeholder="e.g. Coconut" {...field} />
-                  <FormDescription>2-100 characters.</FormDescription>
+                  <FormDescription>2–100 characters.</FormDescription>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="color"
+              render={({ field }) => (
+                <FormItem className="min-w-[220px]">
+                  <ColorPicker
+                    value={field.value}
+                    onChange={field.onChange}
+                    label="Category color"
+                    variant="outline"
+                    className="w-full"
+                  />
+                  <FormDescription>HEX format (e.g., #2563eb).</FormDescription>
                   <FormMessage />
                 </FormItem>
               )}

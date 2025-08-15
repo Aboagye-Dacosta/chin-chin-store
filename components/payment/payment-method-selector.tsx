@@ -1,8 +1,9 @@
-import { PaymentMethod } from "@prisma/client";
+
 import { Label } from "../ui/label";
 import { RadioGroup, RadioGroupItem } from "../ui/radio-group";
 import { cn } from "@/lib/utils";
 import { Smartphone, HandCoins } from "lucide-react";
+import { PaymentMethod } from "@/types/convex-types";
 
 export const PaymentMethodSelector = ({
   value,
@@ -11,12 +12,12 @@ export const PaymentMethodSelector = ({
   value: PaymentMethod;
   onChange: (method: PaymentMethod) => void;
 }) => (
-  <div>
+  <div className="w-full">
     <Label className="mb-2 block">Payment method</Label>
     <RadioGroup
       value={value}
       onValueChange={onChange}
-      className="grid grid-cols-1 gap-3 md:grid-cols-2"
+      className="grid grid-cols-1 gap-3"
     >
       <div>
         <RadioGroupItem id="mm" value="MOBILE_MONEY" className="peer sr-only" />

@@ -1,6 +1,6 @@
-import { ReactQueryProvider } from "./query-provider";
 import ConvexClientProvider from "./convex-provider";
 import { ClerkProvider } from "@clerk/nextjs";
+import ThemeProvider from "./theme-provider";
 
 export const Provider = async ({
   children,
@@ -8,7 +8,7 @@ export const Provider = async ({
   return (
     <ClerkProvider>
       <ConvexClientProvider>
-        <ReactQueryProvider>{children}</ReactQueryProvider>
+        <ThemeProvider>{children}</ThemeProvider>
       </ConvexClientProvider>
     </ClerkProvider>
   );

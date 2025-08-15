@@ -18,7 +18,7 @@ export default function Cart() {
   const lastAuthStateRef = useRef(isSignedIn);
   const syncCartToServerRef = useRef(syncCartToServer);
 
-  const { itemCount, isLoadingCartItems, isLoadingProducts, selectedCart } =
+  const { itemCount, isLoadingCartItems, selectedCart } =
     useAppStore();
 
   useEffect(() => {
@@ -56,7 +56,7 @@ export default function Cart() {
       <Button variant="ghost" size="icon" className="relative">
         <ShoppingCart className="h-5 w-5" />
         <CartBadge
-          isLoading={isLoadingCartItems || isLoadingProducts || isPending}
+          isLoading={(isLoadingCartItems && isSignedIn!) || isPending}
           count={itemCount ?? 0}
         />
       </Button>

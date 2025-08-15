@@ -16,10 +16,13 @@ import type {
 import type * as cart from "../cart.js";
 import type * as cartItems from "../cartItems.js";
 import type * as categories from "../categories.js";
+import type * as createTransferRecipient from "../createTransferRecipient.js";
 import type * as deliveryCharge from "../deliveryCharge.js";
 import type * as handleClerk from "../handleClerk.js";
 import type * as http from "../http.js";
 import type * as locations from "../locations.js";
+import type * as orders from "../orders.js";
+import type * as paymentGateway from "../paymentGateway.js";
 import type * as payments from "../payments.js";
 import type * as products from "../products.js";
 import type * as stores from "../stores.js";
@@ -39,10 +42,13 @@ declare const fullApi: ApiFromModules<{
   cart: typeof cart;
   cartItems: typeof cartItems;
   categories: typeof categories;
+  createTransferRecipient: typeof createTransferRecipient;
   deliveryCharge: typeof deliveryCharge;
   handleClerk: typeof handleClerk;
   http: typeof http;
   locations: typeof locations;
+  orders: typeof orders;
+  paymentGateway: typeof paymentGateway;
   payments: typeof payments;
   products: typeof products;
   stores: typeof stores;

@@ -6,11 +6,11 @@ import { Flex } from "./ui/flex";
 import Image from "next/image";
 import { Badge } from "./ui/badge";
 import { displayMoney } from "@/lib/display-money";
-import { PRODUCT_COLORS } from "@/constants/product-colors";
 import { LoadingSpinner } from "./ui/loading-spinner";
 import { useMemo } from "react";
 import { useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
+import { useAppThemeStore } from "@/store/use-app-theme";
 
 interface CartSummaryProps {
   deliveryPrice?: number;
@@ -20,6 +20,7 @@ export function CartSummary({ deliveryPrice = 0 }: Readonly<CartSummaryProps>) {
   const { totalPrice, serverItems, isLoadingCartItems, products } =
     useAppStore();
   const categories = useQuery(api.categories.getCategories);
+  const { categoryColors } = useAppThemeStore();
 
   const hasContent = useMemo(() => serverItems?.length > 0, [serverItems]);
   return (
@@ -74,7 +75,11 @@ export function CartSummary({ deliveryPrice = 0 }: Readonly<CartSummaryProps>) {
                           gap="md"
                         >
                           <Badge
-                            className={PRODUCT_COLORS[category?.name ?? ""]}
+                            style={{
+                              backgroundColor:
+                                categoryColors?.[category?.name ?? ""] ??
+                                category?.color,
+                            }}
                           >
                             {category?.name}
                           </Badge>
@@ -86,14 +91,14 @@ export function CartSummary({ deliveryPrice = 0 }: Readonly<CartSummaryProps>) {
                             {product?.packaging}
                           </Badge>
                         </Flex>
-                        <div className="block md:hidden text-sm font-medium text-gray-900">
+                        <div className="block md:hidden text-sm font-medium text-primary">
                           {displayMoney(
                             (product?.price ?? 0) * item.quantity,
                             false
                           )}
                         </div>
                       </Flex>
-                      <div className="hidden md:block text-sm font-medium text-gray-900">
+                      <div className="hidden md:block text-sm font-medium text-primary">
                         {displayMoney(
                           (product?.price ?? 0) * item.quantity,
                           false
@@ -113,20 +118,20 @@ export function CartSummary({ deliveryPrice = 0 }: Readonly<CartSummaryProps>) {
               <div className="space-y-2 w-full">
                 <div className="flex justify-between text-sm">
                   <span className="text-gray-600">Subtotal</span>
-                  <span className="font-medium">
+                  <span className="font-medium text-primary">
                     {displayMoney(totalPrice ?? 0, false)}
                   </span>
                 </div>
                 <div className="flex justify-between text-sm">
                   <span className="text-gray-600">Delivery Fee</span>
-                  <span className="font-medium">
+                  <span className="font-medium text-primary">
                     +{displayMoney(deliveryPrice, false)}
                   </span>
                 </div>
                 <Separator />
                 <div className="flex justify-between text-base font-semibold">
                   <span>Total</span>
-                  <span>
+                  <span className="text-primary">
                     {displayMoney((totalPrice ?? 0) + deliveryPrice, false)}
                   </span>
                 </div>

@@ -1,5 +1,6 @@
 import { v } from "convex/values";
-import { mutation, query } from "../convex/_generated/server";
+import { internalQuery, mutation, query } from "../convex/_generated/server";
+import { Role } from "./schema";
 
 export const upsertUserFromClerk = mutation({
   args: {
@@ -19,7 +20,7 @@ export const upsertUserFromClerk = mutation({
       clerkId: args.clerkId,
       email: args.email,
       name: args.name,
-      role: "USER", 
+      role: "USER",
       createdAt: new Date().toISOString(),
       updatedAt: args.updatedAt,
     };
@@ -55,3 +56,46 @@ export const getCurrentUser = query({
     return user;
   },
 });
+
+export const getUser = query({
+  args: {
+    userId: v.optional(v.id("users")),
+  },
+  handler: async (ctx, args) => {
+    if (!args.userId) return null;
+    const user = await ctx.db.get(args.userId);
+
+    if (!user) throw new Error("User not found");
+    return user;
+  },
+});
+
+export const getAllUsers = query({
+  handler: async (ctx) => {
+    const users = await ctx.db.query("users").collect();
+    return users;
+  },
+});
+
+export const readUserById = internalQuery({
+  args: { userId: v.id("users") },
+  handler: async (ctx, args) => {
+    const user = await ctx.db.get(args.userId);
+    return user;
+  },
+});
+
+export const getUserByRole = query({
+  args: {
+    role: Role,
+  },
+  handler: async (ctx, args) => {
+    const users = await ctx.db
+      .query("users")
+      .withIndex("byRole", (q) => q.eq("role", args.role))
+      .collect();
+    return users;
+  },
+});
+
+

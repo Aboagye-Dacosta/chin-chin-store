@@ -1,19 +1,60 @@
 import { defineSchema, defineTable } from "convex/server";
 import { v } from "convex/values";
 
+// convex/schema.ts (snippet)
+const SecretBlob = v.object({
+  data: v.string(),     // base64 ciphertext (includes Poly1305 tag)
+  nonce: v.string(),    // base64 24-byte nonce
+  v: v.number(),        // key version (index into ENC_KEYS_B64)
+});
+
+export const OrderStatus = v.union(
+  v.literal("PENDING"),
+  v.literal("PROCESSING"),
+  v.literal("DELIVERED"),
+  v.literal("CANCELLED")
+);
+
+export const PaymentStatus = v.union(
+  v.literal("PENDING"),
+  v.literal("PAID"),
+  v.literal("FAILED"),
+  v.literal("REFUNDED"),
+  v.literal("AWAITING_CONFIRMATION")
+);
+
+export const PaymentMethod = v.union(
+  v.literal("MOBILE_MONEY"),
+  v.literal("CARD")
+)
+
+export const PaymentNetwork = v.union(
+  v.literal("MTN"),
+  v.literal("AIRTELTIGO"),
+  v.literal("TELECEL")
+)
+
+export const Role = v.union(
+  v.literal("SUPER_ADMIN"),
+  v.literal("VENDOR"),
+  v.literal("USER")
+)
+
+
 export default defineSchema({
   users: defineTable({
     name: v.string(),
     email: v.string(),
-    role: v.union(v.literal("SUPER_ADMIN"), v.literal("VENDOR"), v.literal("USER")),
+    role: Role,
     clerkId: v.string(),
     profileId: v.optional(v.id("profiles")),
-    storeId: v.optional(v.id("stores")),
     addressId: v.optional(v.id("addresses")),
     createdAt: v.string(),
     updatedAt: v.string(),
-  }).index("byEmail", ["email"])
-    .index("byClerkId", ["clerkId"]),
+  })
+    .index("byEmail", ["email"])
+    .index("byClerkId", ["clerkId"])
+    .index("byRole", ["role"]),
 
   profiles: defineTable({
     phoneNumber: v.string(),
@@ -39,6 +80,7 @@ export default defineSchema({
 
   categories: defineTable({
     name: v.string(),
+    color: v.optional(v.string()),
     createdAt: v.string(),
     updatedAt: v.string(),
   }).index("byName", ["name"]),
@@ -55,29 +97,26 @@ export default defineSchema({
     storeId: v.id("stores"),
     createdAt: v.string(),
     updatedAt: v.string(),
-  }).index("byCategory", ["categoryId"])
+  })
+    .index("byCategory", ["categoryId"])
     .index("byStore", ["storeId"]),
 
   payments: defineTable({
     orderId: v.id("orders"),
     amount: v.float64(),
     currency: v.string(),
-    method: v.union(v.literal("MOBILE_MONEY"), v.literal("PAYMENT_ON_DELIVERY"), v.literal("CARD")),
-    status: v.union(
-      v.literal("PENDING"),
-      v.literal("PAID"),
-      v.literal("FAILED"),
-      v.literal("REFUNDED"),
-      v.literal("AWAITING_CONFIRMATION")
+    method: v.union(
+      v.literal("MOBILE_MONEY"),
+      v.literal("PAYMENT_ON_DELIVERY"),
+      v.literal("CARD")
     ),
+    status: PaymentStatus,
     phoneNumber: v.optional(v.string()),
-    mobileNetwork: v.optional(
-      v.union(v.literal("MTN"), v.literal("AIRTELTIGO"), v.literal("TELECEL"))
-    ),
+    mobileNetwork: v.optional(PaymentNetwork),
     transactionId: v.optional(v.string()),
     transactionReference: v.optional(v.string()),
     metadata: v.optional(v.any()),
-    paymentGatewaySettingsId: v.id("paymentGatewaySettings"),
+    paymentGatewaySettingsId:v.optional(v.id("paymentGatewaySettings")),
     createdAt: v.string(),
     updatedAt: v.string(),
   }).index("byOrder", ["orderId"]),
@@ -85,37 +124,33 @@ export default defineSchema({
   paymentGatewaySettings: defineTable({
     name: v.string(),
     environment: v.union(v.literal("TEST"), v.literal("LIVE")),
-    apiKey: v.string(),
-    apiSecret: v.string(),
-    webhookSecret: v.optional(v.string()),
-    supportedMethods: v.array(
-      v.union(v.literal("MOBILE_MONEY"), v.literal("PAYMENT_ON_DELIVERY"), v.literal("CARD"))
-    ),
-    supportedNetworks: v.array(
-      v.union(v.literal("MTN"), v.literal("AIRTELTIGO"), v.literal("TELECEL"))
-    ),
+    apiKey: SecretBlob,
+    apiSecret: SecretBlob,
+    webhookSecret: v.optional(SecretBlob),
+    supportedMethods: v.array(PaymentMethod),
+    supportedNetworks: v.array(PaymentNetwork),
+    isActive: v.boolean(),
     createdAt: v.string(),
     updatedAt: v.string(),
   }),
 
   orders: defineTable({
+    vendorId: v.id("vendors"),
     userId: v.id("users"),
-    vendorId: v.id("users"),
     total: v.float64(),
     deliveryAddressLabel: v.string(),
-    deliveryCity: v.string(),
-    deliveryNote: v.string(),
-    status: v.union(
-      v.literal("Pending"),
-      v.literal("Processing"),
-      v.literal("Delivered"),
-      v.literal("Cancelled")
-    ),
+    deliveryNote: v.optional(v.string()),
+    status: OrderStatus,
     trackingNumber: v.optional(v.string()),
     createdAt: v.string(),
     updatedAt: v.string(),
-  }).index("byUser", ["userId"])
-    .index("byVendor", ["vendorId"]),
+    storeId: v.id("stores"),
+  })
+    .index("byVendor", ["vendorId"])
+    .index("byUser", ["userId"])
+    .index("byStore", ["storeId"])
+    .index("byUserAndStore", ["userId", "storeId"])
+    .index("byVendorAndStore", ["vendorId", "storeId"]),
 
   orderItems: defineTable({
     orderId: v.id("orders"),
@@ -135,11 +170,16 @@ export default defineSchema({
   carts: defineTable({
     userId: v.id("users"),
     storeId: v.id("stores"),
-    status: v.union(v.literal("ACTIVE"), v.literal("CHECKED_OUT"), v.literal("ABANDONED")),
+    status: v.union(
+      v.literal("ACTIVE"),
+      v.literal("CHECKED_OUT"),
+      v.literal("ABANDONED")
+    ),
     createdAt: v.string(),
     updatedAt: v.string(),
-  }).index("byUser", ["userId"])
-    .index("byStore", ["storeId"]) 
+  })
+    .index("byUser", ["userId"])
+    .index("byStore", ["storeId"])
     .index("byUserAndStore", ["userId", "storeId"]),
 
   cartItems: defineTable({
@@ -149,8 +189,9 @@ export default defineSchema({
     total: v.float64(),
     createdAt: v.string(),
     updatedAt: v.string(),
-  }).index("byCart", ["cartId"])
-    .index("byProduct", ["productId"]) 
+  })
+    .index("byCart", ["cartId"])
+    .index("byProduct", ["productId"])
     .index("byCartAndProduct", ["cartId", "productId"]),
 
   addresses: defineTable({
@@ -161,4 +202,21 @@ export default defineSchema({
     createdAt: v.string(),
     updatedAt: v.string(),
   }).index("byUser", ["userId"]),
+
+  vendors: defineTable({
+    userId: v.id("users"),
+    storeId: v.id("stores"),
+    role: v.literal("VENDOR"),
+    mobileMoney: v.object({
+      phoneNumber: v.string(),
+      provider: PaymentNetwork,
+    }),
+    clerkId: v.string(),
+    paystackRecipientCode: v.optional(v.string()),
+    createdAt: v.string(),
+    updatedAt: v.string(),
+  })
+    .index("byUser", ["userId"])
+    .index("byStore", ["storeId"])
+    .index("byUserAndStore", ["userId", "storeId"]),
 });

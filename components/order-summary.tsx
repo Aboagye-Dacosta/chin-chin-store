@@ -28,12 +28,12 @@ export const OrderSummary = memo(
           </div>
 
           {isSignedIn ? (
-            <Button asChild className="w-full">
-              <Link href="/cart/checkout/order">Proceed to Checkout</Link>
-            </Button>
+            <Link href="/cart/checkout/order">
+              <Button className="w-full">Proceed to Checkout</Button>
+            </Link>
           ) : (
             <div className="space-y-2">
-              <Button asChild className="w-full">
+              <Button className="w-full">
                 <Link href="/auth/signin">Sign In to Checkout</Link>
               </Button>
               <p className="text-xs text-muted-foreground text-center">
@@ -44,10 +44,11 @@ export const OrderSummary = memo(
               </p>
             </div>
           )}
-
-          <Button variant="outline" asChild className="w-full">
-            <Link href="/products">Continue Shopping</Link>
-          </Button>
+          <Link href="/products">
+            <Button variant="outline" className="w-full">
+              Continue Shopping
+            </Button>
+          </Link>
         </CardContent>
       </Card>
     );

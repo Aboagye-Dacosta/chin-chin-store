@@ -24,16 +24,16 @@ import {
 } from "@/components/ui/form";
 import { cn } from "@/lib/utils";
 import { locationFormSchema } from "@/schema/location-schema";
-import { Locations } from "@/lib/fetch/fetch-locations";
 import { Input } from "../ui/input";
 import { toast } from "sonner";
 import { useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
+import { Location } from "@/types/convex-types";
 
 type Props = {
   title?: string;
   description?: string;
-  defaultLocation?: Locations[number] | null;
+  defaultLocation?: Location | null;
   className?: string;
 };
 

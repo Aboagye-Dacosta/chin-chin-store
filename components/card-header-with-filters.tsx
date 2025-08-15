@@ -41,7 +41,7 @@ export type GroupAction = {
 }
 
 export type FiltersProps = {
-  title: string
+  title?: string
   filters: FilterGroup[]
   onFilterChange: (filters: Record<string, string>) => void
   // Optional: preselect some values
@@ -128,7 +128,7 @@ export function CardHeaderFilters({
     <CardHeader className={cn("gap-3", className)}>
       {/* Top row: Title on the left, Actions on the right (only when there is a selection) */}
       <div className="flex items-start justify-between gap-2">
-        <CardTitle className="text-xl">{title}</CardTitle>
+        {title && <CardTitle className="text-xl">{title}</CardTitle>}
 
         {hasSelection && visibleActions.length > 0 && (
           <div className="flex items-center gap-2">

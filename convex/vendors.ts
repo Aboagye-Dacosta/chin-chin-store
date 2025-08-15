@@ -1,15 +1,143 @@
-import { query } from "./_generated/server";
+import { internal } from "./_generated/api";
+import { Id } from "./_generated/dataModel";
+import {
+  internalMutation,
+  internalQuery,
+  mutation,
+  query,
+  QueryCtx,
+} from "./_generated/server";
 import { v } from "convex/values";
+
+export const getAllVendors = query({
+  handler: async (ctx) => {
+    const vendors = await ctx.db.query("vendors").collect();
+    return vendors;
+  },
+});
 
 export const getVendors = query({
   args: {
-    storeId: v.string(),
+    storeId: v.optional(v.id("stores")),
   },
   handler: async (ctx, args) => {
+    if (!args.storeId) {
+      return null;
+    }
     const vendors = await ctx.db
-      .query("users")
-      .filter((q) => q.eq("role", "VENDOR"))
+      .query("vendors")
+      .withIndex("byStore", (q) => q.eq("storeId", args.storeId!))
       .collect();
     return vendors;
   },
 });
+
+export const addVendor = mutation({
+  args: {
+    storeId: v.id("stores"),
+    userId: v.id("users"),
+    mobileMoneyAccounts: v.object({
+      provider: v.union(
+        v.literal("MTN"),
+        v.literal("AIRTELTIGO"),
+        v.literal("TELECEL")
+      ),
+      phoneNumber: v.string(),
+    }),
+  },
+  handler: async (ctx, args) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) return null;
+    const clerkId = identity.subject;
+    try {
+      const existingVendor = await ctx.db
+        .query("vendors")
+        .withIndex("byStore", (q) => q.eq("storeId", args.storeId))
+        .first();
+
+      if (existingVendor) {
+        return {
+          success: false,
+          message: "Vendor already exists.",
+        };
+      }
+
+      const vendorId = await ctx.db.insert("vendors", {
+        userId: args.userId,
+        storeId: args.storeId,
+        role: "VENDOR",
+        mobileMoney: args.mobileMoneyAccounts,
+        clerkId: clerkId,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      });
+
+      await ctx.db.patch(args.userId, {
+        role: "VENDOR",
+      });
+
+      await ctx.scheduler.runAfter(
+        0,
+        internal.createTransferRecipient.createSubaccount,
+        {
+          vendorId,
+        }
+      );
+
+      return {
+        success: true,
+        message: "Vendor added successfully.",
+      };
+    } catch {
+      return {
+        success: false,
+        message: "Failed to add vendor.",
+      };
+    }
+  },
+});
+
+export const getVendorById = query({
+  args: {
+    vendorId: v.optional(v.id("vendors")),
+  },
+  handler: async (ctx, args) => {
+    if (!args.vendorId) {
+      return null;
+    }
+    const vendor = await ctx.db.get(args.vendorId);
+    return vendor;
+  },
+});
+
+export const updateVendorRecipientCode = internalMutation({
+  args: {
+    vendorId: v.id("vendors"),
+    recipientCode: v.string(),
+  },
+  handler: async (ctx, args) => {
+    await ctx.db.patch(args.vendorId, {
+      paystackRecipientCode: args.recipientCode,
+    });
+  },
+});
+
+export const readVendorById = internalQuery({
+  args: { vendorId: v.id("vendors") },
+  handler: async (ctx, args) => {
+    const vendor = await ctx.db.get(args.vendorId);
+    const user = await getUser(ctx, vendor?.userId!);
+    return {
+      ...vendor,
+      user,
+
+    };
+  },
+});
+
+async function getUser(ctx: QueryCtx, userId: Id<"users"> | null) {
+  if (userId === null) {
+    return null;
+  }
+  return (await ctx.db.get(userId));
+}

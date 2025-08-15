@@ -1,6 +1,5 @@
 import { create } from "zustand";
 import { createJSONStorage, devtools, persist } from "zustand/middleware";
-import { v4 as uuidv4 } from "uuid";
 import { Cart, CartItem, Product } from "@/types/convex-types";
 
 interface CartActions {
@@ -17,6 +16,7 @@ interface CartActions {
 interface StoreCart {
   items: CartItem[] | null;
   cartId: Cart["_id"] | null;
+  removedItems: CartItem["_id"][] | null;
 }
 
 interface CartStore extends StoreCart, CartActions {}
@@ -26,7 +26,8 @@ export const useCartStore = create<CartStore>()(
     persist(
       (set, get) => ({
         cartId: null,
-        items: null,
+        items: [],
+        removedItems: null,
         setCart: (items) => set(() => ({ items: items })),
         addItem: (product: Product) => {
           const existingItem = get()?.items?.find(
@@ -36,7 +37,11 @@ export const useCartStore = create<CartStore>()(
             set((state) => ({
               items: state?.items?.map((i) =>
                 i.productId === product._id
-                  ? { ...i, quantity: i.quantity + 1 ,total: i.total + product.price }
+                  ? {
+                      ...i,
+                      quantity: i.quantity + 1,
+                      total: i.total + product.price,
+                    }
                   : i
               ),
             }));
@@ -65,14 +70,20 @@ export const useCartStore = create<CartStore>()(
         removeItem: (id) =>
           set((state) => ({
             items: state?.items?.filter((item) => item._id !== id),
+            removedItems: [
+              ...(state?.removedItems ?? []),
+              id,
+            ] as CartItem["_id"][],
           })),
         updateQuantity: (id, quantity) =>
           set((state) => ({
             items: state?.items?.map((item) =>
-              item._id === id ? { ...item, quantity ,total: item.total * quantity} : item
+              item._id === id
+                ? { ...item, quantity, total: item.total * quantity }
+                : item
             ),
           })),
-        clearCart: () => set(() => ({ items: null })),
+        clearCart: () => set(() => ({ items: null, removedItems: null })),
         getTotalPrice: () => {
           return (
             get()?.items?.reduce((total, item) => total + item.total, 0) ?? 0
@@ -91,6 +102,7 @@ export const useCartStore = create<CartStore>()(
           items: state?.items?.map((item) => ({
             ...item,
             existingQuantity: item?.existingQuantity ?? 0,
+            removedItems: state?.removedItems ?? [],
           })),
         }),
       }

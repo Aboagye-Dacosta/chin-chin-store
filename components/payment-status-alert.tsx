@@ -1,7 +1,7 @@
 import { CheckCircle, XCircle } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "./ui/alert";
 import { LoadingSpinner } from "./ui/loading-spinner";
-import { Payment } from "@prisma/client";
+import { Payment } from "@/types/convex-types";
 
 export const PaymentStatusAlert = ({ payment }: { payment: Payment; }) => {
   const status = payment.status
