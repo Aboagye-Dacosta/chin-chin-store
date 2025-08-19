@@ -58,7 +58,7 @@ export function CartSummary({ deliveryPrice = 0 }: Readonly<CartSummaryProps>) {
                           alt={product?.title ?? ""}
                           width={64}
                           height={64}
-                          className="h-full w-full rounded-md object-cover"
+                          className="h-full w-full rounded-md object-contain"
                         />
                         <Badge className="absolute -right-2 -top-2 flex h-5 w-5 items-center justify-center rounded-full  text-xs font-medium text-white">
                           {item.quantity}

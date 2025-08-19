@@ -11,7 +11,7 @@ import { Badge } from "@/components/ui/badge";
 import { ShoppingCart, Package } from "lucide-react";
 import { useCart } from "@/hooks/use-cart";
 import { toast } from "sonner";
-import { useTransition } from "react";
+import { Suspense, useTransition } from "react";
 import { cn } from "@/lib/utils";
 import { displayMoney } from "@/lib/display-money";
 import { ProductWithCategory } from "@/types/convex-types";
@@ -52,7 +52,9 @@ export function ProductCard({ product }: Readonly<ProductCardProps>) {
                 product?.category?.color,
             }}
           ></div>
-          <LargeModelCard src={product?.model ?? ""} />
+          <Suspense fallback={null}>
+            <LargeModelCard src={product?.model ?? ""} />
+          </Suspense>
           <div className="absolute top-2 left-2 flex gap-2">
             <Badge
               style={{
@@ -92,11 +94,6 @@ export function ProductCard({ product }: Readonly<ProductCardProps>) {
             <Button
               onClick={handleAddToCart}
               className={cn("w-full flex items-center justify-center")}
-              style={{
-                backgroundColor:
-                  categoryColors[product?.category?.name ?? ""] ??
-                  product?.category?.color,
-              }}
               disabled={product.stock === 0 || isAdding}
               loading={isLoading}
             >

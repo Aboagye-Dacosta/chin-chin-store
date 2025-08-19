@@ -65,4 +65,4 @@ function AutoRotatingModel({
 }
 
 // Optionally: preload a model
-// useGLTF.preload("/models/your-model.glb");
+// useGLTF.preload("/models/your-model.glb")
