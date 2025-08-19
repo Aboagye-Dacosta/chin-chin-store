@@ -4,11 +4,16 @@ import { useState, useMemo } from "react";
 import { ProductCard } from "@/components/product-card";
 import { Button } from "@/components/ui/button";
 import { Flex } from "./ui/flex";
-import { useCart } from "@/hooks/use-cart";
 import { Skeleton } from "./ui/skeleton";
+import { ProductWithCategory, Category } from "@/types/convex-types";
 
-export function ProductGrid() {
-  const { products, categories } = useCart();
+export function ProductGrid({
+  products,
+  categories,
+}: Readonly<{
+  products: ProductWithCategory[];
+  categories: Category[];
+}>) {
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
   const [selectedPackaging, setSelectedPackaging] = useState<string>("all");
 
