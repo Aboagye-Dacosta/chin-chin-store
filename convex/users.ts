@@ -44,7 +44,7 @@ export const upsertUserFromClerk = mutation({
 export const getCurrentUser = query({
   handler: async (ctx) => {
     const identity = await ctx.auth.getUserIdentity();
-    if (!identity) throw new Error("Not authenticated");
+    if (!identity) return null;
 
     const clerkId = identity.subject;
     const user = await ctx.db
@@ -52,7 +52,7 @@ export const getCurrentUser = query({
       .withIndex("byClerkId", (q) => q.eq("clerkId", clerkId))
       .first();
 
-    if (!user) throw new Error("User not found");
+    if (!user) return null;
     return user;
   },
 });

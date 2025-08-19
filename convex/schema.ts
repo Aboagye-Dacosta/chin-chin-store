@@ -216,4 +216,13 @@ export default defineSchema({
     .index("byUser", ["userId"])
     .index("byStore", ["storeId"])
     .index("byUserAndStore", ["userId", "storeId"]),
+
+  assets: defineTable({
+    name: v.string(),
+    storageId: v.id("_storage"),
+    isModel: v.boolean(),
+    createdAt: v.string(),
+    updatedAt: v.string(),
+  })
+    .index("byName", ["name"]),
 });

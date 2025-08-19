@@ -8,6 +8,7 @@ export const productSchema = z.object({
   price: z.number().min(0, "Price must be a positive number"),
   stock: z.number().int().min(0, "Stock must be a non-negative integer"),
   image: z.string().url("Image must be a valid URL").optional(),
+  model: z.string().url("Model must be a valid URL").optional(),
   status: z.enum(["Active", "Inactive"]).default("Active"),
   packaging: z.enum(["Bag", "Can"]).default("Bag"),
   categoryId: z.string().min(1, "Category ID is required"),

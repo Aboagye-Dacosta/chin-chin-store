@@ -7,6 +7,7 @@ import { Flex } from "../ui/flex";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import DeliverySettings from "./delivery-settings";
 import UsersSettings from "./users-settings";
+import { AssetsManagement } from "../file-upload/assets-management";
 
 export const Settings = () => {
   const paymentSetting = useQuery(api.payments.paymentSettings.paymentSettings);
@@ -18,6 +19,7 @@ export const Settings = () => {
           <TabsTrigger value="payment">Payment</TabsTrigger>
           <TabsTrigger value="delivery">Delivery</TabsTrigger>
           <TabsTrigger value="users">Users</TabsTrigger>
+          <TabsTrigger value="assets">Assets</TabsTrigger>
         </TabsList>
         <TabsContent value="payment" className="w-full h-full">
           <Flex direction="col" gap="xl" className="w-full h-full">
@@ -43,6 +45,9 @@ export const Settings = () => {
         </TabsContent>
         <TabsContent value="users">
           <UsersSettings />
+        </TabsContent>
+        <TabsContent value="assets">
+          <AssetsManagement />
         </TabsContent>
       </Tabs>
     </div>

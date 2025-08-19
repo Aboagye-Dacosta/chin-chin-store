@@ -10,14 +10,14 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { ShoppingCart, Package } from "lucide-react";
 import { useCart } from "@/hooks/use-cart";
-import Scene from "./model";
 import { toast } from "sonner";
-import { useCallback, useTransition } from "react";
+import { useTransition } from "react";
 import { cn } from "@/lib/utils";
 import { displayMoney } from "@/lib/display-money";
 import { ProductWithCategory } from "@/types/convex-types";
 import { useAppThemeStore } from "@/store/use-app-theme";
 import { useAuth } from "@clerk/nextjs";
+import LargeModelCard from "./model";
 
 interface ProductCardProps {
   product: ProductWithCategory;
@@ -36,22 +36,11 @@ export function ProductCard({ product }: Readonly<ProductCardProps>) {
     });
   };
 
-  const getModelUrl = useCallback((packaging: string, category: string) => {
-    switch (packaging) {
-      case "Can":
-        return `/models/${category.toLowerCase()}-can.glb`;
-      case "Bag":
-        return `/models/${category.toLowerCase()}-bag.glb`;
-      default:
-        return `/models/${category.toLowerCase()}-bag.glb`;
-    }
-  }, []);
-
   const isLoading = isAdding && isSignedIn;
 
   return (
-    <Card className="overflow-hidden border-none shadow-none p-1 rounded-lg">
-      <CardHeader className="p-0">
+    <Card className="overflow-hidden border-none shadow-none p-0 rounded-lg space-y-0">
+      <CardHeader className="p-0 my-0">
         <div className="relative h-[300px] w-full z-1">
           <div
             className={cn(
@@ -63,12 +52,7 @@ export function ProductCard({ product }: Readonly<ProductCardProps>) {
                 product?.category?.color,
             }}
           ></div>
-          <Scene
-            modelUrl={getModelUrl(
-              product?.packaging,
-              product?.category?.name ?? ""
-            )}
-          />
+          <LargeModelCard src={product?.model ?? ""} />
           <div className="absolute top-2 left-2 flex gap-2">
             <Badge
               style={{
@@ -88,8 +72,8 @@ export function ProductCard({ product }: Readonly<ProductCardProps>) {
         </div>
       </CardHeader>
 
-      <CardContent className="p-2">
-        <Card className="p-1">
+      <CardContent className="-mt-6 py-0 ">
+        <Card className="p-1 my-0">
           <CardContent>
             <h3 className="font-semibold text-lg mb-2">{product.title}</h3>
             <p className="text-muted-foreground text-sm mb-3 line-clamp-2">

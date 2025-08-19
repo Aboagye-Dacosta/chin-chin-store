@@ -1,78 +1,68 @@
-"use client";
-
-import { Canvas } from "@react-three/fiber";
-import { useGLTF, OrbitControls } from "@react-three/drei";
-import { useRef, useState, useLayoutEffect, Suspense } from "react";
+import React, { useRef } from "react";
+import { Canvas, useFrame } from "@react-three/fiber";
+import { useGLTF, Center } from "@react-three/drei";
 import * as THREE from "three";
+import { useId } from "react";
 
-function Model({
-  url,
-  minHeight = 1.5,
-  maxHeight = 1.5,
+/**
+ * A 100x100 card that renders a GLTF/GLB model and auto-rotates it.
+ * - Non-interactive (no orbit/drag). Pointer events are disabled.
+ * - Give it any .glb/.gltf src via props.
+ */
+export default function LargeModelCard({
+  src,
+  speed = 0.8, // radians per second
+  className = "",
 }: Readonly<{
-  url: string;
-  minHeight?: number;
-  maxHeight?: number;
+  src: string;
+  speed?: number;
+  className?: string;
 }>) {
-  const { scene } = useGLTF(url);
-  const group = useRef<THREE.Group>(null);
-  const [scale, setScale] = useState(1);
-
-  useLayoutEffect(() => {
-    if (group.current) {
-      const box = new THREE.Box3().setFromObject(group.current);
-      const size = new THREE.Vector3();
-      box.getSize(size);
-      const height = size.y;
-      let newScale = 1;
-
-      if (height < minHeight) {
-        newScale = minHeight / height;
-      } else if (height > maxHeight) {
-        newScale = maxHeight / height;
-      }
-
-      setScale(newScale);
-    }
-  }, [scene, minHeight, maxHeight]);
+  const { scene } = useGLTF(src);
+  const id = useId();
 
   return (
-    <group ref={group} scale={[scale, scale, scale]}>
-      <primitive object={scene} />
-    </group>
-  );
-}
-
-export default function Scene({
-  modelUrl,
-  height = 400,
-}: Readonly<{
-  modelUrl: string;
-  height?: number;
-}>) {
-  return (
-    <div style={{ position: "relative", width: "50%", height }} className="relative left-1/2 -translate-x-1/2">
+    <div
+      className={`w-[300px] h-[300px] rounded-2xl overflow-hidden -translate-x-1/2 -translate-y-1/2 top-1/2 left-1/2 relative pointer-events-none ${className}`}
+      aria-hidden
+    >
       <Canvas
-        camera={{ position: [0, 1, 3], fov: 50 }}
-        style={{ height: "100%" }}
-        className="relative left-1/2 -translate-x-1/2"
-        onCreated={({ gl }) => {
-          return () => {
-            gl.dispose();
-            const ext = gl.getContext().getExtension("WEBGL_lose_context");
-            ext?.loseContext();
-          };
-        }}
+        camera={{ position: [0, 0, 5.5], fov: 25 }}
+        gl={{ antialias: true, alpha: true }}
+        className="w-full h-full"
+        key={id}
       >
-        <ambientLight intensity={0.5} />
-        <directionalLight position={[10, 10, 5]} intensity={1} />
+        {/* Simple lighting */}
+        <ambientLight intensity={1} />
+        <directionalLight position={[2, 3, 4]} intensity={1.2} />
 
-        <Suspense fallback={null}>
-          <Model url={modelUrl} />
-        </Suspense>
-
-        <OrbitControls minDistance={2} maxDistance={6} />
+        <AutoRotatingModel key={id} scene={scene} speed={speed} />
       </Canvas>
     </div>
   );
 }
+
+function AutoRotatingModel({
+  scene,
+  speed,
+}: {
+  scene: THREE.Group;
+  speed: number;
+}) {
+  const group = useRef<THREE.Group>(null!);
+
+  useFrame((_, delta) => {
+    if (group.current) group.current.rotation.y += speed * delta;
+  });
+
+  return (
+    <group ref={group}>
+      <Center>
+        <primitive object={scene.clone()} />
+      </Center>
+    </group>
+  );
+}
+
+// Optionally: preload a model
+// useGLTF.preload("/models/your-model.glb");

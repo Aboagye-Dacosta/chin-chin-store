@@ -63,13 +63,13 @@ type FlexVariantProps = VariantProps<typeof flexVariant>;
 interface FlexProps
   extends React.HTMLAttributes<HTMLDivElement>,
     FlexVariantProps {
-  direction: "row" | "col";
+  direction?: "row" | "col";
   children: React.ReactNode;
 }
 
 export const Flex = ({
+  direction = "row",
   className,
-  direction,
   justify,
   align,
   gap,

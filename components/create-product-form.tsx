@@ -40,6 +40,7 @@ export function CreateProductForm({
   const locations = useQuery(api.locations.getLocations);
   const addProduct = useMutation(api.products.addProduct);
   const [isPending, startTransition] = useTransition();
+  const assets = useQuery(api.assets.getAssets);
 
   const hasDefaultProduct = useMemo(
     () => Boolean(defaultProduct),
@@ -51,15 +52,16 @@ export function CreateProductForm({
       return undefined;
     }
     return {
-      title: defaultProduct.title,
-      description: defaultProduct.description,
-      price: defaultProduct.price,
-      stock: defaultProduct.stock,
-      image: defaultProduct.image,
-      status: defaultProduct.status,
-      packaging: defaultProduct.packaging,
-      categoryId: defaultProduct.categoryId,
-      storeId: defaultProduct.storeId,
+      title: defaultProduct?.title,
+      description: defaultProduct?.description,
+      price: defaultProduct?.price,
+      stock: defaultProduct?.stock,
+      image: defaultProduct?.image,
+      status: defaultProduct?.status,
+      packaging: defaultProduct?.packaging,
+      categoryId: defaultProduct?.categoryId,
+      storeId: defaultProduct?.storeId,
+      model: defaultProduct?.model,
     };
   }, [defaultProduct]);
 
@@ -71,6 +73,7 @@ export function CreateProductForm({
       price: computedDefaultProduct?.price ?? 0,
       stock: computedDefaultProduct?.stock ?? 0,
       image: computedDefaultProduct?.image ?? "",
+      model: computedDefaultProduct?.model ?? "",
       status: computedDefaultProduct?.status ?? "Active",
       packaging: computedDefaultProduct?.packaging ?? "Bag",
       categoryId: computedDefaultProduct?.categoryId,
@@ -87,6 +90,7 @@ export function CreateProductForm({
         price: data.price,
         stock: data.stock,
         image: data.image,
+        model: data.model,
         status: data.status,
         packaging: data.packaging,
         categoryId: data.categoryId as Id<"categories">,
@@ -100,6 +104,20 @@ export function CreateProductForm({
       handleStatus(response);
     });
   };
+
+  const images = useMemo(() => {
+    if (!assets) {
+      return [];
+    }
+    return assets.filter((asset) => !asset.isModel);
+  }, [assets]);
+
+  const models = useMemo(() => {
+    if (!assets) {
+      return [];
+    }
+    return assets.filter((asset) => asset.isModel);
+  }, [assets]);
 
   return (
     <form onSubmit={form.handleSubmit(onSubmit)} className="grid gap-6">
@@ -190,24 +208,62 @@ export function CreateProductForm({
             }}
           />
         </div>
-
-        <FormField
-          name="image"
-          render={({ field }) => (
-            <FormItem className="grid gap-2">
-              <FormLabel htmlFor="image">Image URL (Optional)</FormLabel>
-              <FormControl>
-                <Input
-                  id="image"
-                  type="url"
-                  placeholder="https://example.com/image.jpg"
-                  {...field}
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <FormField
+            name="image"
+            render={({ field }) => (
+              <FormItem className="grid gap-2">
+                <FormLabel htmlFor="image">Image URL</FormLabel>
+                <FormControl>
+                  <Select
+                    {...field}
+                    value={field.value}
+                    onValueChange={field.onChange}
+                  >
+                    <SelectTrigger id="image" className="w-full">
+                      <SelectValue placeholder="Select image" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {images.map((image) => (
+                        <SelectItem key={image._id} value={image?.url ?? ""}>
+                          {image.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            name="model"
+            render={({ field }) => (
+              <FormItem className="grid gap-2">
+                <FormLabel htmlFor="image">Model URL</FormLabel>
+                <FormControl>
+                  <Select
+                    {...field}
+                    value={field.value}
+                    onValueChange={field.onChange}
+                  >
+                    <SelectTrigger id="model" className="w-full">
+                      <SelectValue placeholder="Select model" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {models.map((model) => (
+                        <SelectItem key={model._id} value={model?.url ?? ""}>
+                          {model.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </div>
 
         <div
           className={cn(

@@ -72,7 +72,7 @@ export const CartItem = memo(({ cartItem }: { cartItem: CartItemType }) => {
               src={product?.image || "/placeholder.svg"}
               alt={product?.title || ""}
               fill
-              className="object-cover"
+              className="object-contain"
             />
           </div>
 

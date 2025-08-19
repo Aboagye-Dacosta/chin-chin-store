@@ -1,0 +1,225 @@
+{
+  "accessors": [
+    {
+      "bufferView": 1,
+      "byteOffset": 0,
+      "componentType": 5126,
+      "normalized": false,
+      "count": 357203,
+      "type": "VEC3",
+      "max": [
+        0.514706015586853,
+        0.9974570274353027,
+        0.5307549834251404
+      ],
+      "min": [
+        -0.521477997303009,
+        -0.9993469715118408,
+        -0.5314689874649048
+      ]
+    },
+    {
+      "bufferView": 2,
+      "byteOffset": 0,
+      "componentType": 5126,
+      "normalized": false,
+      "count": 357203,
+      "type": "VEC2",
+      "max": [
+        0.9951171875,
+        1
+      ],
+      "min": [
+        0,
+        0
+      ]
+    },
+    {
+      "bufferView": 3,
+      "byteOffset": 0,
+      "componentType": 5126,
+      "normalized": false,
+      "count": 357203,
+      "type": "VEC3",
+      "max": [
+        0.9999988079071045,
+        1,
+        0.9999974966049194
+      ],
+      "min": [
+        -0.9999992847442627,
+        -1,
+        -0.9999974966049194
+      ]
+    },
+    {
+      "bufferView": 0,
+      "byteOffset": 0,
+      "componentType": 5125,
+      "normalized": false,
+      "count": 1700823,
+      "type": "SCALAR"
+    }
+  ],
+  "asset": {
+    "generator": "pygltflib@v1.16.1",
+    "version": "2.0"
+  },
+  "bufferViews": [
+    {
+      "buffer": 0,
+      "byteOffset": 0,
+      "byteLength": 6803292,
+      "target": 34963
+    },
+    {
+      "buffer": 0,
+      "byteOffset": 6803292,
+      "byteLength": 4286436,
+      "target": 34962
+    },
+    {
+      "buffer": 0,
+      "byteOffset": 11089728,
+      "byteLength": 2857624,
+      "target": 34962
+    },
+    {
+      "buffer": 0,
+      "byteOffset": 13947352,
+      "byteLength": 4286436,
+      "target": 34962
+    }
+  ],
+  "buffers": [
+    {
+      "uri": "chocolate-can_data.bin",
+      "byteLength": 18233788
+    }
+  ],
+  "images": [
+    {
+      "uri": "chocolate-can_img0.jpg"
+    },
+    {
+      "uri": "chocolate-can_img1.jpg"
+    },
+    {
+      "uri": "chocolate-can_img2.jpg"
+    }
+  ],
+  "materials": [
+    {
+      "pbrMetallicRoughness": {
+        "baseColorFactor": [
+          1,
+          1,
+          1,
+          1
+        ],
+        "metallicFactor": 1,
+        "roughnessFactor": 1,
+        "baseColorTexture": {
+          "index": 0,
+          "texCoord": 0
+        },
+        "metallicRoughnessTexture": {
+          "index": 1,
+          "texCoord": 0
+        }
+      },
+      "normalTexture": {
+        "index": 2,
+        "texCoord": 0
+      },
+      "emissiveFactor": [
+        0,
+        0,
+        0
+      ],
+      "alphaMode": "OPAQUE",
+      "doubleSided": true
+    }
+  ],
+  "meshes": [
+    {
+      "primitives": [
+        {
+          "attributes": {
+            "POSITION": 0,
+            "NORMAL": 2,
+            "TEXCOORD_0": 1
+          },
+          "indices": 3,
+          "mode": 4,
+          "material": 0
+        }
+      ]
+    }
+  ],
+  "nodes": [
+    {
+      "mesh": 0,
+      "matrix": [
+        1,
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        0,
+        1
+      ]
+    }
+  ],
+  "samplers": [
+    {
+      "magFilter": 9729,
+      "minFilter": 9987,
+      "wrapS": 10497,
+      "wrapT": 10497
+    },
+    {
+      "magFilter": 9729,
+      "minFilter": 9987,
+      "wrapS": 10497,
+      "wrapT": 10497
+    },
+    {
+      "magFilter": 9729,
+      "minFilter": 9987,
+      "wrapS": 10497,
+      "wrapT": 10497
+    }
+  ],
+  "scene": 0,
+  "scenes": [
+    {
+      "nodes": [
+        0
+      ]
+    }
+  ],
+  "textures": [
+    {
+      "sampler": 0,
+      "source": 0
+    },
+    {
+      "sampler": 1,
+      "source": 1
+    },
+    {
+      "sampler": 2,
+      "source": 2
+    }
+  ]
+}
