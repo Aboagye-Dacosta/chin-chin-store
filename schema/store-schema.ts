@@ -7,6 +7,7 @@ export const storeFormSchema = z
       .min(2, "Store name must be at least 2 characters")
       .max(100, "Store name must be at most 100 characters"),
     locationId: z.string().min(1, "Location is required"),
+    deliveryCharge: z.number().min(0, "Delivery charge must be at least 0"),
   })
  
 

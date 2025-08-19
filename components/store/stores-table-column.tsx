@@ -1,15 +1,11 @@
 import { Column } from "../DataTable";
 import { getFormattedTime } from "@/lib/getFormattedTime";
-import { DisplayLocation } from "../display-location";
-import { Store } from "@/types/convex-types";
-import { DisplayProductCount } from "../display-product-count";
-import { DisplayVendorsCount } from "../display-vendors-count";
-import { DisplayDeliveryCharge } from "../display-delivery-charge";
+import { StoreWithLocation } from "@/types/convex-types";
 import { StoreTableActions } from "./store-table-actions";
+import { displayMoney } from "@/lib/display-money";
 
-interface StoreCount extends Store {
+interface StoreCount extends StoreWithLocation {
   products?: number;
-  vendors?: number;
   actions?: string;
 }
 
@@ -21,22 +17,22 @@ export const StoreColumns: Column<StoreCount>[] = [
   {
     key: "locationId",
     header: "Location",
-    render: (_v, row) => <DisplayLocation id={row.locationId} />,
+    render: (_v, row) => row.location?.name,
   },
   {
     key: "products",
     header: "Products",
-    render: (_v, row) => <DisplayProductCount id={row._id} />,
+    render: (_v, row) => row.productCount,
   },
   {
     key: "vendors",
     header: "Vendors",
-    render: (_v, row) => <DisplayVendorsCount id={row._id} />,
+    render: (_v, row) => row.vendors?.length ?? 0,
   },
   {
-    key: "deliveryChargeId",
+    key: "deliveryCharge",
     header: "Delivery Charge",
-    render: (_v, row) => <DisplayDeliveryCharge id={row._id} />,
+    render: (_v, row) => displayMoney(row.deliveryCharge, false),
   },
   {
     key: "createdAt",

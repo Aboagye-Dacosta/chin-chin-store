@@ -98,4 +98,47 @@ export const getUserByRole = query({
   },
 });
 
+export const getUserAddresses = query({
+  handler: async (ctx) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) throw new Error("Not authenticated");
+    const clerkId = identity.subject;
+    const user = await ctx.db
+      .query("users")
+      .withIndex("byClerkId", (q) => q.eq("clerkId", clerkId))
+      .first();
+    if (!user) throw new Error("User not found");
+    const addresses = await ctx.db
+      .query("addresses")
+      .withIndex("byUser", (q) => q.eq("userId", user._id))
+      .first();
+    return addresses;
+  },
+});
 
+export const addAddress = mutation({
+  args: {
+    deliveryAddress: v.string(),
+    deliveryAddressNote: v.optional(v.string()),
+    isDefault: v.boolean(),
+  },
+  handler: async (ctx, args) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) throw new Error("Not authenticated");
+    const clerkId = identity.subject;
+    const user = await ctx.db
+      .query("users")
+      .withIndex("byClerkId", (q) => q.eq("clerkId", clerkId))
+      .first();
+    if (!user) throw new Error("User not found");
+    const now = new Date().toISOString();
+    await ctx.db.insert("addresses", {
+      userId: user._id,
+      deliveryAddress: args.deliveryAddress,
+      deliveryAddressNote: args.deliveryAddressNote,
+      isDefault: args.isDefault,
+      createdAt: now,
+      updatedAt: now,
+    });
+  },
+});

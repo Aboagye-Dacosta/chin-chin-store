@@ -8,6 +8,7 @@ import {
   QueryCtx,
 } from "./_generated/server";
 import { v } from "convex/values";
+import { PaymentNetwork } from "./schema";
 
 export const getAllVendors = query({
   handler: async (ctx) => {
@@ -28,7 +29,18 @@ export const getVendors = query({
       .query("vendors")
       .withIndex("byStore", (q) => q.eq("storeId", args.storeId!))
       .collect();
-    return vendors;
+
+    const allVendorsWithName = await Promise.all(
+      vendors.map(async (vendor) => {
+        const user = await ctx.db.get(vendor.userId);
+        return {
+          ...vendor,
+          user,
+        };
+      })
+    );
+
+    return allVendorsWithName;
   },
 });
 
@@ -37,11 +49,7 @@ export const addVendor = mutation({
     storeId: v.id("stores"),
     userId: v.id("users"),
     mobileMoneyAccounts: v.object({
-      provider: v.union(
-        v.literal("MTN"),
-        v.literal("AIRTELTIGO"),
-        v.literal("TELECEL")
-      ),
+      provider: PaymentNetwork,
       phoneNumber: v.string(),
     }),
   },
@@ -52,7 +60,7 @@ export const addVendor = mutation({
     try {
       const existingVendor = await ctx.db
         .query("vendors")
-        .withIndex("byStore", (q) => q.eq("storeId", args.storeId))
+        .withIndex("byUser", (q) => q.eq("userId", args.userId))
         .first();
 
       if (existingVendor) {
@@ -130,7 +138,6 @@ export const readVendorById = internalQuery({
     return {
       ...vendor,
       user,
-
     };
   },
 });
@@ -139,5 +146,5 @@ async function getUser(ctx: QueryCtx, userId: Id<"users"> | null) {
   if (userId === null) {
     return null;
   }
-  return (await ctx.db.get(userId));
+  return await ctx.db.get(userId);
 }

@@ -4,7 +4,7 @@ import sodium from "libsodium-wrappers";
 import { PaymentMethod, PaymentNetwork } from "./schema";
 
 const METHODS = ["MOBILE_MONEY", "PAYMENT_ON_DELIVERY", "CARD"] as const;
-const NETWORKS = ["MTN", "AIRTELTIGO", "TELECEL"] as const;
+const NETWORKS = ["MTN", "AIRTELTIGO", "VODAFONE"] as const;
 
 function parseAdminEmails(): string[] {
   return (process.env.ADMIN_EMAILS || "")

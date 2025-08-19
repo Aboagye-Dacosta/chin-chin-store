@@ -53,12 +53,13 @@ export default function StoreForm({
   const locations = useQuery(api.locations.getLocations);
   const addStore = useMutation(api.stores.addStore);
   const [isPending, startTransition] = useTransition();
-  
+
   const form = useForm<StoreFormValues>({
     resolver: zodResolver(storeFormSchema),
     defaultValues: {
       name: defaultValue?.name ?? "",
       locationId: defaultValue?.locationId ?? "",
+      deliveryCharge: defaultValue?.deliveryCharge ?? 0,
     },
   });
 
@@ -67,6 +68,7 @@ export default function StoreForm({
       const response = await addStore({
         name: values.name.trim().toLowerCase(),
         locationId: values.locationId as Id<"locations">,
+        deliveryCharge: values.deliveryCharge,
       });
       if (response.success) {
         form.reset({
@@ -105,10 +107,7 @@ export default function StoreForm({
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Store name</FormLabel>
-                  <Input
-                    placeholder="e.g. Downtown Market"
-                    {...field}
-                  />
+                  <Input placeholder="e.g. Downtown Market" {...field} />
                   <FormDescription>
                     Must be at least 2 characters and at most 100.
                   </FormDescription>
@@ -138,6 +137,25 @@ export default function StoreForm({
                   <FormDescription>
                     Chose the location for the store
                   </FormDescription>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="deliveryCharge"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Delivery Charge</FormLabel>
+                  <Input
+                    placeholder="e.g. 10"
+                    {...field}
+                    type="number"
+                    step="0.01"
+                    onChange={(e) => field.onChange(Number(e.target.value))}
+                  />
+                  <FormDescription>Must be at least 0.</FormDescription>
                   <FormMessage />
                 </FormItem>
               )}

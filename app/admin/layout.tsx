@@ -9,18 +9,16 @@ export default function AdminLayout({
 }>) {
   return (
     <AdminProvider>
-      <div className="h-screen overflow-hidden bg-background">
-        <div className="grid grid-cols-[256px_1fr] grid-rows-[64px_1fr] gap-0 h-full">
-          <div className="col-span-1 row-span-2 w-full h-full">
-            <AdminSidebar />
-          </div>
-          <div className="w-full">
-            <AdminHeader />
-          </div>
-          <main className="overflow-hidden p-8">
-            <div className="w-full py-6 h-full overflow-auto">{children}</div>
-          </main>
+      <div className="h-screen grid grid-cols-[256px_1fr] grid-rows-[64px_1fr] gap-0 overflow-hidden">
+        <div className="col-span-1 row-span-2 w-full h-full">
+          <AdminSidebar />
         </div>
+        <div className="w-full h-full">
+          <AdminHeader />
+        </div>
+        <main className="h-full overflow-auto p-8">
+          <div className="w-full">{children}</div>
+        </main>
       </div>
     </AdminProvider>
   );

@@ -6,7 +6,6 @@ import { useMemo } from "react";
 import { CartItem } from "./cart-item";
 import { EmptyCart } from "./empty-cart";
 import { OrderSummary } from "./order-summary";
-import { LoadingSpinner } from "./ui/loading-spinner";
 import { useAuth } from "@clerk/nextjs";
 import { Skeleton } from "./ui/skeleton";
 
@@ -22,8 +21,6 @@ export function CartManagement() {
     return items?.reduce((total, item) => total + item.quantity, 0);
   }, [items]);
 
-  console.log(items);
-
   if (items && items?.length === 0) {
     return <EmptyCart />;
   }
@@ -31,12 +28,15 @@ export function CartManagement() {
   const isLoading = isSignedIn && items === undefined;
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="bg-background">
       <Container className="container mx-auto px-4 py-8">
         {isLoading && (
           <div className="space-y-4">
             {Array.from({ length: 4 }).map((_, index) => (
-              <Skeleton key={index} className="h-[100px] w-full max-w-md mx-auto" />
+              <Skeleton
+                key={index}
+                className="h-[100px] w-full max-w-md mx-auto"
+              />
             ))}
           </div>
         )}

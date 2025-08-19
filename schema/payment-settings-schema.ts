@@ -8,7 +8,7 @@ export const paymentGatewaySettingsSchema = z.object({
   apiSecret: z.string(),
   webhookSecret: z.string().optional(),
   supportedMethods: z.array(z.enum(["MOBILE_MONEY", "CARD"])),
-  supportedNetworks: z.array(z.enum(["MTN", "AIRTELTIGO", "TELECEL"])),
+  supportedNetworks: z.array(z.enum(["MTN", "AIRTELTIGO", "VODAFONE"])),
 });
 
 export type PaymentGatewaySettings = z.infer<typeof paymentGatewaySettingsSchema>;

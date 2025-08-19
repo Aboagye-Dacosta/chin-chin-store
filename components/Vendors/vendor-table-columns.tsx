@@ -10,6 +10,8 @@ interface TableVendor extends Vendor {
   receivedOrders?: number;
   name?: string;
   email?: string;
+  phoneNumber?: string;
+  provider?: string;
 }
 
 export const VendorColumns: Column<TableVendor>[] = [
@@ -22,6 +24,16 @@ export const VendorColumns: Column<TableVendor>[] = [
     key: "email",
     header: "Email",
     render: (_v, row) => <DisplayUserField userId={row.userId} field="email" />,
+  },
+  {
+    key: "phoneNumber",
+    header: "Phone",
+    render: (_v, row) => row.mobileMoney.phoneNumber,
+  },
+  {
+    key: "provider",
+    header: "Provider",
+    render: (_v, row) => row.mobileMoney.provider,
   },
   {
     key: "store",

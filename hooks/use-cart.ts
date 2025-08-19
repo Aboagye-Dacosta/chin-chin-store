@@ -109,6 +109,7 @@ export function useCart() {
   };
 
   return {
+    cart,
     items: isSignedIn ? cartItems : items,
     products,
     categories,

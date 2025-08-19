@@ -25,8 +25,8 @@ import { cn } from "@/lib/utils";
 
 export function StoreManagement() {
   const [filter, setFilter] = useState<Record<string, string>>({});
-  const stores = useQuery(api.stores.getStores);
   const locations = useQuery(api.locations.getLocations);
+  const stores = useQuery(api.stores.getStores);
 
   return (
     <Flex direction="col" gap="lg" className="w-full">
@@ -53,15 +53,15 @@ export function StoreManagement() {
             <CardHeaderFilters
               title="Stores"
               filters={[
-                {
-                  key: "store",
-                  label: "Store",
-                  options:
-                    stores?.map((store) => ({
-                      label: store.name,
-                      value: store._id,
-                    })) ?? [],
-                },
+               {
+                key: "locationId",
+                label: "Location",
+                options:
+                  locations?.map((location) => ({
+                    label: location.name,
+                    value: location._id,
+                  })) ?? [],
+               }
               ]}
               onFilterChange={(filter) => setFilter(filter)}
             />

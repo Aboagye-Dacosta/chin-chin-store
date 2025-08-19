@@ -4,7 +4,6 @@ import { useState, useMemo } from "react";
 import { ProductCard } from "@/components/product-card";
 import { Button } from "@/components/ui/button";
 import { Flex } from "./ui/flex";
-import { LoadingSpinner } from "./ui/loading-spinner";
 import { useCart } from "@/hooks/use-cart";
 import { Skeleton } from "./ui/skeleton";
 
@@ -38,7 +37,7 @@ export function ProductGrid() {
   const loading = categories == null || products == null;
 
   return (
-    <div className="space-y-8 min-h-screen" id="products">
+    <div className="space-y-8" id="products">
       <div className="text-center">
         <h2 className="text-3xl font-bold mb-4">Our Premium Chips</h2>
         <p className="text-muted-foreground max-w-2xl mx-auto">

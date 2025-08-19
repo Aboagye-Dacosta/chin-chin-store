@@ -1,5 +1,5 @@
 import { DataTable } from "../DataTable";
-import { Product } from "@/types/convex-types";
+import { ProductWithStoreAndCategory } from "@/types/convex-types";
 import { productsColumn } from "./products-column";
 import { memo } from "react";
 
@@ -8,7 +8,7 @@ export const ProductsTable = memo(({
   filterBy,
   onRowSelect,
 }: {
-  products: Product[];
+  products: ProductWithStoreAndCategory[];
   filterBy: Record<string, string>;
   onRowSelect?: (selectdRows: Set<string>) => void;
 }) => {

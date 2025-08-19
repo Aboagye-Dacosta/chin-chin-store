@@ -1,13 +1,17 @@
 "use client";
 
 import { OrderCard } from "@/components/order-card";
-import { Orders } from "@/lib/fetch/fetch-orders";
+import { useQuery } from "convex/react";
+import { api } from "@/convex/_generated/api";
+import { useStoreStore } from "@/store/use-store-store";
 
-interface OrdersListProps {
-  orders: Orders;
-}
 
-export function OrdersList({ orders }: Readonly<OrdersListProps>) {
+export function OrdersList() {
+  const { store } = useStoreStore();
+  const orders = useQuery(api.orders.getOrdersByStoreAndUser, {
+    storeId: store?._id!,  
+  });
+
   if (!orders || orders.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center h-[400px] text-gray-500 dark:text-gray-400">
@@ -21,7 +25,7 @@ export function OrdersList({ orders }: Readonly<OrdersListProps>) {
   return (
     <div className="grid gap-6">
       {orders.map((order) => (
-        <OrderCard key={order.id} order={order} />
+        <OrderCard key={order._id} order={order} />
       ))}
     </div>
   );

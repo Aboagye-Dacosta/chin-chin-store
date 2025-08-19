@@ -14,7 +14,7 @@ export const PaymentSchema = z.object({
     "AWAITING_CONFIRMATION",
   ]),
   phoneNumber: z.string().optional(),
-  mobileNetwork: z.enum(["MTN", "AIRTELTIGO", "TELECEL"]).optional(),
+  mobileNetwork: z.enum(["MTN", "AIRTELTIGO", "VODAFONE"]).optional(),
   transactionId: z.string().optional(),
   transactionReference: z.string().optional(),
   metadata: z.any().optional(),

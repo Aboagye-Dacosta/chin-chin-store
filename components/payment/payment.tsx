@@ -1,10 +1,8 @@
 "use client";
 
-import { useMemo, useState, useTransition } from "react";
+import { useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { ShieldCheck, ArrowLeft, XCircle } from "lucide-react";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
+import { ShieldCheck, ArrowLeft, XCircle, RefreshCcw } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -16,7 +14,6 @@ import {
 } from "@/components/ui/card";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { PaymentOrderSummary } from "@/components/payment-order-summary";
-import { PaymentStatusAlert } from "@/components/payment-status-alert";
 import { PaymentMethodSelector } from "./payment-method-selector";
 import { HelpCard } from "../payment-help-card";
 import { useStoreStore } from "@/store/use-store-store";
@@ -25,73 +22,123 @@ import { useAction, useMutation, useQuery } from "convex/react";
 import { toast } from "sonner";
 import { Id } from "@/convex/_generated/dataModel";
 import { useOrderStore } from "@/store/use-order-store";
-import { Payment, PaymentMethod } from "@/types/convex-types";
+import { PaymentMethod } from "@/types/convex-types";
 import PaystackPop from "@paystack/inline-js";
+import { useCart } from "@/hooks/use-cart";
+import { nanoid } from "nanoid";
+import { Flex } from "../ui/flex";
+import { useAppStore } from "@/hooks/use-app-store";
 
 export default function PaymentPage() {
+  const [error, setError] = useState<string | null>(null);
   const [paymentMethod, setPaymentMethod] =
     useState<PaymentMethod>("MOBILE_MONEY");
-  const [error, setError] = useState<string | null>(null);
-  const [result, setResult] = useState<Payment | null>(null);
+  const { cart } = useCart();
+  const { serverItems } = useAppStore();
+  const paymentButtonRef = useRef<HTMLButtonElement>(null);
 
   const router = useRouter();
-  const { order } = useOrderStore();
+  const { order,clearOrder } = useOrderStore();
   const { store } = useStoreStore();
   const [isPending, startTransition] = useTransition();
 
   const currentUser = useQuery(api.users.getCurrentUser);
-  const createOrder = useMutation(api.payments.makePayment);
-  const makePayment = useMutation(api.payments.makePayment);
+  const createOrder = useMutation(api.orders.createOrder);
   const triggerPaymentWithPaystack = useAction(
-    api.createTransferRecipient.initializePaystackTransaction
+    api.payments.paystack.initializePaystackTransaction
+  );
+  const makePayOnDelivery = useMutation(
+    api.payments.addPayments.makePayOnDeliveryPayment
+  );
+  const validatePayment = useAction(
+    api.payments.paystack.verifyPaystackTransaction
   );
 
   const onSubmit = async () => {
     startTransition(async () => {
       try {
-        const response = await createOrder({
+        const orderResponse = await createOrder({
           vendorId: order?.vendorId as Id<"vendors">,
-          method: paymentMethod,
           deliveryAddressLabel: order?.deliveryAddressLabel!,
           deliveryNote: order?.deliveryNote!,
           amount: order?.total!,
           userId: currentUser?._id!,
           storeId: store?._id as Id<"stores">,
-          trackingNumber: "",
-          callback_url: "",
-          transactionId: "",
-          transactionReference: "",
-          metadata: {},
+          trackingNumber: nanoid(),
+          method: paymentMethod,
+          items:
+            serverItems.map((item) => ({
+              productId: item.productId,
+              quantity: item.quantity,
+            })) ?? [],
+          deliveryCharge: store?.deliveryCharge ?? 0,
         });
+
+        if (paymentMethod === "PAYMENT_ON_DELIVERY") {
+          try {
+            await makePayOnDelivery({
+              orderId: orderResponse,
+              amount: order?.total!,
+              cartId: cart?._id!,
+            });
+            toast.success("Payment successful");
+            clearOrder();
+            router.push(`/orders/${orderResponse}`);
+          } catch (error) {
+            toast.error((error as Error)?.message);
+          }
+        }
 
         if (paymentMethod === "MOBILE_MONEY") {
           const paymentResponse = await triggerPaymentWithPaystack({
             amount: order?.total!,
             email: currentUser?.email!,
-            orderId: response,
+            orderId: orderResponse,
             vendorId: order?.vendorId as Id<"vendors">,
             callback_url: "",
           });
 
           const popup = new PaystackPop();
           popup.resumeTransaction(paymentResponse.access_code, {
-            onSuccess: (response) => {
+            onSuccess: async (response) => {
               if (response.status === "success") {
-                toast.success("Payment successful");
-                router.push("/order");
+                try {
+                  await validatePayment({
+                    orderId: orderResponse,
+                    reference: response.reference,
+                    paymentId: paymentResponse?.paymentId as Id<"payments">,
+                    vendorId: order?.vendorId as Id<"vendors">,
+                    cartId: cart?._id!,
+                  });
+                  toast.success("Payment successful");
+                  clearOrder();
+                  router.push(`/orders/${orderResponse}`);
+                } catch (error) {
+                  toast.error((error as Error)?.message);
+                  setError((error as Error)?.message);
+                }
               } else {
                 toast.error("Payment failed");
+                setError(
+                  "Payment failed, please try again if it was not intentional"
+                );
               }
             },
             onCancel: () => {
-              toast.error("Payment failed");
+              toast.error("Payment cancelled");
+              setError(
+                "Payment cancelled, please try again if it was not intentional"
+              );
             },
             onError: (err) => {
               toast.error(err.message);
+              setError(err.message);
             },
           });
         } else {
           toast.success("Order placed successfully");
+          clearOrder();
+          router.push(`/orders/${orderResponse}`);
         }
       } catch (error) {
         toast.error((error as Error)?.message);
@@ -135,12 +182,26 @@ export default function PaymentPage() {
                   <AlertTitle>Payment Error</AlertTitle>
                   <AlertDescription className="text-sm">
                     {error}
+                    <Flex className="w-full" direction="row" justify="end">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                          setError(null);
+                          paymentButtonRef.current?.click();
+                        }}
+                      >
+                        <RefreshCcw className="mr-2 h-4 w-4" />
+                        Retry
+                      </Button>
+                    </Flex>
                   </AlertDescription>
                 </Alert>
               )}
 
               <div className="pt-2">
                 <Button
+                  ref={paymentButtonRef}
                   className="w-full"
                   type="button"
                   disabled={isPending}
@@ -150,14 +211,12 @@ export default function PaymentPage() {
                   Pay now
                 </Button>
               </div>
-
-              {result && <PaymentStatusAlert payment={result} />}
             </CardContent>
           </Card>
         </div>
 
         <div className="space-y-6 lg:col-span-2">
-          <PaymentOrderSummary deliveryFee={0} />
+          <PaymentOrderSummary />
           <HelpCard />
         </div>
       </div>

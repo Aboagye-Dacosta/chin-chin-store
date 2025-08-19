@@ -1,13 +1,6 @@
 "use client";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
-import { User } from "lucide-react";
-import Link from "next/link";
+import { BookUser, LogOut, Package, Shield } from "lucide-react";
 import { ROLES } from "@/constants/roles";
 import { memo, useCallback, useState, useTransition } from "react";
 import {
@@ -20,9 +13,10 @@ import {
 } from "./ui/dialog";
 import { useCart } from "@/hooks/use-cart";
 import { useStoreStore } from "@/store/use-store-store";
-import { useAuth } from "@clerk/nextjs";
+import { useAuth, UserButton } from "@clerk/nextjs";
 import { useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
+import ProfileManagement from "./profile-management";
 
 export const ProfileItem = memo(() => {
   const [openSignOutDialog, setOpenSignOutDialog] = useState(false);
@@ -31,46 +25,55 @@ export const ProfileItem = memo(() => {
   const { store } = useStoreStore();
   const { signOut } = useAuth();
   const user = useQuery(api.users.getCurrentUser);
+  const iconStyle = "size-4";
 
   const handleSyncCart = useCallback(() => {
     startTransition(
       async () =>
         await syncServerToCart(store?._id ?? "").finally(() => {
           signOut();
-          setOpenSignOutDialog(false);
         })
     );
   }, [store?._id, syncServerToCart]);
 
   return (
     <>
-      <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-          <Button
-            variant="ghost"
-            size="icon"
-            className="flex items-center justify-center"
-          >
-            <User className="!h-5 !w-5" />
-          </Button>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent align="end">
-          <DropdownMenuItem asChild>
-            <Link href="/profile">Profile</Link>
-          </DropdownMenuItem>
-          <DropdownMenuItem asChild>
-            <Link href="/orders">Orders</Link>
-          </DropdownMenuItem>
+      <UserButton
+        appearance={{
+          elements: {
+            userButtonPopoverActionButton__signOut: {
+              display: "none",
+            },
+          },
+        }}
+      >
+        <UserButton.MenuItems>
+          <UserButton.Link
+            labelIcon={<Package className={iconStyle} />}
+            label="Orders"
+            href="/orders"
+          />
           {user?.role !== ROLES.USER && (
-            <DropdownMenuItem asChild>
-              <Link href="/admin">Admin Dashboard</Link>
-            </DropdownMenuItem>
+            <UserButton.Link
+              labelIcon={<Shield className={iconStyle} />}
+              label="Admin Dashboard"
+              href="/admin"
+            />
           )}
-          <DropdownMenuItem onClick={() => setOpenSignOutDialog(true)}>
-            Sign Out
-          </DropdownMenuItem>
-        </DropdownMenuContent>
-      </DropdownMenu>
+          <UserButton.Action
+            labelIcon={<LogOut className={iconStyle} />}
+            label="signOut"
+            onClick={() => setOpenSignOutDialog(true)}
+          />
+        </UserButton.MenuItems>
+        <UserButton.UserProfilePage
+          label="Delivery Address"
+          labelIcon={<BookUser className={iconStyle}/>}
+          url="/delivery-address"
+        >
+          <ProfileManagement />
+        </UserButton.UserProfilePage>
+      </UserButton>
       {openSignOutDialog && (
         <Dialog open={openSignOutDialog} onOpenChange={setOpenSignOutDialog}>
           <DialogContent>
@@ -101,5 +104,4 @@ export const ProfileItem = memo(() => {
     </>
   );
 });
-
 ProfileItem.displayName = "ProfileItem";

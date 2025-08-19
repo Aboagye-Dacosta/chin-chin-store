@@ -3,9 +3,9 @@ import { v } from "convex/values";
 
 // convex/schema.ts (snippet)
 const SecretBlob = v.object({
-  data: v.string(),     // base64 ciphertext (includes Poly1305 tag)
-  nonce: v.string(),    // base64 24-byte nonce
-  v: v.number(),        // key version (index into ENC_KEYS_B64)
+  data: v.string(), // base64 ciphertext (includes Poly1305 tag)
+  nonce: v.string(), // base64 24-byte nonce
+  v: v.number(), // key version (index into ENC_KEYS_B64)
 });
 
 export const OrderStatus = v.union(
@@ -19,6 +19,8 @@ export const PaymentStatus = v.union(
   v.literal("PENDING"),
   v.literal("PAID"),
   v.literal("FAILED"),
+  v.literal("CANCELLED"),
+  v.literal("ORDER_CANCELLED"),
   v.literal("REFUNDED"),
   v.literal("AWAITING_CONFIRMATION")
 );
@@ -26,20 +28,19 @@ export const PaymentStatus = v.union(
 export const PaymentMethod = v.union(
   v.literal("MOBILE_MONEY"),
   v.literal("CARD")
-)
+);
 
 export const PaymentNetwork = v.union(
   v.literal("MTN"),
   v.literal("AIRTELTIGO"),
-  v.literal("TELECEL")
-)
+  v.literal("VODAFONE")
+);
 
 export const Role = v.union(
   v.literal("SUPER_ADMIN"),
   v.literal("VENDOR"),
   v.literal("USER")
-)
-
+);
 
 export default defineSchema({
   users: defineTable({
@@ -67,7 +68,7 @@ export default defineSchema({
   stores: defineTable({
     name: v.string(),
     locationId: v.id("locations"),
-    deliveryChargeId: v.optional(v.id("deliveryCharges")),
+    deliveryCharge: v.float64(),
     createdAt: v.string(),
     updatedAt: v.string(),
   }).index("byName", ["name"]),
@@ -91,6 +92,7 @@ export default defineSchema({
     price: v.float64(),
     stock: v.number(),
     image: v.optional(v.string()),
+    model: v.optional(v.string()),
     status: v.union(v.literal("Active"), v.literal("Inactive")),
     packaging: v.union(v.literal("Bag"), v.literal("Can")),
     categoryId: v.id("categories"),
@@ -116,7 +118,7 @@ export default defineSchema({
     transactionId: v.optional(v.string()),
     transactionReference: v.optional(v.string()),
     metadata: v.optional(v.any()),
-    paymentGatewaySettingsId:v.optional(v.id("paymentGatewaySettings")),
+    paymentGatewaySettingsId: v.optional(v.id("paymentGatewaySettings")),
     createdAt: v.string(),
     updatedAt: v.string(),
   }).index("byOrder", ["orderId"]),
@@ -140,8 +142,9 @@ export default defineSchema({
     total: v.float64(),
     deliveryAddressLabel: v.string(),
     deliveryNote: v.optional(v.string()),
+    deliveryCharge: v.optional(v.float64()),
     status: OrderStatus,
-    trackingNumber: v.optional(v.string()),
+    trackingNumber: v.string(),
     createdAt: v.string(),
     updatedAt: v.string(),
     storeId: v.id("stores"),
@@ -149,6 +152,7 @@ export default defineSchema({
     .index("byVendor", ["vendorId"])
     .index("byUser", ["userId"])
     .index("byStore", ["storeId"])
+    .index("byTrackingNumber", ["trackingNumber"])
     .index("byUserAndStore", ["userId", "storeId"])
     .index("byVendorAndStore", ["vendorId", "storeId"]),
 
@@ -159,13 +163,6 @@ export default defineSchema({
     createdAt: v.string(),
     updatedAt: v.string(),
   }).index("byOrder", ["orderId"]),
-
-  deliveryCharges: defineTable({
-    amount: v.float64(),
-    storeId: v.id("stores"),
-    createdAt: v.string(),
-    updatedAt: v.string(),
-  }).index("byStore", ["storeId"]),
 
   carts: defineTable({
     userId: v.id("users"),
@@ -196,8 +193,8 @@ export default defineSchema({
 
   addresses: defineTable({
     userId: v.id("users"),
-    label: v.string(),
-    city: v.string(),
+    deliveryAddress: v.string(),
+    deliveryAddressNote: v.optional(v.string()),
     isDefault: v.boolean(),
     createdAt: v.string(),
     updatedAt: v.string(),

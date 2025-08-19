@@ -25,3 +25,4 @@ export const getCart = query({
     return cart;
   },
 });
+

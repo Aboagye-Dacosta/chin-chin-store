@@ -1,13 +1,13 @@
-import { Store } from "@/types/convex-types";
+import { StoreWithLocation } from "@/types/convex-types";
 import { create } from "zustand";
 import { createJSONStorage, devtools, persist } from "zustand/middleware";
 
 interface StoreState {
-  store: Store | null;
+  store: StoreWithLocation | null;
 }
 
 interface StoreActions {
-  setStore: (store: Store) => void;
+  setStore: (store: StoreWithLocation) => void;
 }
 
 type StoreStore = StoreState & StoreActions;

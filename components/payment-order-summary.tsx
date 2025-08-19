@@ -9,16 +9,14 @@ import {
 import { Separator } from "./ui/separator";
 import { displayMoney } from "@/lib/display-money";
 import { useMemo } from "react";
+import { useStoreStore } from "@/store/use-store-store";
 
-export const PaymentOrderSummary = ({
-  deliveryFee,
-}: {
-  deliveryFee: number;
-}) => {
+export const PaymentOrderSummary = () => {
   const { totalPrice } = useAppStore();
+  const { store } = useStoreStore();
   const amount = useMemo(
-    () => (totalPrice ?? 0) + deliveryFee,
-    [totalPrice, deliveryFee]
+    () => (totalPrice ?? 0) + (store?.deliveryCharge ?? 0),
+    [totalPrice, store?.deliveryCharge]
   );
   return (
     <Card>
@@ -36,7 +34,7 @@ export const PaymentOrderSummary = ({
         <div className="flex items-center text-sm">
           <span className="text-muted-foreground">Delivery</span>
           <span className="ml-auto font-medium">
-            {displayMoney(deliveryFee)}
+            {displayMoney(store?.deliveryCharge ?? 0)}
           </span>
         </div>
         <Separator />

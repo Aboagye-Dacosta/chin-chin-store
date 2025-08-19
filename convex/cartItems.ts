@@ -1,4 +1,4 @@
-import { mutation, query } from "./_generated/server";
+import { internalMutation, mutation, query } from "./_generated/server";
 import { v } from "convex/values";
 
 export const getCartItems = query({
@@ -110,5 +110,33 @@ export const updateCartItem = mutation({
       quantity,
       total: quantity * productPrice,
     });
+  },
+});
+
+//internal actions
+export const deleteCartItemsAndUpdateStock = internalMutation({
+  args: {
+    cartId: v.id("carts"),
+  },
+  handler: async (ctx, args) => {
+    const cartItems = await ctx.db
+      .query("cartItems")
+      .withIndex("byCart", (q) => q.eq("cartId", args.cartId))
+      .collect();
+
+    await Promise.all(
+      cartItems.map(async (item) => {
+        const product = await ctx.db.get(item.productId);
+        if (!product) return;
+        if(product.stock < item.quantity){
+          throw new Error(`Not enough stock for ${product.title}`);
+        }
+        await ctx.db.patch(item.productId, {
+          stock: product.stock - item.quantity,
+          updatedAt: new Date().toISOString(),
+        });
+        return await ctx.db.delete(item._id);
+      })
+    );
   },
 });

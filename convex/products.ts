@@ -12,14 +12,36 @@ export const getProducts = query({
       .query("products")
       .withIndex("byStore", (q) => q.eq("storeId", args.storeId!))
       .collect();
-    return products;
+
+    const enrichedProducts = await Promise.all(
+      products.map(async (product) => {
+        const category = await ctx.db.get(product.categoryId);
+        return {
+          ...product,
+          category,
+        };
+      })
+    );
+
+    return enrichedProducts;
   },
 });
 
 export const getAllProducts = query({
   handler: async (ctx) => {
     const products = await ctx.db.query("products").collect();
-    return products;
+    const enrichedProducts = await Promise.all(
+      products.map(async (product) => {
+        const store = await ctx.db.get(product.storeId);
+        const category = await ctx.db.get(product.categoryId);
+        return {
+          ...product,
+          store,
+          category,
+        };
+      })
+    );
+    return enrichedProducts;
   },
 });
 

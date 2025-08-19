@@ -48,7 +48,7 @@ const PAYMENT_METHODS = [
 const MOBILE_NETWORKS = [
   { id: "MTN", label: "MTN Mobile Money" },
   { id: "AIRTELTIGO", label: "AirtelTigo Money" },
-  { id: "TELECEL", label: "Telecel Cash" },
+  { id: "VODAFONE", label: "Telecel Cash" },
 ] as const;
 
 interface PaymentGatewayFormProps {

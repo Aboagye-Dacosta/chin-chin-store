@@ -15,16 +15,16 @@ import { toast } from "sonner";
 import { useCallback, useTransition } from "react";
 import { cn } from "@/lib/utils";
 import { displayMoney } from "@/lib/display-money";
-import { Product } from "@/types/convex-types";
+import { ProductWithCategory } from "@/types/convex-types";
 import { useAppThemeStore } from "@/store/use-app-theme";
 import { useAuth } from "@clerk/nextjs";
 
 interface ProductCardProps {
-  product: Product;
+  product: ProductWithCategory;
 }
 
 export function ProductCard({ product }: Readonly<ProductCardProps>) {
-  const { addItem, categories } = useCart();
+  const { addItem } = useCart();
   const [isAdding, startTransition] = useTransition();
   const { categoryColors } = useAppThemeStore();
   const { isSignedIn } = useAuth();
@@ -47,10 +47,6 @@ export function ProductCard({ product }: Readonly<ProductCardProps>) {
     }
   }, []);
 
-  const category = categories?.find(
-    (category) => category._id === product.categoryId
-  );
-
   const isLoading = isAdding && isSignedIn;
 
   return (
@@ -63,21 +59,26 @@ export function ProductCard({ product }: Readonly<ProductCardProps>) {
             )}
             style={{
               backgroundColor:
-                categoryColors[category?.name ?? ""] ?? category?.color,
+                categoryColors[product?.category?.name ?? ""] ??
+                product?.category?.color,
             }}
           ></div>
           <Scene
-            modelUrl={getModelUrl(product.packaging, category?.name ?? "")}
+            modelUrl={getModelUrl(
+              product?.packaging,
+              product?.category?.name ?? ""
+            )}
           />
           <div className="absolute top-2 left-2 flex gap-2">
             <Badge
               style={{
                 backgroundColor:
-                  categoryColors[category?.name ?? ""] ?? category?.color,
+                  categoryColors[product?.category?.name ?? ""] ??
+                  product?.category?.color,
                 color: "white",
               }}
             >
-              {category?.name}
+              {product?.category?.name}
             </Badge>
             <Badge variant="secondary" className="flex items-center gap-1">
               <Package className="h-3 w-3" />
@@ -109,7 +110,8 @@ export function ProductCard({ product }: Readonly<ProductCardProps>) {
               className={cn("w-full flex items-center justify-center")}
               style={{
                 backgroundColor:
-                  categoryColors[category?.name ?? ""] ?? category?.color,
+                  categoryColors[product?.category?.name ?? ""] ??
+                  product?.category?.color,
               }}
               disabled={product.stock === 0 || isAdding}
               loading={isLoading}
