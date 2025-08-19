@@ -101,6 +101,8 @@
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "@types/three": "^0.179.0",
+    "eslint": "^9.33.0",
+    "eslint-config-next": "15.4.7",
     "postcss": "^8.5",
     "prisma": "^6.13.0",
     "tailwindcss": "^4.1.9",
