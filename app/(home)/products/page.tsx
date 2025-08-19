@@ -1,4 +1,3 @@
-"use client";
 import { ProductGrid } from "@/components/product-grid";
 import { Container } from "@/components/ui/contaner";
 import { api } from "@/convex/_generated/api";

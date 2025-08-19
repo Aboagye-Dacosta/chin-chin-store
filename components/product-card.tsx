@@ -18,6 +18,7 @@ import { ProductWithCategory } from "@/types/convex-types";
 import { useAppThemeStore } from "@/store/use-app-theme";
 import { useAuth } from "@clerk/nextjs";
 import LargeModelCard from "./model";
+import Image from "next/image";
 
 interface ProductCardProps {
   product: ProductWithCategory;
@@ -52,7 +53,18 @@ export function ProductCard({ product }: Readonly<ProductCardProps>) {
                 product?.category?.color,
             }}
           ></div>
-          <Suspense fallback={null}>
+          <Suspense
+            fallback={
+              <div className="h-[300px] w-full">
+                <Image
+                  src={product?.image ?? ""}
+                  alt={product?.title ?? ""}
+                  fill
+                  className="object-contain"
+                />
+              </div>
+            }
+          >
             <LargeModelCard src={product?.model ?? ""} />
           </Suspense>
           <div className="absolute top-2 left-2 flex gap-2">
