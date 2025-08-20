@@ -51,11 +51,18 @@ export type StoreWithLocation = Store & {
 
 export type ProductWithCategory = Product & {
   category: Category | null;
+  stock: number;
 };
 
 export type ProductWithStoreAndCategory = Product & {
   store: Store | null;
   category: Category | null;
+};
+
+export type ProductByStore = Doc<"productsByStore"> & {
+    store: Store | null;
+    product: Product | null; 
+    category: Category | null;
 };
 
 

@@ -6,7 +6,7 @@ interface CartActions {
   setCart: (items: CartItem[]) => void;
   addItem: (item: Product) => void;
   removeItem: (id: string) => void;
-  updateQuantity: (id: string, quantity: number) => void;
+  updateQuantity: (id: string, quantity: number, productPrice: number) => void;
   clearCart: () => void;
   setCartId: (cartId: Cart["_id"] | null) => void;
   getTotalPrice: () => number;
@@ -34,6 +34,7 @@ export const useCartStore = create<CartStore>()(
             (i) => i.productId === product._id
           );
           if (existingItem) {
+            console.log("existingItem", existingItem);
             set((state) => ({
               items: state?.items?.map((i) =>
                 i.productId === product._id
@@ -75,11 +76,11 @@ export const useCartStore = create<CartStore>()(
               id,
             ] as CartItem["_id"][],
           })),
-        updateQuantity: (id, quantity) =>
+        updateQuantity: (id, quantity, productPrice) =>
           set((state) => ({
             items: state?.items?.map((item) =>
               item._id === id
-                ? { ...item, quantity, total: item.total * quantity }
+                ? { ...item, quantity, total: quantity * productPrice }
                 : item
             ),
           })),
@@ -102,8 +103,8 @@ export const useCartStore = create<CartStore>()(
           items: state?.items?.map((item) => ({
             ...item,
             existingQuantity: item?.existingQuantity ?? 0,
-            removedItems: state?.removedItems ?? [],
           })),
+          removedItems: state?.removedItems ?? [],
         }),
       }
     )

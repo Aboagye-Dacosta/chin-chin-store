@@ -40,9 +40,9 @@
 }
 [data-theme="dark"],
 .dark {
-  --background: oklch(0.18 0.02 260);
+  --background: #121212;
   --foreground: oklch(0.985 0 0);
-  --card: oklch(0.18 0.02 260);
+  --card: #121212;
   --card-foreground: oklch(0.985 0 0);
   --popover: oklch(0.145 0 0);
   --popover-foreground: oklch(0.985 0 0);

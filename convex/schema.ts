@@ -90,18 +90,26 @@ export default defineSchema({
     title: v.string(),
     description: v.string(),
     price: v.float64(),
-    stock: v.number(),
     image: v.optional(v.string()),
     model: v.optional(v.string()),
     status: v.union(v.literal("Active"), v.literal("Inactive")),
     packaging: v.union(v.literal("Bag"), v.literal("Can")),
     categoryId: v.id("categories"),
-    storeId: v.id("stores"),
     createdAt: v.string(),
     updatedAt: v.string(),
   })
-    .index("byCategory", ["categoryId"])
-    .index("byStore", ["storeId"]),
+    .index("byCategory", ["categoryId"]),
+
+  productsByStore: defineTable({
+    storeId: v.id("stores"),
+    productId: v.id("products"),
+    quantity: v.number(),
+    createdAt: v.string(),
+    updatedAt: v.string(),
+  })
+    .index("byStore", ["storeId"])
+    .index("byProduct", ["productId"])
+    .index("byStoreAndProduct", ["storeId", "productId"]),
 
   payments: defineTable({
     orderId: v.id("orders"),
@@ -223,6 +231,13 @@ export default defineSchema({
     isModel: v.boolean(),
     createdAt: v.string(),
     updatedAt: v.string(),
-  })
-    .index("byName", ["name"]),
+  }).index("byName", ["name"]),
+  support: defineTable({
+    email: v.string(),
+    phone: v.string(),
+    address: v.string(),
+    operationHours: v.string(),
+    createdAt: v.string(),
+    updatedAt: v.string(),
+  }).index("byEmail", ["email"]),
 });

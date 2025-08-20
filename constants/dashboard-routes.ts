@@ -16,6 +16,7 @@ export const DASHBOARD_ROUTES = [
   { id: "/admin/store", label: "Store", icon: ShoppingCart },
   { id: "/admin/orders", label: "Orders", icon: ShoppingBag },
   { id: "/admin/payments", label: "Payments", icon: CircleDollarSign },
+  { id: "/admin/stocks", label: "Stocks", icon: ShoppingCart },
   {
     id: "/admin/vendor-registration",
     label: "Vendor Registration",

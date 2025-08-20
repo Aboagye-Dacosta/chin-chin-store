@@ -198,6 +198,7 @@ export const updateOrderStatus = internalMutation({
 export const cancelOrder = mutation({
   args: {
     orderId: v.id("orders"),
+    storeId: v.id("stores"),
   },
   handler: async (ctx, args) => {
     const order = await ctx.db.get(args.orderId);
@@ -220,7 +221,7 @@ export const cancelOrder = mutation({
     }
 
     //update payment status
-    if(payment.method === "MOBILE_MONEY") {
+    if (payment.method === "MOBILE_MONEY") {
       await ctx.db.patch(payment._id, {
         status: "ORDER_CANCELLED",
         updatedAt: now,
@@ -240,10 +241,15 @@ export const cancelOrder = mutation({
 
     await Promise.all(
       orderItems.map(async (item) => {
-        const product = await ctx.db.get(item.productId);
-        if (!product) return;
-        await ctx.db.patch(product._id, {
-          stock: product.stock + item.quantity,
+        const productByStore = await ctx.db
+          .query("productsByStore")
+          .withIndex("byStoreAndProduct", (q) =>
+            q.eq("storeId", args.storeId).eq("productId", item.productId)
+          )
+          .first();
+        if (!productByStore) return;
+        await ctx.db.patch(productByStore._id, {
+          quantity: productByStore.quantity + item.quantity,
           updatedAt: now,
         });
       })

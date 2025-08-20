@@ -28,6 +28,8 @@ export const addCartItem = mutation({
     { storeId, cartId, productId, quantity, productPrice }
   ) => {
     let newCartId = cartId;
+    const now = new Date().toISOString();
+
     if (!cartId) {
       const identity = await ctx.auth.getUserIdentity();
       if (!identity) return null;
@@ -50,8 +52,8 @@ export const addCartItem = mutation({
           userId: user._id,
           storeId,
           status: "ACTIVE",
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
+          createdAt: now,
+          updatedAt: now,
         });
 
         return await ctx.db.insert("cartItems", {
@@ -59,8 +61,8 @@ export const addCartItem = mutation({
           productId,
           quantity,
           total: quantity * productPrice,
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
+          createdAt: now,
+          updatedAt: now,
         });
       }
     }
@@ -110,33 +112,5 @@ export const updateCartItem = mutation({
       quantity,
       total: quantity * productPrice,
     });
-  },
-});
-
-//internal actions
-export const deleteCartItemsAndUpdateStock = internalMutation({
-  args: {
-    cartId: v.id("carts"),
-  },
-  handler: async (ctx, args) => {
-    const cartItems = await ctx.db
-      .query("cartItems")
-      .withIndex("byCart", (q) => q.eq("cartId", args.cartId))
-      .collect();
-
-    await Promise.all(
-      cartItems.map(async (item) => {
-        const product = await ctx.db.get(item.productId);
-        if (!product) return;
-        if(product.stock < item.quantity){
-          throw new Error(`Not enough stock for ${product.title}`);
-        }
-        await ctx.db.patch(item.productId, {
-          stock: product.stock - item.quantity,
-          updatedAt: new Date().toISOString(),
-        });
-        return await ctx.db.delete(item._id);
-      })
-    );
   },
 });

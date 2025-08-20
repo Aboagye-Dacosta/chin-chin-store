@@ -9,49 +9,52 @@ export const getProducts = query({
   handler: async (ctx, args) => {
     if (!args.storeId) return [];
     const products = await ctx.db
-      .query("products")
+      .query("productsByStore")
       .withIndex("byStore", (q) => q.eq("storeId", args.storeId!))
       .collect();
 
-    const enrichedProducts = await Promise.all(
-      products.map(async (product) => {
+    const enrichedStoreProducts = await Promise.all(
+      products.map(async (storeProduct) => {
+        const product = await ctx.db.get(storeProduct.productId);
+        if (!product) return;
         const category = await ctx.db.get(product.categoryId);
+        if (!category) return;
         return {
           ...product,
+          stock: storeProduct.quantity,
           category,
         };
       })
     );
 
-    return enrichedProducts;
+    return enrichedStoreProducts;
   },
 });
 
 export const getAllProducts = query({
   handler: async (ctx) => {
-    const products = await ctx.db.query("products").collect();
+    const products = await ctx.db
+      .query("products")
+      .collect();
     const enrichedProducts = await Promise.all(
       products.map(async (product) => {
-        const store = await ctx.db.get(product.storeId);
         const category = await ctx.db.get(product.categoryId);
+        if (!category) return null;
         return {
           ...product,
-          store,
           category,
         };
       })
     );
-    return enrichedProducts;
+    return enrichedProducts?.filter((product) => product !== null) ?? [];
   },
 });
 
 export const addProduct = mutation({
   args: {
-    storeId: v.id("stores"),
     title: v.string(),
     description: v.string(),
     price: v.float64(),
-    stock: v.number(),
     image: v.optional(v.string()),
     model: v.optional(v.string()),
     status: v.union(v.literal("Active"), v.literal("Inactive")),
@@ -61,11 +64,9 @@ export const addProduct = mutation({
   handler: async (ctx, args) => {
     try {
       await ctx.db.insert("products", {
-        storeId: args.storeId,
         title: args.title,
         description: args.description,
         price: args.price,
-        stock: args.stock,
         image: args.image,
         model: args.model,
         status: args.status,

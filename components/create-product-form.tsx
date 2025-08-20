@@ -35,9 +35,7 @@ interface CreateProductFormProps {
 export function CreateProductForm({
   defaultProduct,
 }: Readonly<CreateProductFormProps>) {
-  const stores = useQuery(api.stores.getStores);
   const categories = useQuery(api.categories.getCategories);
-  const locations = useQuery(api.locations.getLocations);
   const addProduct = useMutation(api.products.addProduct);
   const [isPending, startTransition] = useTransition();
   const assets = useQuery(api.assets.getAssets);
@@ -55,12 +53,10 @@ export function CreateProductForm({
       title: defaultProduct?.title,
       description: defaultProduct?.description,
       price: defaultProduct?.price,
-      stock: defaultProduct?.stock,
       image: defaultProduct?.image,
       status: defaultProduct?.status,
       packaging: defaultProduct?.packaging,
       categoryId: defaultProduct?.categoryId,
-      storeId: defaultProduct?.storeId,
       model: defaultProduct?.model,
     };
   }, [defaultProduct]);
@@ -71,13 +67,11 @@ export function CreateProductForm({
       title: computedDefaultProduct?.title ?? "",
       description: computedDefaultProduct?.description ?? "",
       price: computedDefaultProduct?.price ?? 0,
-      stock: computedDefaultProduct?.stock ?? 0,
       image: computedDefaultProduct?.image ?? "",
       model: computedDefaultProduct?.model ?? "",
       status: computedDefaultProduct?.status ?? "Active",
       packaging: computedDefaultProduct?.packaging ?? "Bag",
       categoryId: computedDefaultProduct?.categoryId,
-      storeId: computedDefaultProduct?.storeId,
     },
   });
 
@@ -88,13 +82,11 @@ export function CreateProductForm({
         title: data.title,
         description: data.description,
         price: data.price,
-        stock: data.stock,
         image: data.image,
         model: data.model,
         status: data.status,
         packaging: data.packaging,
         categoryId: data.categoryId as Id<"categories">,
-        storeId: data.storeId as Id<"stores">,
       });
 
       if (response.success) {
@@ -161,53 +153,30 @@ export function CreateProductForm({
           )}
         />
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <FormField
-            name="price"
-            render={({ field }) => {
-              return (
-                <FormItem className="grid gap-2">
-                  <FormLabel htmlFor="price">Price</FormLabel>
-                  <FormControl>
-                    <Input
-                      id="price"
-                      type="number"
-                      step="0.01"
-                      placeholder="0.00"
-                      {...field}
-                      value={field.value}
-                      onChange={(e) => field.onChange(Number(e.target.value))}
-                      required
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              );
-            }}
-          />
-          <FormField
-            name="stock"
-            render={({ field }) => {
-              return (
-                <FormItem className="grid gap-2">
-                  <FormLabel htmlFor="stock">Stock</FormLabel>
-                  <FormControl>
-                    <Input
-                      id="stock"
-                      type="number"
-                      placeholder="0"
-                      {...field}
-                      value={field.value}
-                      onChange={(e) => field.onChange(Number(e.target.value))}
-                      required
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              );
-            }}
-          />
-        </div>
+        <FormField
+          name="price"
+          render={({ field }) => {
+            return (
+              <FormItem className="grid gap-2">
+                <FormLabel htmlFor="price">Price</FormLabel>
+                <FormControl>
+                  <Input
+                    id="price"
+                    type="number"
+                    step="0.01"
+                    placeholder="0.00"
+                    {...field}
+                    value={field.value}
+                    onChange={(e) => field.onChange(Number(e.target.value))}
+                    required
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            );
+          }}
+        />
+
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <FormField
             name="image"
@@ -314,61 +283,32 @@ export function CreateProductForm({
               </FormItem>
             )}
           />
-
-          <FormField
-            name="categoryId"
-            render={({ field }) => (
-              <FormItem className="grid gap-2" hidden={hasDefaultProduct}>
-                <FormLabel htmlFor="categoryId">Category</FormLabel>
-                <Select
-                  {...field}
-                  value={field.value}
-                  onValueChange={field.onChange}
-                >
-                  <SelectTrigger id="categoryId" className="w-full">
-                    <SelectValue placeholder="Select category" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {categories?.map((category) => (
-                      <SelectItem key={category._id} value={category._id}>
-                        {category.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </FormItem>
-            )}
-          />
-
-          <FormField
-            name="storeId"
-            render={({ field }) => (
-              <FormItem className="grid gap-2" hidden={hasDefaultProduct}>
-                <FormLabel htmlFor="storeId">Store</FormLabel>
-                <Select
-                  {...field}
-                  value={field.value}
-                  onValueChange={field.onChange}
-                >
-                  <SelectTrigger id="storeId" className="w-full">
-                    <SelectValue placeholder="Select store" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {stores?.map((store) => (
-                      <SelectItem key={store._id} value={store._id}>
-                        {
-                          locations?.find(
-                            (location) => location._id === store.locationId
-                          )?.name
-                        }
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </FormItem>
-            )}
-          />
         </div>
+
+        <FormField
+          name="categoryId"
+          render={({ field }) => (
+            <FormItem className="grid gap-2" hidden={hasDefaultProduct}>
+              <FormLabel htmlFor="categoryId">Category</FormLabel>
+              <Select
+                {...field}
+                value={field.value}
+                onValueChange={field.onChange}
+              >
+                <SelectTrigger id="categoryId" className="w-full">
+                  <SelectValue placeholder="Select category" />
+                </SelectTrigger>
+                <SelectContent>
+                  {categories?.map((category) => (
+                    <SelectItem key={category._id} value={category._id}>
+                      {category.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </FormItem>
+          )}
+        />
 
         <Button
           type="submit"

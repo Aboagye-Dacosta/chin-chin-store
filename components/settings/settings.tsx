@@ -1,4 +1,4 @@
-"use client"
+"use client";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { PaymentGatewayForm } from "../payment-management/payment-gate-way-form";
 import { useQuery } from "convex/react";
@@ -8,6 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import DeliverySettings from "./delivery-settings";
 import UsersSettings from "./users-settings";
 import { AssetsManagement } from "../file-upload/assets-management";
+import { SupportForm } from "./support-form";
 
 export const Settings = () => {
   const paymentSetting = useQuery(api.payments.paymentSettings.paymentSettings);
@@ -20,6 +21,7 @@ export const Settings = () => {
           <TabsTrigger value="delivery">Delivery</TabsTrigger>
           <TabsTrigger value="users">Users</TabsTrigger>
           <TabsTrigger value="assets">Assets</TabsTrigger>
+          <TabsTrigger value="support">Support</TabsTrigger>
         </TabsList>
         <TabsContent value="payment" className="w-full h-full">
           <Flex direction="col" gap="xl" className="w-full h-full">
@@ -49,7 +51,10 @@ export const Settings = () => {
         <TabsContent value="assets">
           <AssetsManagement />
         </TabsContent>
+        <TabsContent value="support">
+          <SupportForm />
+        </TabsContent>
       </Tabs>
     </div>
   );
-}
+};

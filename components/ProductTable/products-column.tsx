@@ -3,9 +3,9 @@ import { getFormattedTime } from "@/lib/getFormattedTime";
 import { displayMoney } from "@/lib/display-money";
 import Image from "next/image";
 import { ProductsTableActions } from "./products-table-actions";
-import { ProductWithStoreAndCategory } from "@/types/convex-types";
+import { ProductWithCategory } from "@/types/convex-types";
 
-export const productsColumn: Column<ProductWithStoreAndCategory>[] = [
+export const productsColumn: Column<Omit<ProductWithCategory, "stock">>[] = [
   {
     key: "image",
     header: "",
@@ -34,11 +34,6 @@ export const productsColumn: Column<ProductWithStoreAndCategory>[] = [
     key: "categoryId",
     header: "Category",
     render: (_value, row) => row.category?.name,
-  },
-  {
-    key: "storeId",
-    header: "Store",
-    render: (_value, row) => row.store?.name,
   },
   {
     key: "packaging",

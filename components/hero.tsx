@@ -9,7 +9,7 @@ import Image from "next/image";
 
 export function Hero() {
   return (
-    <section className="relative bg-gradient-to-r bg-primary  text-primary-foreground  h-screen overflow-hidden z-2 flex items-center justify-center">
+    <section className="relative bg-gradient-to-r bg-primary  text-[#fff]  h-screen overflow-hidden z-2 flex items-center justify-center">
       <div className="h-screen relative z-3 flex items-center justify-center">
         <div className="absolute -bottom-2/4 left-0 w-full h-full -z-1">
           <Image

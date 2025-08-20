@@ -53,6 +53,7 @@ export const makePayOnDeliveryPayment = mutation({
     orderId: v.id("orders"),
     amount: v.float64(),
     cartId: v.id("carts"),
+    storeId: v.id("stores"),
   },
 
   handler: async (ctx, args) => {
@@ -82,15 +83,24 @@ export const makePayOnDeliveryPayment = mutation({
 
       await Promise.all(
         cartItems.map(async (item) => {
-          const product = await ctx.db.get(item.productId);
+          const productByStore = await ctx.db
+            .query("productsByStore")
+            .withIndex("byStoreAndProduct", (q) =>
+              q.eq("storeId", args.storeId).eq("productId", item.productId)
+            )
+            .first();
+
+          if (!productByStore) return;
+          const product = await ctx.db.get(productByStore.productId);
           if (!product) return;
-          if (product.stock < item.quantity) {
+          if (productByStore.quantity < item.quantity) {
             throw new Error(`Not enough stock for ${product.title}`);
           }
-          await ctx.db.patch(item.productId, {
-            stock: product.stock - item.quantity,
+          await ctx.db.patch(productByStore._id, {
+            quantity: productByStore.quantity - item.quantity,
             updatedAt: new Date().toISOString(),
           });
+          
           return await ctx.db.delete(item._id);
         })
       );

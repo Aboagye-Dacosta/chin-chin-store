@@ -1,21 +1,41 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useMemo } from "react";
+import { useSearchParams, useRouter, usePathname } from "next/navigation";
 import { ProductCard } from "@/components/product-card";
 import { Button } from "@/components/ui/button";
 import { Flex } from "./ui/flex";
 import { Skeleton } from "./ui/skeleton";
-import { ProductWithCategory, Category } from "@/types/convex-types";
+import { Category } from "@/types/convex-types";
+import { useAppStore } from "@/hooks/use-app-store";
 
 export function ProductGrid({
-  products,
   categories,
 }: Readonly<{
-  products: ProductWithCategory[];
   categories: Category[];
 }>) {
-  const [selectedCategory, setSelectedCategory] = useState<string>("all");
-  const [selectedPackaging, setSelectedPackaging] = useState<string>("all");
+  const { products } = useAppStore();
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  const pathname = usePathname();
+
+  const selectedCategory = searchParams.get("category") || "all";
+  const selectedPackaging = searchParams.get("packaging") || "all";
+
+  const updateSearchParams = (key: string, value: string) => {
+    const params = new URLSearchParams(searchParams.toString());
+
+    if (value === "all") {
+      params.delete(key);
+    } else {
+      params.set(key, value);
+    }
+
+    const queryString = params.toString();
+    const newUrl = queryString ? `${pathname}?${queryString}` : pathname;
+
+    router.push(newUrl, { scroll: false });
+  };
 
   const filteredProducts = useMemo(
     () =>
@@ -23,14 +43,14 @@ export function ProductGrid({
         const categoryMatch =
           selectedCategory === "all" ||
           categories
-            ?.find((category) => category._id === product.categoryId)
+            ?.find((category) => category._id === product?.categoryId)
             ?.name.toLowerCase() === selectedCategory.toLowerCase();
         const packagingMatch =
           selectedPackaging === "all" ||
-          product.packaging.toLowerCase() === selectedPackaging.toLowerCase();
+          product?.packaging?.toLowerCase() === selectedPackaging.toLowerCase();
         return categoryMatch && packagingMatch;
       }) ?? [],
-    [products, selectedCategory, selectedPackaging]
+    [products, selectedCategory, selectedPackaging, categories]
   );
 
   const categoryNames = [
@@ -71,7 +91,7 @@ export function ProductGrid({
                     selectedCategory === category ? "default" : "outline"
                   }
                   size="sm"
-                  onClick={() => setSelectedCategory(category)}
+                  onClick={() => updateSearchParams("category", category)}
                   className="capitalize"
                 >
                   {category}
@@ -89,7 +109,7 @@ export function ProductGrid({
                     selectedPackaging === packaging ? "default" : "outline"
                   }
                   size="sm"
-                  onClick={() => setSelectedPackaging(packaging)}
+                  onClick={() => updateSearchParams("packaging", packaging)}
                   className="capitalize"
                 >
                   {packaging}
@@ -103,7 +123,7 @@ export function ProductGrid({
       {!loading && filteredProducts?.length > 0 && (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 my-8">
           {filteredProducts?.map((product) => (
-            <ProductCard key={product._id} product={product} />
+            <ProductCard key={product?._id} product={product} />
           ))}
         </div>
       )}

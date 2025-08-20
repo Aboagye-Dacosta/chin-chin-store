@@ -77,13 +77,6 @@ export function useCart() {
 
   const addItem = async (item: Product) => {
     if (isSignedIn) {
-      console.log({
-        cartId: cart?._id!,
-        productId: item._id,
-        quantity: 1,
-        productPrice: item.price,
-      });
-
       await addCartItem({
         storeId: store?._id!,
         cartId: cart?._id!,
@@ -105,7 +98,7 @@ export function useCart() {
     productPrice: number
   ) => {
     if (isSignedIn) await updateCartItem({ id, quantity, productPrice });
-    else localUpdate(id, quantity);
+    else localUpdate(id, quantity, productPrice);
   };
 
   return {

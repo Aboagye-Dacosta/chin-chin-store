@@ -21,7 +21,7 @@ import LargeModelCard from "./model";
 import Image from "next/image";
 
 interface ProductCardProps {
-  product: ProductWithCategory;
+  product: ProductWithCategory | undefined;
 }
 
 export function ProductCard({ product }: Readonly<ProductCardProps>) {
@@ -32,8 +32,8 @@ export function ProductCard({ product }: Readonly<ProductCardProps>) {
 
   const handleAddToCart = () => {
     startTransition(async () => {
-      await addItem(product);
-      toast.success(`${product.title} has been added to your cart.`);
+      await addItem(product!);
+      toast.success(`${product?.title} has been added to your cart.`);
     });
   };
 
@@ -80,7 +80,7 @@ export function ProductCard({ product }: Readonly<ProductCardProps>) {
             </Badge>
             <Badge variant="secondary" className="flex items-center gap-1">
               <Package className="h-3 w-3" />
-              {product.packaging}
+              {product?.packaging}
             </Badge>
           </div>
         </div>
@@ -89,16 +89,16 @@ export function ProductCard({ product }: Readonly<ProductCardProps>) {
       <CardContent className="-mt-6 py-0 ">
         <Card className="p-1 my-0">
           <CardContent>
-            <h3 className="font-semibold text-lg mb-2">{product.title}</h3>
+            <h3 className="font-semibold text-lg mb-2">{product?.title}</h3>
             <p className="text-muted-foreground text-sm mb-3 line-clamp-2">
-              {product.description}
+              {product?.description}
             </p>
             <div className="flex items-center justify-between">
               <span className="text-2xl font-bold">
-                {displayMoney(product.price)}
+                {displayMoney(product?.price ?? 0)}
               </span>
               <span className="text-sm text-muted-foreground">
-                {product.stock} in stock
+                {product?.stock} in stock
               </span>
             </div>
           </CardContent>
@@ -106,11 +106,11 @@ export function ProductCard({ product }: Readonly<ProductCardProps>) {
             <Button
               onClick={handleAddToCart}
               className={cn("w-full flex items-center justify-center")}
-              disabled={product.stock === 0 || isAdding}
+              disabled={product?.stock === 0 || isAdding}
               loading={isLoading}
             >
               {!isLoading && <ShoppingCart className="h-4 w-4 mr-2" />}
-              {product.stock === 0 ? "Out of Stock" : "Add to Cart"}
+              {product?.stock === 0 ? "Out of Stock" : "Add to Cart"}
             </Button>
           </CardFooter>
         </Card>

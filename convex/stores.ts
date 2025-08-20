@@ -11,8 +11,8 @@ export const getStores = query({
           .query("vendors")
           .withIndex("byStore", (q) => q.eq("storeId", store._id))
           .collect();
-        const products = await ctx.db
-          .query("products")
+        const productsByStore = await ctx.db
+          .query("productsByStore")
           .withIndex("byStore", (q) => q.eq("storeId", store._id))
           .collect();
         const enrichedVendors = await Promise.all(
@@ -27,7 +27,7 @@ export const getStores = query({
           ...store,
           location,
           vendors: enrichedVendors,
-          productCount: products.length,
+          productCount: productsByStore?.reduce((acc, product) => acc + product.quantity, 0) ?? 0,
         };
       })
     );

@@ -118,6 +118,22 @@ export const getVendorById = query({
   },
 });
 
+export const getVendorByUserId = query({
+  args: {
+    userId: v.optional(v.id("users")),
+  },
+  handler: async (ctx, args) => {
+    if (!args.userId) {
+      return null;
+    }
+    const vendor = await ctx.db
+      .query("vendors")
+      .withIndex("byUser", (q) => q.eq("userId", args.userId!))
+      .first();
+    return vendor;
+  },
+});
+
 export const updateVendorRecipientCode = internalMutation({
   args: {
     vendorId: v.id("vendors"),

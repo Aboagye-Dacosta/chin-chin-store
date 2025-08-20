@@ -1,14 +1,6 @@
 import { v } from "convex/values";
-import { api, internal } from "../_generated/api";
-import {
-  action,
-  internalMutation,
-  internalQuery,
-  mutation,
-  query,
-} from "../_generated/server";
-import { decryptSecret } from "../paymentGateway";
-import { PaymentMethod, PaymentStatus } from "../schema";
+import { internal } from "../_generated/api";
+import { action } from "../_generated/server";
 
 type PaystackAuthorizationResponse = {
   status: boolean;
@@ -188,6 +180,7 @@ export const verifyPaystackTransaction = action({
     paymentId: v.id("payments"),
     vendorId: v.id("vendors"),
     cartId: v.id("carts"),
+    storeId: v.id("stores"),
   },
   handler: async (ctx, args): Promise<PaystackVerificationResponse["data"]> => {
     const secretKey = await ctx.runQuery(
@@ -227,6 +220,7 @@ export const verifyPaystackTransaction = action({
       paymentId: args.paymentId,
       orderId: args.orderId,
       cartId: args.cartId,
+      storeId: args.storeId,
     });
 
     return result.data;
