@@ -37,6 +37,7 @@ export function CreateProductForm({
 }: Readonly<CreateProductFormProps>) {
   const categories = useQuery(api.categories.getCategories);
   const addProduct = useMutation(api.products.addProduct);
+  const updateProduct = useMutation(api.products.updateProduct);
   const [isPending, startTransition] = useTransition();
   const assets = useQuery(api.assets.getAssets);
 
@@ -78,22 +79,42 @@ export function CreateProductForm({
   const onSubmit = async (data: ProductSchema) => {
     console.log(data);
     startTransition(async () => {
-      const response = await addProduct({
-        title: data.title,
-        description: data.description,
-        price: data.price,
-        image: data.image,
-        model: data.model,
-        status: data.status,
-        packaging: data.packaging,
-        categoryId: data.categoryId as Id<"categories">,
-      });
+      if (defaultProduct) {
+        const response = await updateProduct({
+          productId: defaultProduct._id,
+          title: data.title,
+          description: data.description,
+          price: data.price,
+          image: data.image,
+          model: data.model,
+          status: data.status,
+          packaging: data.packaging,
+          categoryId: data.categoryId as Id<"categories">,
+        });
 
-      if (response.success) {
-        form.reset();
+        if (response.success) {
+          form.reset();
+        }
+
+        handleStatus(response);
+      } else {
+        const response = await addProduct({
+          title: data.title,
+          description: data.description,
+          price: data.price,
+          image: data.image,
+          model: data.model,
+          status: data.status,
+          packaging: data.packaging,
+          categoryId: data.categoryId as Id<"categories">,
+        });
+
+        if (response.success) {
+          form.reset();
+        }
+
+        handleStatus(response);
       }
-
-      handleStatus(response);
     });
   };
 

@@ -33,9 +33,7 @@ export const getProducts = query({
 
 export const getAllProducts = query({
   handler: async (ctx) => {
-    const products = await ctx.db
-      .query("products")
-      .collect();
+    const products = await ctx.db.query("products").collect();
     const enrichedProducts = await Promise.all(
       products.map(async (product) => {
         const category = await ctx.db.get(product.categoryId);
@@ -73,6 +71,38 @@ export const addProduct = mutation({
         packaging: args.packaging,
         categoryId: args.categoryId,
         createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      });
+      return { success: true, message: "Product added successfully" };
+    } catch {
+      return { success: false, message: "Failed to add product" };
+    }
+  },
+});
+
+export const updateProduct = mutation({
+  args: {
+    productId: v.id("products"),
+    title: v.string(),
+    description: v.string(),
+    price: v.float64(),
+    image: v.optional(v.string()),
+    model: v.optional(v.string()),
+    status: v.union(v.literal("Active"), v.literal("Inactive")),
+    packaging: v.union(v.literal("Bag"), v.literal("Can")),
+    categoryId: v.id("categories"),
+  },
+  handler: async (ctx, args) => {
+    try {
+      await ctx.db.patch(args.productId, {
+        title: args.title,
+        description: args.description,
+        price: args.price,
+        image: args.image,
+        model: args.model,
+        status: args.status,
+        packaging: args.packaging,
+        categoryId: args.categoryId,
         updatedAt: new Date().toISOString(),
       });
       return { success: true, message: "Product added successfully" };
