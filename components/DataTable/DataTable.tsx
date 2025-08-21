@@ -60,6 +60,7 @@ export function DataTable<T extends Record<string, unknown>>({
             showCheckboxes={showCheckboxes}
             selectAll={selectAll}
             onSelectAll={handleSelectAll}
+            row={data?.[0]}
           />
           {!hasError && (
             <DataTableBody

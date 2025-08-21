@@ -14,10 +14,16 @@ import { useState } from "react";
 import { CustomAlertDialog } from "../custom-alert-dislog";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "../ui/dialog";
 import StocksProductRegistrationForm from "./stocks-product-registration-form";
+import { useMutation } from "convex/react";
+import { api } from "@/convex/_generated/api";
 
 export const StocksTableActions = ({ stock }: { stock: ProductByStore }) => {
   const [open, setOpen] = useState(false);
   const [openDelete, setOpenDelete] = useState(false);
+  const removeProductFromStore = useMutation(
+    api.productsByStore.removeProductFromStore
+  );
+
   return (
     <>
       <DropdownMenu>
@@ -62,7 +68,12 @@ export const StocksTableActions = ({ stock }: { stock: ProductByStore }) => {
           description="Are you sure you want to delete this product?"
           actionText="Delete"
           cancelText="Cancel"
-          action={() => setOpenDelete(false)}
+          action={() =>
+            removeProductFromStore({
+              productId: stock.productId,
+              storeId: stock.storeId,
+            })
+          }
           cancel={() => setOpenDelete(false)}
         />
       )}

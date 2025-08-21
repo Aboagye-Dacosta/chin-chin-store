@@ -10,13 +10,13 @@ export const productsColumn: Column<Omit<ProductWithCategory, "stock">>[] = [
     key: "image",
     header: "",
     render: (_value, row) => (
-      <div className="w-16 h-16">
+      <div className="w-[50px] h-[50px] flex items-center justify-center">
         <Image
           src={row.image ? row.image : "/placeholder.png"}
           alt={row.title}
-          width={100}
-          height={100}
-          className="w-16 h-16 object-cover"
+          width={20}
+          height={20}
+          className=" object-cover"
         />
       </div>
     ),

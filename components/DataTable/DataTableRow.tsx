@@ -2,6 +2,7 @@ import React from "react";
 import { Checkbox } from "../ui/checkbox";
 import { formatCellValue } from "./DataTable.utils";
 import { DataTableRowProps } from "./DataTable.types";
+import { cn } from "@/lib/utils";
 
 export function DataTableRow<T extends Record<string, unknown>>({
   row,
@@ -29,7 +30,12 @@ export function DataTableRow<T extends Record<string, unknown>>({
       {columns.map((column) => (
         <td
           key={String(column.key)}
-          className="py-3 px-4 text-accent-800 whitespace-nowrap !capitalize"
+          className={cn(
+            "py-3 px-4 text-accent-800 whitespace-nowrap !capitalize",
+            column?.condition === undefined || column?.condition?.(row)
+              ? ""
+              : "hidden"
+          )}
         >
           {column.render
             ? column.render(row[column.key], row)

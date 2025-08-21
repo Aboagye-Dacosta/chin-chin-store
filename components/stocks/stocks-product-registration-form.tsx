@@ -2,7 +2,6 @@ import {
   productByStoreSchema,
   ProductByStoreType,
 } from "@/schema/product-by-store-schema";
-import { ProductByStore } from "@/types/convex-types";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import {
@@ -27,11 +26,12 @@ import { useCallback, useEffect, useState } from "react";
 import { Button } from "../ui/button";
 import { Flex } from "../ui/flex";
 import { Id } from "@/convex/_generated/dataModel";
+import { toast } from "sonner";
 
 export default function StocksProductRegistrationForm({
   initialValues,
 }: Readonly<{
-  initialValues: ProductByStore;
+  initialValues?: ProductByStoreType;
 }>) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const stores = useQuery(api.stores.getStores);
@@ -41,6 +41,9 @@ export default function StocksProductRegistrationForm({
   });
 
   const addProductToStore = useMutation(api.productsByStore.addProductToStore);
+  const updateProductQuantity = useMutation(
+    api.productsByStore.updateProductQuantity
+  );
 
   const form = useForm<ProductByStoreType>({
     resolver: zodResolver(productByStoreSchema),
@@ -54,11 +57,24 @@ export default function StocksProductRegistrationForm({
   const saveProduct = useCallback(
     async (data: ProductByStoreType) => {
       setIsSubmitting(true);
-      await addProductToStore({
-        storeId: data.storeId as Id<"stores">,
-        productId: data.productId as Id<"products">,
-        quantity: data.quantity,
-      });
+      try {
+        if (initialValues) {
+          await updateProductQuantity({
+            storeId: data.storeId as Id<"stores">,
+            productId: data.productId as Id<"products">,
+            quantity: data.quantity,
+          });
+        } else {
+          await addProductToStore({
+            storeId: data.storeId as Id<"stores">,
+            productId: data.productId as Id<"products">,
+            quantity: data.quantity,
+          });
+        }
+      } catch (error) {
+        toast.error((error as Error)?.message);
+      }
+
       setIsSubmitting(false);
     },
     [form, setIsSubmitting]
@@ -82,7 +98,7 @@ export default function StocksProductRegistrationForm({
   }, [currentUser, verdor]);
 
   return (
-    <div>
+    <div className="max-w-md w-full flex flex-col gap-3">
       <h1>Stocks Product Registration Form</h1>
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
@@ -92,14 +108,14 @@ export default function StocksProductRegistrationForm({
                 control={form.control}
                 name="storeId"
                 render={({ field }) => (
-                  <FormItem>
+                  <FormItem className="w-full">
                     <FormControl>
                       <Select
                         {...field}
                         value={field.value}
                         onValueChange={field.onChange}
                       >
-                        <SelectTrigger>
+                        <SelectTrigger className="w-full">
                           <SelectValue placeholder="Select a store" />
                         </SelectTrigger>
                         <SelectContent>
@@ -121,14 +137,14 @@ export default function StocksProductRegistrationForm({
               control={form.control}
               name="productId"
               render={({ field }) => (
-                <FormItem>
+                <FormItem className="w-full">
                   <FormControl>
                     <ProductPickerDialog
                       label="Choose Product"
                       value={field.value}
                       onChange={field.onChange}
-                      btnVariant="default"
-                      className="w-full"
+                      btnVariant="outline"
+                      className="w-full flex justify-start"
                     />
                   </FormControl>
                   <FormMessage />
@@ -139,7 +155,7 @@ export default function StocksProductRegistrationForm({
               control={form.control}
               name="quantity"
               render={({ field }) => (
-                <FormItem>
+                <FormItem className="w-full">
                   <FormControl>
                     <Input
                       {...field}
@@ -150,7 +166,14 @@ export default function StocksProductRegistrationForm({
                 </FormItem>
               )}
             />
-            <Button type="submit" disabled={isSubmitting} loading={isSubmitting}>Save Product</Button>
+            <Button
+              type="submit"
+              disabled={isSubmitting}
+              loading={isSubmitting}
+              className="self-end"
+            >
+              Save Product
+            </Button>
           </Flex>
         </form>
       </Form>

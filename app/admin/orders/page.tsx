@@ -1,5 +1,6 @@
-import { OrderManagement } from "@/components/order-management";
+import { OrdersManagement } from "@/components/order-management/orders-management";
+
 
 export default function OrdersPage() {
-  return <OrderManagement />;
+  return <OrdersManagement />;
 }

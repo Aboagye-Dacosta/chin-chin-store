@@ -1,12 +1,14 @@
 import React from "react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { DataTableHeaderProps } from "./DataTable.types";
+import { cn } from "@/lib/utils";
 
 export function DataTableHeader<T extends Record<string, unknown>>({
   columns,
   showCheckboxes,
   selectAll,
   onSelectAll,
+  row,
 }: Readonly<DataTableHeaderProps<T>>) {
   return (
     <thead>
@@ -23,7 +25,12 @@ export function DataTableHeader<T extends Record<string, unknown>>({
         {columns.map((column) => (
           <th
             key={String(column.key)}
-            className="text-left py-3 px-4 font-medium whitespace-nowrap text-accent-950"
+            className={cn(
+              "text-left py-3 px-4 font-medium whitespace-nowrap text-accent-950",
+              column?.condition === undefined || column?.condition?.(row)
+                ? ""
+                : "hidden"
+            )}
           >
             {column.header}
           </th>

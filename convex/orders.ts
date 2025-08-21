@@ -256,3 +256,70 @@ export const cancelOrder = mutation({
     );
   },
 });
+
+export const getAdminAndVendorsOrders = query({
+  handler: async (ctx) => {
+    const identity = await ctx.auth.getUserIdentity();
+    const clerkId = identity?.subject;
+    if (!clerkId) return null;
+    const user = await ctx.db
+      .query("users")
+      .withIndex("byClerkId", (q) => q.eq("clerkId", clerkId))
+      .first();
+    if (!user) return null;
+
+    if (user.role === "SUPER_ADMIN") {
+      const orders = await ctx.db.query("orders").collect();
+      const enrichedOrders = await Promise.all(
+        orders.map(async (order) => {
+          const user = await ctx.db.get(order.userId);
+          const vendor = await ctx.db.get(order.vendorId);
+          if (!vendor) return null;
+          const vendorUser = await ctx.db.get(vendor.userId);
+          const store = await ctx.db.get(order.storeId);
+
+          return {
+            ...order,
+            user,
+            vendor: vendorUser,
+            store,
+          };
+        })
+      );
+      return enrichedOrders.filter((order) => order !== null);
+    }
+
+    if (user.role === "VENDOR") {
+      const vendor = await ctx.db
+        .query("vendors")
+        .withIndex("byUser", (q) => q.eq("userId", user._id))
+        .first();
+      if (!vendor) return null;
+      const orders = await ctx.db
+        .query("orders")
+        .withIndex("byVendor", (q) => q.eq("vendorId", vendor._id))
+        .collect();
+
+      const enrichedOrders = await Promise.all(
+        orders.map(async (order) => {
+          const user = await ctx.db.get(order.userId);
+          const vendor = await ctx.db.get(order.vendorId);
+          if (!vendor) return null;
+          const vendorUser = await ctx.db.get(vendor.userId);
+          const store = await ctx.db.get(order.storeId);
+
+          const enrichedOrder = {
+            ...order,
+            user,
+            vendor: vendorUser,
+            store,
+          };
+          return enrichedOrder;
+        })
+      );
+      return enrichedOrders.filter((order) => order !== null);
+    }
+
+    return [];
+  },
+});

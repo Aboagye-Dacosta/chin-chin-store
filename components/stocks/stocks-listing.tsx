@@ -20,10 +20,12 @@ export function StocksListing() {
   const stores = useQuery(api.stores.getStores);
   const [filters, setFilters] = useState<Record<string, string>>({});
 
+  console.log(stocks)
+
   const generateFilters = useMemo(() => {
     let filters: FilterGroup[] = [];
     filters.push({
-      key: "categoryId",
+      key: "product",
       label: "Category",
       options:
         categories?.map((category) => ({
@@ -67,7 +69,7 @@ export function StocksListing() {
                   Add Stock
                 </Button>
               </DialogTrigger>
-              <DialogContent className="!max-w-[700px] w-full">
+              <DialogContent >
                 <StocksProductRegistrationForm />
               </DialogContent>
             </Dialog>

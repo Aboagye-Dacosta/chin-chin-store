@@ -80,6 +80,7 @@ export default function PaymentPage() {
               orderId: orderResponse,
               amount: order?.total!,
               cartId: cart?._id!,
+              storeId: store?._id as Id<"stores">,
             });
             toast.success("Payment successful");
             clearOrder();
@@ -109,6 +110,7 @@ export default function PaymentPage() {
                     paymentId: paymentResponse?.paymentId as Id<"payments">,
                     vendorId: order?.vendorId as Id<"vendors">,
                     cartId: cart?._id!,
+                    storeId: store?._id as Id<"stores">,
                   });
                   toast.success("Payment successful");
                   clearOrder();

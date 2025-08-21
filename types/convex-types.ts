@@ -65,4 +65,10 @@ export type ProductByStore = Doc<"productsByStore"> & {
     category: Category | null;
 };
 
+export type OrderWithUserAndStore = Order & {
+    user: User | null;
+    vendor: User | null;
+    store: Store | null;
+};
+
 

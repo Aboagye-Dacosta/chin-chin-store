@@ -18,7 +18,7 @@ export const productsByStore = queryGeneric({
         .query("vendors")
         .withIndex("byUser", (q) => q.eq("userId", user._id))
         .first();
-        
+
       if (!vendor) return null;
 
       const productsByStore = await ctx.db
@@ -70,15 +70,25 @@ export const addProductToStore = mutation({
     storeId: v.id("stores"),
     quantity: v.number(),
   },
-  handler: (ctx, args) => {
+  handler: async (ctx, args) => {
+    const existingProduct = await ctx.db
+      .query("productsByStore")
+      .withIndex("byStoreAndProduct", (q) =>
+        q.eq("storeId", args.storeId).eq("productId", args.productId)
+      )
+      .first();
+
+    if (existingProduct) throw new Error("Product already exists");
+
     const now = new Date().toISOString();
-    const product = ctx.db.insert("productsByStore", {
+    const product = await ctx.db.insert("productsByStore", {
       productId: args.productId,
       storeId: args.storeId,
       quantity: args.quantity,
       createdAt: now,
       updatedAt: now,
     });
+
     return product;
   },
 });
@@ -102,24 +112,23 @@ export const removeProductFromStore = mutation({
 });
 
 export const updateProductQuantity = mutation({
-    args: {
-        productId: v.id("products"),
-        storeId: v.id("stores"),
-        quantity: v.number(),
-    },
-    handler: async (ctx, args) => {
-        const productByStore = await ctx.db
-            .query("productsByStore")
-            .withIndex("byStoreAndProduct", (q) =>
-                q.eq("storeId", args.storeId).eq("productId", args.productId)
-            )
-            .first();
-        if (!productByStore) throw new Error("Product not found");
-        const product = await ctx.db.patch(productByStore._id, {
-            quantity: args.quantity,
-            updatedAt: new Date().toISOString(),
-        });
-        return product;
-    },
+  args: {
+    productId: v.id("products"),
+    storeId: v.id("stores"),
+    quantity: v.number(),
+  },
+  handler: async (ctx, args) => {
+    const productByStore = await ctx.db
+      .query("productsByStore")
+      .withIndex("byStoreAndProduct", (q) =>
+        q.eq("storeId", args.storeId).eq("productId", args.productId)
+      )
+      .first();
+    if (!productByStore) throw new Error("Product not found");
+    const product = await ctx.db.patch(productByStore._id, {
+      quantity: args.quantity,
+      updatedAt: new Date().toISOString(),
+    });
+    return product;
+  },
 });
-

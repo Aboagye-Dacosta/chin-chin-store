@@ -4,6 +4,7 @@ export interface Column<T> {
   key: keyof T;
   header: string;
   render?: (value: unknown, row: T) => React.ReactNode;
+  condition?: (row: T) => boolean;
 }
 
 export interface DataTableHeaderProps<T> {
@@ -11,6 +12,7 @@ export interface DataTableHeaderProps<T> {
   showCheckboxes: boolean;
   selectAll: boolean;
   onSelectAll: (checked: boolean) => void;
+  row: T;
 }
 
 export interface DataTableRowProps<T> {
