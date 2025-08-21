@@ -7,6 +7,8 @@ import { CustomAlertDialog } from "../custom-alert-dislog";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "../ui/dialog";
 import { CreateProductForm } from "../create-product-form";
 import { Product } from "@/types/convex-types";
+import { useMutation } from "convex/react";
+import { api } from "@/convex/_generated/api";
 
 export const ProductsTableActions = ({
   row,
@@ -15,6 +17,7 @@ export const ProductsTableActions = ({
 }) => {
   const [openUpdateDialog, setOpenUpdateDialog] = useState(false);
   const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
+  const deleteProduct = useMutation(api.products.deleteProduct);
   return (
     <div>
       <DropdownMenu>
@@ -40,7 +43,7 @@ export const ProductsTableActions = ({
           description="Are you sure you want to delete this product?"
           actionText="Delete"
           cancelText="Cancel"
-          action={() => setOpenDeleteDialog(false)}
+          action={() => deleteProduct({productId: row._id})}
           cancel={() => setOpenDeleteDialog(false)}
         />
       )}

@@ -111,3 +111,17 @@ export const updateProduct = mutation({
     }
   },
 });
+
+export const deleteProduct = mutation({
+  args: {
+    productId: v.id("products"),
+  },
+  handler: async (ctx, args) => {
+    try {
+      await ctx.db.delete(args.productId);
+      return { success: true, message: "Product deleted successfully" };
+    } catch {
+      return { success: false, message: "Failed to delete product" };
+    }
+  },
+});
