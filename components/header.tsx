@@ -6,7 +6,6 @@ import Cart from "./cart";
 import { IconLogo } from "./ui/icon-logo";
 import { LocationSelector } from "./user-location-selector";
 import { Authenticated, Unauthenticated } from "convex/react";
-import { SignInButton } from "@clerk/nextjs";
 import { ProfileItem } from "./profile-item";
 import { Flex } from "./ui/flex";
 import { Button } from "./ui/button";
