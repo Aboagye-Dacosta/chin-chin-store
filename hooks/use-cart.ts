@@ -4,6 +4,7 @@ import { api } from "@/convex/_generated/api";
 import { useMutation, useQuery } from "convex/react";
 import { useStoreStore } from "@/store/use-store-store";
 import { CartItem, Product } from "@/types/convex-types";
+import { useMemo } from "react";
 
 export function useCart() {
   const {
@@ -44,7 +45,7 @@ export function useCart() {
           quantity: item.quantity,
           existingQuantity: item.existingQuantity ?? 0,
           productPrice:
-            products?.find((p) => p._id === item.productId)?.price ?? 0,
+            products?.find((p) => p?._id === item.productId)?.price ?? 0,
         });
       }
       localClear();
@@ -101,7 +102,34 @@ export function useCart() {
     else localUpdate(id, quantity, productPrice);
   };
 
+  const isAnyOutOfStock = useMemo(() => {
+    if (!cartItems) return false;
+    return cartItems.some((item) => {
+      const product = products?.find((p) => p?._id === item.productId);
+      return product?.stock === 0;
+    });
+  }, [cartItems, products]);
+
+  const isAnyInactive = useMemo(() => {
+    if (!cartItems) return false;
+    return cartItems.some((item) => {
+      const product = products?.find((p) => p?._id === item.productId);
+      return product?.status === "Inactive";
+    });
+  }, [cartItems, products]);
+
+  const isAnyMoreThanStock = useMemo(() => {
+    if (!cartItems) return false;
+    return cartItems.some((item) => {
+      const product = products?.find((p) => p?._id === item.productId);
+      return product?.stock && product?.stock < item.quantity;
+    });
+  }, [cartItems, products]);
+
   return {
+    isAnyOutOfStock,
+    isAnyInactive,
+    isAnyMoreThanStock,
     cart,
     items: isSignedIn ? cartItems : items,
     products,

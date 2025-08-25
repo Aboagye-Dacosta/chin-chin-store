@@ -25,6 +25,7 @@ import { ColorPicker } from "./color-picker";
 
 export function ProductManagement() {
   const [showMore, setShowMore] = useState(false);
+  const [showProductDialog, setShowProductDialog] = useState(false);
   const products = useQuery(api.products.getAllProducts);
   const stores = useQuery(api.stores.getStores);
   const categories = useQuery(api.categories.getCategories);
@@ -41,19 +42,21 @@ export function ProductManagement() {
           <h1 className="text-3xl font-bold">Product Management</h1>
         </Flex>
         <Flex direction="row" gap="md" justify="between" align="center">
-          <Dialog>
+          <Dialog open={showProductDialog} onOpenChange={setShowProductDialog}>
             <DialogTrigger asChild>
-              <Button>
+              <Button onClick={() => setShowProductDialog(true)}>
                 <Plus className="h-4 w-4 mr-2" />
                 Add Product
               </Button>
             </DialogTrigger>
-            <DialogContent className="max-w-md">
-              <DialogHeader>
-                <DialogTitle>Add New Product</DialogTitle>
-              </DialogHeader>
-              <CreateProductForm />
-            </DialogContent>
+            {showProductDialog && (
+              <DialogContent className="max-w-md">
+                <DialogHeader>
+                  <DialogTitle>Add New Product</DialogTitle>
+                </DialogHeader>
+                <CreateProductForm />
+              </DialogContent>
+            )}
           </Dialog>
           <Button variant="ghost" onClick={() => setShowMore(!showMore)}>
             <MenuIcon />

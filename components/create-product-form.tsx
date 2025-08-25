@@ -20,13 +20,13 @@ import {
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMemo, useTransition } from "react";
 import { productSchema, ProductSchema } from "@/schema/product-schema";
-import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { Product } from "@/types/convex-types";
 import { useMutation, useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
 import { handleStatus } from "@/lib/handle-status";
+import ProductImageModelPickerDialog from "./product-image-model-picker";
 
 interface CreateProductFormProps {
   defaultProduct?: Product;
@@ -39,7 +39,6 @@ export function CreateProductForm({
   const addProduct = useMutation(api.products.addProduct);
   const updateProduct = useMutation(api.products.updateProduct);
   const [isPending, startTransition] = useTransition();
-  const assets = useQuery(api.assets.getAssets);
 
   const hasDefaultProduct = useMemo(
     () => Boolean(defaultProduct),
@@ -118,20 +117,6 @@ export function CreateProductForm({
     });
   };
 
-  const images = useMemo(() => {
-    if (!assets) {
-      return [];
-    }
-    return assets.filter((asset) => !asset.isModel);
-  }, [assets]);
-
-  const models = useMemo(() => {
-    if (!assets) {
-      return [];
-    }
-    return assets.filter((asset) => asset.isModel);
-  }, [assets]);
-
   return (
     <form onSubmit={form.handleSubmit(onSubmit)} className="grid gap-6">
       <Form {...form}>
@@ -205,22 +190,14 @@ export function CreateProductForm({
               <FormItem className="grid gap-2">
                 <FormLabel htmlFor="image">Image URL</FormLabel>
                 <FormControl>
-                  <Select
-                    {...field}
+                  <ProductImageModelPickerDialog
                     value={field.value}
-                    onValueChange={field.onChange}
-                  >
-                    <SelectTrigger id="image" className="w-full">
-                      <SelectValue placeholder="Select image" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {images.map((image) => (
-                        <SelectItem key={image._id} value={image?.url ?? ""}>
-                          {image.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                    onChange={field.onChange}
+                    btnVariant="outline"
+                    assetType="image"
+                    label="Select product Image"
+                    className="flex items-start justify-start"
+                  />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -232,22 +209,14 @@ export function CreateProductForm({
               <FormItem className="grid gap-2">
                 <FormLabel htmlFor="image">Model URL</FormLabel>
                 <FormControl>
-                  <Select
-                    {...field}
+                  <ProductImageModelPickerDialog
                     value={field.value}
-                    onValueChange={field.onChange}
-                  >
-                    <SelectTrigger id="model" className="w-full">
-                      <SelectValue placeholder="Select model" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {models.map((model) => (
-                        <SelectItem key={model._id} value={model?.url ?? ""}>
-                          {model.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                    onChange={field.onChange}
+                    btnVariant="outline"
+                    assetType="model"
+                    label="Select product Model"
+                    className="flex items-start justify-start"
+                  />
                 </FormControl>
                 <FormMessage />
               </FormItem>

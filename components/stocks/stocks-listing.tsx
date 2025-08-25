@@ -14,13 +14,13 @@ import { Dialog, DialogContent, DialogTrigger } from "../ui/dialog";
 import { Plus } from "lucide-react";
 
 export function StocksListing() {
+  const [showStockDialog, setShowStockDialog] = useState(false);
+
   const currentUser = useQuery(api.users.getCurrentUser);
   const stocks = useQuery(api.productsByStore.productsByStore);
   const categories = useQuery(api.categories.getCategories);
   const stores = useQuery(api.stores.getStores);
   const [filters, setFilters] = useState<Record<string, string>>({});
-
-  console.log(stocks)
 
   const generateFilters = useMemo(() => {
     let filters: FilterGroup[] = [];
@@ -62,16 +62,18 @@ export function StocksListing() {
             className="w-full"
           >
             <h1 className="text-3xl font-bold">Stocks Listing</h1>
-            <Dialog>
+            <Dialog open={showStockDialog} onOpenChange={setShowStockDialog}>
               <DialogTrigger asChild>
-                <Button>
+                <Button onClick={() => setShowStockDialog(true)}>
                   <Plus className="h-4 w-4 mr-2" />
                   Add Stock
                 </Button>
               </DialogTrigger>
-              <DialogContent >
-                <StocksProductRegistrationForm />
-              </DialogContent>
+              {showStockDialog && (
+                <DialogContent>
+                  <StocksProductRegistrationForm />
+                </DialogContent>
+              )}
             </Dialog>
           </Flex>
 

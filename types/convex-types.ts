@@ -71,4 +71,8 @@ export type OrderWithUserAndStore = Order & {
     store: Store | null;
 };
 
+export type ProductWithStock = Product & {
+    stock: number | undefined;
+};
+
 

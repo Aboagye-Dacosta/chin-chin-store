@@ -53,20 +53,31 @@ export function ProductCard({ product }: Readonly<ProductCardProps>) {
                 product?.category?.color,
             }}
           ></div>
-          <Suspense
-            fallback={
-              <div className="h-[300px] w-full">
-                <Image
-                  src={product?.image ?? ""}
-                  alt={product?.title ?? ""}
-                  fill
-                  className="object-contain"
-                />
-              </div>
-            }
-          >
-            <LargeModelCard src={product?.model ?? ""} />
-          </Suspense>
+          {product?.model ? (
+            <Suspense
+              fallback={
+                <div className="h-[300px] w-full">
+                  <Image
+                    src={product?.image ?? ""}
+                    alt={product?.title ?? ""}
+                    fill
+                    className="object-contain"
+                  />
+                </div>
+              }
+            >
+              <LargeModelCard src={product?.model ?? ""} />
+            </Suspense>
+          ) : (
+            <div className="h-[300px] w-full">
+              <Image
+                src={product?.image ?? ""}
+                alt={product?.title ?? ""}
+                fill
+                className="object-contain"
+              />
+            </div>
+          )}
           <div className="absolute top-2 left-2 flex gap-2">
             <Badge
               style={{

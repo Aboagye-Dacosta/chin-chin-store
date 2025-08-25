@@ -35,7 +35,7 @@ export function CartSummary({ deliveryPrice = 0 }: Readonly<CartSummaryProps>) {
             <Flex direction="col" gap="md" className="p-2 w-full">
               {serverItems?.map((item) => {
                 const product = products?.find(
-                  (product) => product._id === item.productId
+                  (product) => product?._id === item.productId
                 );
                 const category = categories?.find(
                   (category) => category._id === product?.categoryId

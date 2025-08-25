@@ -17,10 +17,5 @@ export const DASHBOARD_ROUTES = [
   { id: "/admin/orders", label: "Orders", icon: ShoppingBag },
   { id: "/admin/payments", label: "Payments", icon: CircleDollarSign },
   { id: "/admin/stocks", label: "Stocks", icon: ShoppingCart },
-  {
-    id: "/admin/vendor-registration",
-    label: "Vendor Registration",
-    icon: UserPlus,
-  },
   { id: "/admin/settings", label: "Settings", icon: Settings },
 ];

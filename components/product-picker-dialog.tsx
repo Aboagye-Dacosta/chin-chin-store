@@ -51,62 +51,88 @@ export default function ProductPickerDialog({
   }, [value]);
 
   return (
-    <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-      <DialogTrigger asChild>
-        <Button variant={btnVariant} className={className}>
-          <Flex direction="row" gap="sm" align="center">
-            {product?.image && (
-              <div className="h-[20px] w-[20px]">
-                <Image
-                  src={product?.image}
-                  alt={product.title}
-                  width={10}
-                  height={10}
-                  className="object-contain"
-                />
-              </div>
-            )}
-            <span className="text-sm line-clamp-1">
-              {product?.title ?? label}
-            </span>
-          </Flex>
-        </Button>
-      </DialogTrigger>
-      <DialogContent >
-        <DialogHeader>
-          <DialogTitle>Product Picker</DialogTitle>
-        </DialogHeader>
-        <RadioGroup value={selectedProduct} onValueChange={setSelectedProduct}>
-          <Flex direction="row" gap="md" wrap={true}>
-            {products?.map((product) => (
-              <Card key={product._id}>
-                <CardContent className="flex gap-2 items-center">
-                  <RadioGroupItem value={product._id} id={product._id} />
-                  <Label className="text-sm" htmlFor={product._id}>
-                    <div className="h-[30px] w-[30px]">
-                      <Image
-                        src={product?.image ?? ""}
-                        alt={product.title}
-                        width={30}
-                        height={30}
-                        className="object-contain h-[30px] w-[30px]"
-                      />
-                    </div>
+    <>
+      <Button
+        variant={btnVariant}
+        className={className}
+        onClick={() => setIsDialogOpen(true)}
+        type="button"
+      >
+        <Flex direction="row" gap="sm" align="center">
+          {product?.image && (
+            <div className="h-[20px] w-[20px]">
+              <Image
+                src={product?.image}
+                alt={product.title}
+                width={10}
+                height={10}
+                className="object-contain"
+              />
+            </div>
+          )}
+          <span className="text-sm line-clamp-1">
+            {product?.title ?? label}
+          </span>
+        </Flex>
+      </Button>
+      {isDialogOpen && (
+        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+          <DialogContent className="!max-w-[300px] w-full">
+            <DialogHeader>
+              <DialogTitle>Product Picker</DialogTitle>
+            </DialogHeader>
+            <RadioGroup
+              value={selectedProduct}
+              onValueChange={setSelectedProduct}
+            >
+              <Flex direction="row" gap="md" wrap={true}>
+                {products?.map((product) => (
+                  <Label
+                    className="text-sm"
+                    htmlFor={product._id}
+                    key={product._id}
+                  >
+                    <Card>
+                      <CardContent className="flex gap-2 items-center">
+                        <RadioGroupItem value={product._id} id={product._id} />
+                        <div className="h-[30px] w-[30px]">
+                          <Image
+                            src={product?.image ?? ""}
+                            alt={product.title}
+                            width={30}
+                            height={30}
+                            className="object-contain h-[30px] w-[30px]"
+                          />
+                        </div>
+                      </CardContent>
+                    </Card>
                   </Label>
-                </CardContent>
-              </Card>
-            ))}
-          </Flex>
-        </RadioGroup>
-        <DialogFooter>
-          <Flex direction="row" justify="between" align="center" className="w-full">  
-            <DialogClose asChild>
-              <Button variant="outline" className="flex-1">Cancel</Button>
-            </DialogClose>
-            <Button onClick={() => handleProductChange(selectedProduct)} className="flex-1">Save</Button>
-          </Flex>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+                ))}
+              </Flex>
+            </RadioGroup>
+            <DialogFooter>
+              <Flex
+                direction="row"
+                justify="between"
+                align="center"
+                className="w-full"
+              >
+                <DialogClose asChild>
+                  <Button variant="outline" className="flex-1">
+                    Cancel
+                  </Button>
+                </DialogClose>
+                <Button
+                  onClick={() => handleProductChange(selectedProduct)}
+                  className="flex-1"
+                >
+                  Save
+                </Button>
+              </Flex>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+      )}
+    </>
   );
 }

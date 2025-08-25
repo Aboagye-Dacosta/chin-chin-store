@@ -1,7 +1,8 @@
-import React, { Suspense, useRef } from "react";
+import React, { useRef } from "react";
 import { Canvas, useFrame } from "@react-three/fiber";
 import { useGLTF, Center } from "@react-three/drei";
 import * as THREE from "three";
+import { cn } from "@/lib/utils";
 
 /**
  * Tiny 50x50 card that renders a GLTF/GLB model and auto-rotates it.
@@ -20,7 +21,10 @@ export default function TinyModelCard({
 }>) {
   return (
     <div
-      className={`w-[50px] h-[50px] rounded-2xl border bg-background shadow-sm overflow-hidden pointer-events-none ${className}`}
+      className={cn(
+        "w-[50px] h-[50px] rounded-2xl border bg-background shadow-sm overflow-hidden pointer-events-none",
+        className
+      )}
       aria-hidden
     >
       <Canvas
@@ -32,9 +36,7 @@ export default function TinyModelCard({
         <ambientLight intensity={1} />
         <directionalLight position={[2, 3, 4]} intensity={1.2} />
 
-        <Suspense fallback={null}>
-          <AutoRotatingModel src={src} speed={speed} />
-        </Suspense>
+        <AutoRotatingModel src={src} speed={speed} />
       </Canvas>
     </div>
   );
