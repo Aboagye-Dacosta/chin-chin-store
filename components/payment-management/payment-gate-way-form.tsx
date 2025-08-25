@@ -81,7 +81,6 @@ export const PaymentGatewayForm = memo(
     });
 
     const handleSubmit = async (data: PaymentGatewaySettings) => {
-      if (!form.formState.isDirty) return;
       if (initialData) {
         startTransition(async () => {
           try {

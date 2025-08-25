@@ -3,9 +3,6 @@ import { v } from "convex/values";
 import sodium from "libsodium-wrappers";
 import { PaymentMethod, PaymentNetwork } from "./schema";
 
-const METHODS = ["MOBILE_MONEY", "PAYMENT_ON_DELIVERY", "CARD"] as const;
-const NETWORKS = ["MTN", "AIRTELTIGO", "VODAFONE"] as const;
-
 function parseAdminEmails(): string[] {
   return (process.env.ADMIN_EMAILS || "")
     .split(",")
@@ -235,19 +232,6 @@ export const updatePaymentGatewaySetting = mutation({
         "supportedNetworks should be empty when MOBILE_MONEY is not enabled"
       );
     }
-
-    // --- Prevent duplicate (name + environment)
-    const dup = await ctx.db
-      .query("paymentGatewaySettings")
-      .filter((q) =>
-        q.and(
-          q.eq(q.field("name"), args.name),
-          q.eq(q.field("environment"), args.environment)
-        )
-      )
-      .first();
-    if (dup)
-      throw new Error("Gateway with this name and environment already exists");
 
     await sodium.ready;
     const keys = getKeys();
