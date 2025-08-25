@@ -3,7 +3,6 @@ import {
   Package,
   ShoppingCart,
   Settings,
-  UserPlus,
   Users,
   CircleDollarSign,
   ShoppingBag,

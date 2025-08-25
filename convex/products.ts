@@ -27,7 +27,9 @@ export const getProducts = query({
       })
     );
 
-    return enrichedStoreProducts;
+    return enrichedStoreProducts
+      .filter((product) => product !== null)
+      .filter((product) => product?.status === "Active");
   },
 });
 

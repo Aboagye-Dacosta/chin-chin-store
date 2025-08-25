@@ -9,6 +9,7 @@ import { Authenticated, Unauthenticated } from "convex/react";
 import { SignInButton } from "@clerk/nextjs";
 import { ProfileItem } from "./profile-item";
 import { Flex } from "./ui/flex";
+import { Button } from "./ui/button";
 
 export function Header() {
   return (
@@ -35,7 +36,11 @@ export function Header() {
                 <ProfileItem />
               </Authenticated>
               <Unauthenticated>
-                <SignInButton />
+                <Link href="/auth/signin">
+                  <Button className="w-full cursor-pointer" asChild variant={"ghost"}>
+                    Sign In
+                  </Button>
+                </Link>
               </Unauthenticated>
             </div>
           </div>

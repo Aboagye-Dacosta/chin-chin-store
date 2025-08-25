@@ -5,7 +5,6 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { memo } from "react";
 import { displayMoney } from "@/lib/display-money";
-import { useAuth } from "@clerk/nextjs";
 import {
   Tooltip,
   TooltipContent,
@@ -13,6 +12,7 @@ import {
   TooltipTrigger,
 } from "./ui/tooltip";
 import { useRouter } from "next/navigation";
+import { useAuth } from "@clerk/nextjs";
 
 export const OrderSummary = memo(
   ({
@@ -69,20 +69,19 @@ export const OrderSummary = memo(
                 </TooltipTrigger>
                 {(isAnyInactive || isAnyOutOfStock || isAnyMoreThanStock) && (
                   <TooltipContent>
-                   
-                      {isAnyInactive ? "Some items are inactive" : ""}
-                      {isAnyOutOfStock ? "Some items are out of stock" : ""}
-                      {isAnyMoreThanStock
-                        ? "Some items are more than stock"
-                        : ""}
+                    {isAnyInactive ? "Some items are inactive" : ""}
+                    {isAnyOutOfStock ? "Some items are out of stock" : ""}
+                    {isAnyMoreThanStock ? "Some items are more than stock" : ""}
                   </TooltipContent>
                 )}
               </Tooltip>
             ) : (
               <div className="space-y-2">
-                <Button className="w-full">
-                  <Link href="/auth/signin">Sign In to Checkout</Link>
-                </Button>
+                <Link href="/auth/signin">
+                  <Button className="w-full cursor-pointer" asChild>
+                    Sign In to Checkout
+                  </Button>
+                </Link>
                 <p className="text-xs text-muted-foreground text-center">
                   New customer?{" "}
                   <Link href="/auth/signup" className="underline">
@@ -92,7 +91,7 @@ export const OrderSummary = memo(
               </div>
             )}
             <Link href="/products">
-              <Button variant="outline" className="w-full">
+              <Button variant="outline" className="w-full cursor-pointer">
                 Continue Shopping
               </Button>
             </Link>

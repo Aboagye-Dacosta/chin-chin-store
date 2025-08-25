@@ -6,7 +6,7 @@ export const Provider = async ({
   children,
 }: Readonly<{ children: React.ReactNode }>) => {
   return (
-    <ClerkProvider>
+    <ClerkProvider >
       <ConvexClientProvider>
         <ThemeProvider>{children}</ThemeProvider>
       </ConvexClientProvider>
