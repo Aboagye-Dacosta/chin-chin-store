@@ -101,17 +101,13 @@ export function ProductManagement() {
                 key: "edit",
                 label: "Edit",
                 icon: Pencil,
-                onSelect: (ctx) => {
-                  console.log(ctx);
-                },
+                
               },
               {
                 key: "delete",
                 label: "Delete",
                 icon: Trash,
-                onSelect: (ctx) => {
-                  console.log(ctx);
-                },
+               
               },
             ]}
           />

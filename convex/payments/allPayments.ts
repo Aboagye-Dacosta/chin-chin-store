@@ -10,7 +10,6 @@ export const getAllPayments = query({
       payments.map(async (payment) => {
         // 3. Get order
         const order = await ctx.db.get(payment.orderId);
-        console.log("order", order);
         if (!order) return payment; // Skip if order doesn't exist
 
         // 4. Get related user, vendor, store
@@ -23,10 +22,6 @@ export const getAllPayments = query({
         const vendorUser = vendor?.userId
           ? await ctx.db.get(vendor.userId)
           : null;
-
-        console.log("user", user);
-        console.log("vendor", vendorUser);
-        console.log("store", store);
 
         return {
           ...payment,

@@ -34,7 +34,6 @@ import {
 import { MobileMoneyProvider, Vendor } from "@/types/convex-types";
 import { useQuery, useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
-import { cn } from "@/lib/utils";
 import { Id } from "@/convex/_generated/dataModel";
 import { handleStatus } from "@/lib/handle-status";
 
@@ -251,12 +250,19 @@ export const VendorForm = memo(
   }
 );
 
+VendorForm.displayName = "VendorForm";
+
 export const UpdateVendorForm = memo(
   ({ initialData }: Readonly<Omit<VendorFormProps, "mode">>) => {
     return <VendorForm mode="update" initialData={initialData} />;
   }
 );
 
+UpdateVendorForm.displayName = "UpdateVendorForm";
+
 export const CreateVendorForm = memo(() => {
   return <VendorForm mode="create" />;
 });
+
+CreateVendorForm.displayName = "CreateVendorForm";
+

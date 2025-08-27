@@ -76,7 +76,6 @@ export function CreateProductForm({
   });
 
   const onSubmit = async (data: ProductSchema) => {
-    console.log(data);
     startTransition(async () => {
       if (defaultProduct) {
         const response = await updateProduct({

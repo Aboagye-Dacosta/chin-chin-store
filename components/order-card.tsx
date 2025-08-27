@@ -11,15 +11,14 @@ import { Badge } from "@/components/ui/badge";
 import { OrderWithItems, OrderStatus } from "@/types/convex-types";
 import { displayMoney } from "@/lib/display-money";
 import Link from "next/link";
-import { useAuth } from "@clerk/nextjs";
 import { cn } from "@/lib/utils";
+import { useMemo } from "react";
 
 interface OrderCardProps {
   order: OrderWithItems;
 }
 
 export function OrderCard({ order }: Readonly<OrderCardProps>) {
-  const { isSignedIn } = useAuth();
   const getStatusBadgeVariant = (status: OrderStatus) => {
     switch (status) {
       case "DELIVERED":
@@ -34,6 +33,11 @@ export function OrderCard({ order }: Readonly<OrderCardProps>) {
         return "outline";
     }
   };
+
+  const itemsCount = useMemo(
+    () => order.items.reduce((total, item) => total + item.quantity, 0),
+    [order]
+  );
 
   return (
     <Link href={`/orders/${order._id}`}>
@@ -53,12 +57,10 @@ export function OrderCard({ order }: Readonly<OrderCardProps>) {
         </CardHeader>
 
         <CardContent>
-          <div className={cn("flex justify-between items-center w-full", (!isSignedIn || order.items.length === 0) && "justify-end")}>
-            {isSignedIn && order.items.length > 0 && (
-              <div className="text-sm text-gray-600">
-                {order.items.length} item{order.items.length !== 1 ? "s" : ""}
-              </div>
-            )}
+          <div className={cn("flex justify-between items-center w-full")}>
+            <div className="text-sm text-gray-600">
+              {itemsCount} item{itemsCount !== 1 ? "s" : ""}
+            </div>
             <div className="font-semibold text-gray-900 self-end">
               {displayMoney(order.total)}
             </div>

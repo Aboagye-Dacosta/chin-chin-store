@@ -32,7 +32,7 @@ export type PaymentMethod = "MOBILE_MONEY" | "PAYMENT_ON_DELIVERY" | "CARD";
 export type PaymentNetwork = "MTN" | "VODAFONE" | "AIRTELTIGO" | "ORANGE";
 
 interface PaymentDetailCardProps {
-  payment: Payment | null;
+  payment: Payment | null | undefined;
 }
 
 export function PaymentDetailCard({ payment }: PaymentDetailCardProps) {

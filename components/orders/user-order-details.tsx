@@ -1,5 +1,5 @@
 "use client";
-import { useQuery , useMutation} from "convex/react";
+import { useQuery, useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
@@ -29,6 +29,7 @@ import { Order, OrderStatus } from "@/types/convex-types";
 import { toast } from "sonner";
 import { PaymentDetailCard } from "./payment-card";
 import { Container } from "../ui/contaner";
+import { Id } from "@/convex/_generated/dataModel";
 
 export default function UserOrderDetails({
   orderId,
@@ -62,7 +63,10 @@ export default function UserOrderDetails({
   const handleCancelOrder = () => {
     startTransition(async () => {
       try {
-        await cancelOrder({ orderId: order?._id!, storeId: order?.storeId! });
+        await cancelOrder({
+          orderId: (order?._id ?? "") as Id<"orders">,
+          storeId: (order?.storeId ?? "") as Id<"stores">,
+        });
         toast.success("Order cancelled successfully");
       } catch (error) {
         toast.error((error as Error)?.message);
@@ -82,11 +86,13 @@ export default function UserOrderDetails({
                   Order #{order?.trackingNumber?.substring(0, 8)}
                 </CardTitle>
                 <div className="text-sm text-muted-foreground">
-                  {new Date(order?.createdAt!).toLocaleDateString()}
+                  {new Date(order?.createdAt ?? "").toLocaleDateString()}
                 </div>
               </div>
               <div className="flex flex-col md:flex-row  md:items-center gap-2">
-                <Badge variant={getStatusBadgeVariant(order?.status!)}>
+                <Badge
+                  variant={getStatusBadgeVariant(order?.status ?? "PENDING")}
+                >
                   {order?.status}
                 </Badge>
                 {order?.trackingNumber && (
@@ -143,13 +149,13 @@ export default function UserOrderDetails({
                   ))}
                 </TableBody>
               </Table>
-              <PaymentDetailCard payment={order?.payment!} />
+              <PaymentDetailCard payment={order?.payment} />
               {/* {order?.deliveryCharge && ( */}
-                <div className="mt-4 flex justify-between items-center">
-                  <div className="text-sm">
-                    Delivery Charge: {displayMoney(order?.deliveryCharge ?? 0)}
-                  </div>
+              <div className="mt-4 flex justify-between items-center">
+                <div className="text-sm">
+                  Delivery Charge: {displayMoney(order?.deliveryCharge ?? 0)}
                 </div>
+              </div>
               {/* )} */}
               <div className="mt-4 flex justify-between items-center">
                 <div className="text-lg font-semibold">

@@ -4,7 +4,6 @@ import { useTransition } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { MapPin, Save } from "lucide-react";
-import { HexColorPicker } from "react-colorful";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -28,20 +27,11 @@ import { useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { Category } from "@/types/convex-types";
 import { handleStatus } from "@/lib/handle-status";
-import { Flex } from "./ui/flex";
 import {
   productCategorySchema,
   ProductCategorySchemaType,
 } from "@/schema/product-category-schema";
-import {
-  DropdownMenu,
-  DropdownMenuTrigger,
-} from "@radix-ui/react-dropdown-menu";
-import {
-  DropdownMenuContent,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-} from "./ui/dropdown-menu";
+
 import { ColorPicker } from "./color-picker";
 
 type Props = {

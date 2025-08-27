@@ -1,5 +1,5 @@
 import { Flex } from "../ui/flex";
-import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
+import { Card, CardContent } from "../ui/card";
 import { Input } from "../ui/input";
 import {
   Form,
@@ -68,7 +68,7 @@ export const SupportForm = () => {
     if (support) {
       form.reset(support);
     }
-  }, [support]);
+  }, [support,form]);
 
   return (
     <Flex direction="col" gap="lg" className="w-full h-full">

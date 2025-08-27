@@ -8,13 +8,14 @@ import { OrderWithItems } from "@/types/convex-types";
 import { useLocalOrdersStore } from "@/store/user-local-orders";
 import { Flex } from "./ui/flex";
 import { Skeleton } from "./ui/skeleton";
+import { Id } from "@/convex/_generated/dataModel";
 
 export function OrdersList() {
   const { store } = useStoreStore();
   const { orders: localOrders } = useLocalOrdersStore();
 
   const orders = useQuery(api.orders.getOrdersByStoreAndUser, {
-    storeId: store?._id!,
+    storeId: (store?._id ?? "" ) as Id<"stores">,
     orders: localOrders,
   });
 
@@ -33,7 +34,7 @@ export function OrdersList() {
       <div className="flex flex-col items-center justify-center h-[400px] text-gray-500 dark:text-gray-400">
         <PackageIcon className="h-16 w-16 mb-4" />
         <p className="text-xl font-semibold">No orders found.</p>
-        <p className="text-sm">Looks like you haven't placed any orders yet.</p>
+        <p className="text-sm">Looks like you haven&apos;t placed any orders yet.</p>
       </div>
     );
   }

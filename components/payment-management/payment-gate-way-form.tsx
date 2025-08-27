@@ -125,7 +125,7 @@ export const PaymentGatewayForm = memo(
       if (initialData) {
         form.reset(initialData);
       }
-    }, [initialData]);
+    }, [initialData, form]);
 
     return (
       <Form {...form}>
@@ -384,3 +384,5 @@ export const PaymentGatewayForm = memo(
     );
   }
 );
+
+PaymentGatewayForm.displayName = "PaymentGatewayForm";

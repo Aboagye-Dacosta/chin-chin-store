@@ -34,7 +34,6 @@ export const useCartStore = create<CartStore>()(
             (i) => i.productId === product._id
           );
           if (existingItem) {
-            console.log("existingItem", existingItem);
             set((state) => ({
               items: state?.items?.map((i) =>
                 i.productId === product._id
@@ -84,7 +83,7 @@ export const useCartStore = create<CartStore>()(
                 : item
             ),
           })),
-        clearCart: () => set(() => ({ items: null, removedItems: null })),
+        clearCart: () => set(() => ({ items: [], removedItems: null })),
         getTotalPrice: () => {
           return (
             get()?.items?.reduce((total, item) => total + item.total, 0) ?? 0

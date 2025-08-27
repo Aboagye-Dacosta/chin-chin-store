@@ -77,7 +77,7 @@ export default function StocksProductRegistrationForm({
 
       setIsSubmitting(false);
     },
-    [form, setIsSubmitting]
+    [ setIsSubmitting, initialValues, addProductToStore, updateProductQuantity]
   );
 
   const {
@@ -95,7 +95,7 @@ export default function StocksProductRegistrationForm({
     if (currentUser?.role === "VENDOR") {
       form.setValue("storeId", verdor?.storeId ?? "");
     }
-  }, [currentUser, verdor]);
+  }, [currentUser, verdor,form]);
 
   return (
     <div className="max-w-md w-full flex flex-col gap-3">

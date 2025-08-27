@@ -14,8 +14,8 @@ import { fileUploadSchema, FileUploadType } from "@/schema/file-upload-schema";
 import { useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
-import { Checkbox } from "../ui/checkbox";
 import { Switch } from "../ui/switch";
+import Image from "next/image";
 
 export function FileUploadForm() {
   const ref = useRef<HTMLInputElement>(null);
@@ -78,7 +78,6 @@ export function FileUploadForm() {
         }
 
         const responseData = await response.json();
-        console.log(responseData);
         const { storageId } = responseData;
 
         await addAsset({
@@ -167,7 +166,9 @@ export function FileUploadForm() {
 
                 {preview ? (
                   <div className="space-y-2">
-                    <img
+                    <Image
+                      width={200}
+                      height={200}
                       src={preview || "/placeholder.svg"}
                       alt="Preview"
                       className="max-w-full h-32 object-contain rounded"

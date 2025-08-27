@@ -5,11 +5,6 @@ import { CardHeaderFilters } from "../card-header-with-filters";
 import { useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { cn } from "@/lib/utils";
-
-import { Button } from "@/components/ui/button";
-
-import { Separator } from "@/components/ui/separator";
-import { ScrollableCard } from "../ScrollableCard";
 import { useState } from "react";
 import { DataTable } from "../DataTable";
 import { OrderColumns } from "./orders-columns";

@@ -55,7 +55,6 @@ export const makePayOnDeliveryPayment = mutation({
     cartId: v.optional(v.id("carts")),
     storeId: v.id("stores"),
   },
-
   handler: async (ctx, args) => {
     const now = new Date().toISOString();
     try {
@@ -107,10 +106,38 @@ export const makePayOnDeliveryPayment = mutation({
           })
         );
       }
+      if (!identity) {
+        const orderItems = await ctx.db
+        .query("orderItems")
+        .withIndex("byOrder", (q) => q.eq("orderId", args.orderId))
+        .collect();
+
+        await Promise.all(
+          orderItems.map(async (item) => {
+            const productByStore = await ctx.db
+              .query("productsByStore")
+              .withIndex("byStoreAndProduct", (q) =>
+                q.eq("storeId", args.storeId).eq("productId", item.productId)
+              )
+              .first();
+
+            if (!productByStore) return;
+            const product = await ctx.db.get(productByStore.productId);
+            if (!product) return;
+            if (productByStore.quantity < item.quantity) {
+              throw new Error(`Not enough stock for ${product.title}`);
+            }
+            await ctx.db.patch(productByStore._id, {
+              quantity: productByStore.quantity - item.quantity,
+              updatedAt: new Date().toISOString(),
+            });
+
+          })
+        );
+      }
 
       return payment;
-    } catch (err) {
-      console.log(err);
+    } catch{
       throw new Error("Failed to create payment");
     }
   },

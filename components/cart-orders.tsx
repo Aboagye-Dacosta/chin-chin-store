@@ -12,20 +12,12 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import {
   OrderFormData,
   orderSchema,
   unauthOrderSchema,
 } from "@/schema/order-schema";
-import {
-  MapPin,
-  MessageSquare,
-  ShoppingBag,
-  Loader2,
-  ArrowLeft,
-} from "lucide-react";
+import { MapPin, ShoppingBag, ArrowLeft } from "lucide-react";
 import { useAppStore } from "@/hooks/use-app-store";
 import {
   Select,
@@ -64,7 +56,7 @@ export function OrdersPage() {
   const currentUser = useQuery(api.users.getCurrentUser);
   const address = useQuery(api.users.getUserAddresses);
   const vendors = useQuery(api.vendors.getVendors, {
-    storeId: store?._id!,
+    storeId: store?._id,
   });
 
   // Memoized calculations
@@ -125,7 +117,6 @@ export function OrdersPage() {
   // Optimized submit handler
   const handleSubmit = useCallback(
     async (data: OrderFormData) => {
-      console.log(data);
       if (isSubmitting) return;
 
       try {
@@ -259,65 +250,6 @@ export function OrdersPage() {
                       />
                     </CardContent>
                   </Card>
-                  {/* Delivery Information */}
-                  {/* <Card className="w-full">
-                    <CardHeader>
-                      <CardTitle className="flex items-center gap-2">
-                        <ShoppingBag className="h-5 w-5" />
-                        Delivery Information
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent className="space-y-4">
-                      <FormField
-                        control={form.control}
-                        name="deliveryAddressLabel"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel className="flex items-center gap-2">
-                              <MapPin className="h-4 w-4" />
-                              Delivery Address *
-                            </FormLabel>
-                            <FormControl>
-                              <Input
-                                placeholder="Enter your complete delivery address"
-                                {...field}
-                                className="min-h-[44px]"
-                              />
-                            </FormControl>
-                            <FormDescription>
-                              Provide your complete address including landmarks
-                            </FormDescription>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-
-                      <FormField
-                        control={form.control}
-                        name="deliveryNote"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel className="flex items-center gap-2">
-                              <MessageSquare className="h-4 w-4" />
-                              Delivery Instructions
-                            </FormLabel>
-                            <FormControl>
-                              <Textarea
-                                placeholder="Special instructions for the delivery person (e.g., gate code, floor number, etc.)"
-                                className="resize-none min-h-[100px]"
-                                {...field}
-                              />
-                            </FormControl>
-                            <FormDescription>
-                              Optional: Any special instructions to help with
-                              delivery
-                            </FormDescription>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                    </CardContent>
-                  </Card> */}
 
                   {isSignedIn ? <AuthOrderForms /> : <UnauthOrderForms />}
 

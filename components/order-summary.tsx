@@ -19,7 +19,6 @@ import {
 } from "./ui/tooltip";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@clerk/nextjs";
-import { Flex } from "./ui/flex";
 
 export const OrderSummary = memo(
   ({

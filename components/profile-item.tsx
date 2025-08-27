@@ -34,7 +34,7 @@ export const ProfileItem = memo(() => {
           signOut();
         })
     );
-  }, [store?._id, syncServerToCart]);
+  }, [store?._id, syncServerToCart, signOut]);
 
   return (
     <>

@@ -52,6 +52,7 @@ export const getOrdersByStoreAndUser = query({
         .withIndex("byClerkId", (q) => q.eq("clerkId", clerkId))
         .first();
       if (!user) return null;
+
       orders = await ctx.db
         .query("orders")
         .withIndex("byUserAndStore", (q) =>
@@ -97,7 +98,6 @@ export const getOrdersByStoreAndUser = query({
           payment,
           items: enrichedOrderItems,
         };
-
         return enrichedOrder;
       })
     );
@@ -275,6 +275,30 @@ export const cancelOrder = mutation({
           });
         })
       );
+    }
+
+    if(!identity){
+      const orderItems = await ctx.db
+        .query("orderItems")
+        .withIndex("byOrder", (q) => q.eq("orderId", args.orderId))
+        .collect();
+
+      await Promise.all(
+        orderItems.map(async (item) => {
+          const productByStore = await ctx.db
+            .query("productsByStore")
+            .withIndex("byStoreAndProduct", (q) =>
+              q.eq("storeId", args.storeId).eq("productId", item.productId)
+            )
+            .first();
+          if (!productByStore) return;
+          await ctx.db.patch(productByStore._id, {
+            quantity: productByStore.quantity + item.quantity,
+            updatedAt: now,
+          });
+        })
+      );
+      
     }
   },
 });

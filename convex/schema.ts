@@ -173,6 +173,8 @@ export default defineSchema({
     updatedAt: v.string(),
   }).index("byOrder", ["orderId"]),
 
+  
+
   carts: defineTable({
     userId: v.id("users"),
     storeId: v.id("stores"),

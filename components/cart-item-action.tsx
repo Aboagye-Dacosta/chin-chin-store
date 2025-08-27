@@ -28,7 +28,7 @@ export const CartItemAction = ({ product, cartItem }: CartItemActionProps) => {
         product?.price ?? 0
       );
     });
-  }, [cartItem._id, cartItem.quantity, updateQuantity]);
+  }, [cartItem._id, cartItem.quantity, updateQuantity, product?.price]);
 
   const handleDecrement = useCallback(() => {
     startDecrementTransition(async () => {
@@ -38,7 +38,7 @@ export const CartItemAction = ({ product, cartItem }: CartItemActionProps) => {
         product?.price ?? 0
       );
     });
-  }, [cartItem._id, cartItem.quantity, updateQuantity]);
+  }, [cartItem._id, cartItem.quantity, updateQuantity, product?.price]);
 
   const handleQuantityChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -48,7 +48,7 @@ export const CartItemAction = ({ product, cartItem }: CartItemActionProps) => {
         product?.price ?? 0
       );
     },
-    [cartItem._id, updateQuantity]
+    [cartItem._id, updateQuantity, product?.price]
   );
   return (
     <div className="flex items-center space-x-2">
@@ -83,13 +83,15 @@ export const CartItemAction = ({ product, cartItem }: CartItemActionProps) => {
             variant="outline"
             size="icon"
             loading={isIncrementing}
-            disabled={isIncrementing || cartItem.quantity >= product?.stock!}
+            disabled={
+              isIncrementing || cartItem.quantity >= (product?.stock ?? 0)
+            }
             onClick={handleIncrement}
           >
             {!isIncrementing && <Plus className="h-4 w-4" />}
           </Button>
         </TooltipTrigger>
-        {cartItem.quantity >= product?.stock! && (
+        {cartItem.quantity >= (product?.stock ?? 0) && (
           <TooltipContent>
             <p>Cannot increment above stock</p>
           </TooltipContent>

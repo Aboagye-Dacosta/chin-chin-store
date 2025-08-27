@@ -1,6 +1,6 @@
 "use client";
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Flex } from "../ui/flex";
 import { DataTable } from "../DataTable";
 import { PaymentColumns } from "./payment-table-column";
@@ -15,13 +15,8 @@ export function PaymentManagement() {
     vendor: "",
   });
   const payments = useQuery(api.payments.allPayments.getAllPayments);
-  const paymentSetting = useQuery(api.payments.paymentSettings.paymentSettings);
   const stores = useQuery(api.stores.getStores);
   const vendors = useQuery(api.users.getUserByRole, { role: "VENDOR" });
-
-  console.log(paymentSetting);
-
-  console.log("i am logging");
 
   return (
     <Flex direction="col" gap="lg" className="w-full">

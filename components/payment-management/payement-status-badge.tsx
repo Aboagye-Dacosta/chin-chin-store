@@ -30,7 +30,7 @@ export const PaymentStatusBadge = ({
     AWAITING_CONFIRMATION: "processing",
   };
 
-  const updatePayment = useMutation(api.payments.updatePayment);
+  const updatePayment = useMutation(api.payments.updatePayment.updateStatus);
 
   const handleUpdatePayment = (value: string) => {
     try {
@@ -39,7 +39,7 @@ export const PaymentStatusBadge = ({
         status: value as PaymentStatusBadgeProps["status"],
       });
       toast.success("Payment status updated successfully");
-    } catch (error) {
+    } catch  {
       toast.error("Could not update payment status");
     }
   };

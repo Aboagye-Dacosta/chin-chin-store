@@ -27,7 +27,6 @@ import PaystackPop from "@paystack/inline-js";
 import { useCart } from "@/hooks/use-cart";
 import { nanoid } from "nanoid";
 import { Flex } from "../ui/flex";
-import { useAppStore } from "@/hooks/use-app-store";
 import { useLocalOrdersStore } from "@/store/user-local-orders";
 import { useAuth } from "@clerk/nextjs";
 
@@ -35,8 +34,7 @@ export default function PaymentPage() {
   const [error, setError] = useState<string | null>(null);
   const [paymentMethod, setPaymentMethod] =
     useState<PaymentMethod>("MOBILE_MONEY");
-  const { cart, clearCart } = useCart();
-  const { serverItems } = useAppStore();
+  const { cart, clearCart, items: serverItems } = useCart();
   const { addOrder } = useLocalOrdersStore();
   const { isSignedIn } = useAuth();
 
@@ -64,9 +62,9 @@ export default function PaymentPage() {
       try {
         const orderResponse = await createOrder({
           vendorId: order?.vendorId as Id<"vendors">,
-          deliveryAddressLabel: order?.deliveryAddressLabel!,
-          deliveryNote: order?.deliveryNote!,
-          amount: order?.total!,
+          deliveryAddressLabel: order?.deliveryAddressLabel ?? "",
+          deliveryNote: order?.deliveryNote ?? "",
+          amount: order?.total ?? 0,
           userId: currentUser?._id,
           name: order?.name,
           email: order?.email,
@@ -74,7 +72,7 @@ export default function PaymentPage() {
           trackingNumber: nanoid(),
           method: paymentMethod,
           items:
-            serverItems.map((item) => ({
+            serverItems?.map((item) => ({
               productId: item.productId,
               quantity: item.quantity,
             })) ?? [],
@@ -85,7 +83,7 @@ export default function PaymentPage() {
           try {
             await makePayOnDelivery({
               orderId: orderResponse,
-              amount: order?.total!,
+              amount: order?.total ?? 0,
               cartId: cart?._id,
               storeId: store?._id as Id<"stores">,
             });
@@ -103,8 +101,8 @@ export default function PaymentPage() {
 
         if (paymentMethod === "MOBILE_MONEY") {
           const paymentResponse = await triggerPaymentWithPaystack({
-            amount: order?.total!,
-            email: currentUser?.email! ?? order?.email!,
+            amount: order?.total ?? 0,
+            email: currentUser?.email ?? order?.email ?? "",
             orderId: orderResponse,
             vendorId: order?.vendorId as Id<"vendors">,
             callback_url: "",

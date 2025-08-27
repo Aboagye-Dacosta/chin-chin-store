@@ -34,7 +34,7 @@ export const Settings = () => {
               </CardHeader>
               <CardContent>
                 <PaymentGatewayForm
-                  // @ts-ignore
+                  // @ts-expect-error this is expected
                   initialData={paymentSetting}
                   id={paymentSetting?._id}
                 />

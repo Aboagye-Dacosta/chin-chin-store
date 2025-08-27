@@ -9,7 +9,6 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useForm } from "react-hook-form";
 import { ProfileSchema, profileSchema } from "@/schema/profile-schema";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -23,12 +22,7 @@ import {
 } from "./ui/form";
 import { Textarea } from "./ui/textarea";
 import { Container } from "./ui/contaner";
-import { toast } from "sonner";
-import { UploadButton } from "@/lib/uploadthing";
-import { Flex } from "./ui/flex";
-import { LoadingSpinner } from "./ui/loading-spinner";
 import { useEffect, useTransition } from "react";
-import { useRouter } from "next/navigation";
 import { useMutation, useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { Switch } from "./ui/switch";
@@ -71,7 +65,7 @@ export default function ProfileManagement() {
       form.setValue("deliveryAddressNote", user.deliveryAddressNote);
       form.setValue("isDefault", user.isDefault);
     }
-  }, [user]);
+  }, [user, form]);
 
   return (
     <Container>

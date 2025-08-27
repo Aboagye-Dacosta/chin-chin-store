@@ -37,9 +37,7 @@ export function DataTable<T extends Record<string, unknown>>({
 
   useEffect(() => {
     onRowSelect?.(selectedRows);
-  }, [selectedRows]);
-
-
+  }, [selectedRows, onRowSelect]);
 
   if (loading) {
     return (

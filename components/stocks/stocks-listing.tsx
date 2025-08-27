@@ -50,7 +50,7 @@ export function StocksListing() {
     }
 
     return filters;
-  }, [stores, categories]);
+  }, [stores, categories, currentUser?.role]);
   return (
     <Flex direction="col" gap="lg" className="w-full">
       <Flex direction="row" justify="between" align="center" className="w-full">
