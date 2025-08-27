@@ -7,19 +7,12 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Separator } from "@/components/ui/separator";
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import {
-  HoverCard,
-  HoverCardContent,
-  HoverCardTrigger,
-} from "@/components/ui/hover-card";
-import { Button } from "@/components/ui/button";
 import {
   CreditCard,
   Smartphone,
@@ -29,13 +22,9 @@ import {
   XCircle,
   AlertCircle,
   Calendar,
-  Hash,
   DollarSign,
-  Copy,
-  Eye,
 } from "lucide-react";
 import { Payment } from "@/types/convex-types";
-import { displayMoney } from "@/lib/display-money";
 import { Flex } from "../ui/flex";
 
 // Type definitions based on your schema

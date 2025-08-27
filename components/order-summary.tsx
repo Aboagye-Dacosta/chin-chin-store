@@ -2,7 +2,13 @@
 
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { memo } from "react";
 import { displayMoney } from "@/lib/display-money";
 import {
@@ -13,6 +19,7 @@ import {
 } from "./ui/tooltip";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@clerk/nextjs";
+import { Flex } from "./ui/flex";
 
 export const OrderSummary = memo(
   ({
@@ -54,32 +61,48 @@ export const OrderSummary = memo(
               </div>
             </div>
 
-            {isSignedIn ? (
-              <Tooltip>
-                <TooltipTrigger className="w-full">
-                  <Button
-                    className="w-full"
-                    disabled={
-                      isAnyInactive || isAnyOutOfStock || isAnyMoreThanStock
-                    }
-                    onClick={handleProceedToCheckout}
-                  >
-                    Proceed to Checkout
-                  </Button>
-                </TooltipTrigger>
-                {(isAnyInactive || isAnyOutOfStock || isAnyMoreThanStock) && (
-                  <TooltipContent>
-                    {isAnyInactive ? "Some items are inactive" : ""}
-                    {isAnyOutOfStock ? "Some items are out of stock" : ""}
-                    {isAnyMoreThanStock ? "Some items are more than stock" : ""}
-                  </TooltipContent>
-                )}
-              </Tooltip>
-            ) : (
-              <div className="space-y-2">
+            <Tooltip>
+              <TooltipTrigger className="w-full">
+                <Button
+                  className="w-full"
+                  disabled={
+                    isAnyInactive || isAnyOutOfStock || isAnyMoreThanStock
+                  }
+                  onClick={handleProceedToCheckout}
+                >
+                  Proceed to Checkout
+                </Button>
+              </TooltipTrigger>
+              {(isAnyInactive || isAnyOutOfStock || isAnyMoreThanStock) && (
+                <TooltipContent>
+                  {isAnyInactive ? "Some items are inactive" : ""}
+                  {isAnyOutOfStock ? "Some items are out of stock" : ""}
+                  {isAnyMoreThanStock ? "Some items are more than stock" : ""}
+                </TooltipContent>
+              )}
+            </Tooltip>
+
+            <Link href="/products">
+              <Button variant="outline" className="w-full cursor-pointer">
+                Continue Shopping
+              </Button>
+            </Link>
+          </CardContent>
+        </Card>
+        {!isSignedIn && (
+            <Card className="w-full p-2 mt-4">
+              <CardContent className="space-y-2">
+                <CardDescription>
+                  Sign in before checkout if you want to persist your payments
+                  and track your order history and other features.
+                </CardDescription>
                 <Link href="/auth/signin">
-                  <Button className="w-full cursor-pointer" asChild>
-                    Sign In to Checkout
+                  <Button
+                    className="w-full cursor-pointer"
+                    variant="outline"
+                    asChild
+                  >
+                    Sign In
                   </Button>
                 </Link>
                 <p className="text-xs text-muted-foreground text-center">
@@ -88,15 +111,9 @@ export const OrderSummary = memo(
                     Create an account
                   </Link>
                 </p>
-              </div>
-            )}
-            <Link href="/products">
-              <Button variant="outline" className="w-full cursor-pointer">
-                Continue Shopping
-              </Button>
-            </Link>
-          </CardContent>
-        </Card>
+              </CardContent>
+            </Card>
+        )}
       </TooltipProvider>
     );
   }

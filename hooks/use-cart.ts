@@ -5,6 +5,7 @@ import { useMutation, useQuery } from "convex/react";
 import { useStoreStore } from "@/store/use-store-store";
 import { CartItem, Product } from "@/types/convex-types";
 import { useMemo } from "react";
+import { useLocalOrdersStore } from "@/store/user-local-orders";
 
 export function useCart() {
   const {
@@ -19,6 +20,7 @@ export function useCart() {
     getTotalItems,
     getTotalPrice,
   } = useCartStore();
+  const { orders: localOrders, clearOrders } = useLocalOrdersStore();
 
   const { isSignedIn } = useAuth();
   const syncCartToDB = useMutation(api.syncCartToDB.syncCartToDB);
@@ -32,6 +34,7 @@ export function useCart() {
   const addCartItem = useMutation(api.cartItems.addCartItem);
   const removeCartItem = useMutation(api.cartItems.removeCartItem);
   const updateCartItem = useMutation(api.cartItems.updateCartItem);
+  const attachOrderToUser = useMutation(api.orders.attachOrderToUser);
   const categories = useQuery(api.categories.getCategories);
 
   const syncCartToServer = async () => {
@@ -59,6 +62,13 @@ export function useCart() {
         });
       }
       localClear();
+    }
+
+    if (localOrders && localOrders.length > 0) {
+      await attachOrderToUser({
+        orders: localOrders,
+      });
+      clearOrders();
     }
   };
 
@@ -142,5 +152,6 @@ export function useCart() {
     getTotalPrice,
     syncCartToServer,
     syncServerToCart,
+    clearCart: localClear,
   };
 }

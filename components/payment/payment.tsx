@@ -28,17 +28,22 @@ import { useCart } from "@/hooks/use-cart";
 import { nanoid } from "nanoid";
 import { Flex } from "../ui/flex";
 import { useAppStore } from "@/hooks/use-app-store";
+import { useLocalOrdersStore } from "@/store/user-local-orders";
+import { useAuth } from "@clerk/nextjs";
 
 export default function PaymentPage() {
   const [error, setError] = useState<string | null>(null);
   const [paymentMethod, setPaymentMethod] =
     useState<PaymentMethod>("MOBILE_MONEY");
-  const { cart } = useCart();
+  const { cart, clearCart } = useCart();
   const { serverItems } = useAppStore();
+  const { addOrder } = useLocalOrdersStore();
+  const { isSignedIn } = useAuth();
+
   const paymentButtonRef = useRef<HTMLButtonElement>(null);
 
   const router = useRouter();
-  const { order,clearOrder } = useOrderStore();
+  const { order, clearTotal } = useOrderStore();
   const { store } = useStoreStore();
   const [isPending, startTransition] = useTransition();
 
@@ -62,7 +67,9 @@ export default function PaymentPage() {
           deliveryAddressLabel: order?.deliveryAddressLabel!,
           deliveryNote: order?.deliveryNote!,
           amount: order?.total!,
-          userId: currentUser?._id!,
+          userId: currentUser?._id,
+          name: order?.name,
+          email: order?.email,
           storeId: store?._id as Id<"stores">,
           trackingNumber: nanoid(),
           method: paymentMethod,
@@ -79,11 +86,15 @@ export default function PaymentPage() {
             await makePayOnDelivery({
               orderId: orderResponse,
               amount: order?.total!,
-              cartId: cart?._id!,
+              cartId: cart?._id,
               storeId: store?._id as Id<"stores">,
             });
             toast.success("Payment successful");
-            clearOrder();
+            if (!isSignedIn) {
+              addOrder(orderResponse);
+              clearCart();
+            }
+            clearTotal();
             router.push(`/orders/${orderResponse}`);
           } catch (error) {
             toast.error((error as Error)?.message);
@@ -93,7 +104,7 @@ export default function PaymentPage() {
         if (paymentMethod === "MOBILE_MONEY") {
           const paymentResponse = await triggerPaymentWithPaystack({
             amount: order?.total!,
-            email: currentUser?.email!,
+            email: currentUser?.email! ?? order?.email!,
             orderId: orderResponse,
             vendorId: order?.vendorId as Id<"vendors">,
             callback_url: "",
@@ -109,11 +120,15 @@ export default function PaymentPage() {
                     reference: response.reference,
                     paymentId: paymentResponse?.paymentId as Id<"payments">,
                     vendorId: order?.vendorId as Id<"vendors">,
-                    cartId: cart?._id!,
+                    cartId: cart?._id,
                     storeId: store?._id as Id<"stores">,
                   });
                   toast.success("Payment successful");
-                  clearOrder();
+                  if (!isSignedIn) {
+                    addOrder(orderResponse);
+                    clearCart();
+                  }
+                  clearTotal();
                   router.push(`/orders/${orderResponse}`);
                 } catch (error) {
                   toast.error((error as Error)?.message);
@@ -139,7 +154,7 @@ export default function PaymentPage() {
           });
         } else {
           toast.success("Order placed successfully");
-          clearOrder();
+          clearTotal();
           router.push(`/orders/${orderResponse}`);
         }
       } catch (error) {

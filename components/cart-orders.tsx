@@ -14,7 +14,11 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { OrderFormData, orderSchema } from "@/schema/order-schema";
+import {
+  OrderFormData,
+  orderSchema,
+  unauthOrderSchema,
+} from "@/schema/order-schema";
 import {
   MapPin,
   MessageSquare,
@@ -42,12 +46,17 @@ import { useRouter } from "next/navigation";
 import { useStoreStore } from "@/store/use-store-store";
 import { Skeleton } from "./ui/skeleton";
 import { Container } from "./ui/contaner";
+import { useCart } from "@/hooks/use-cart";
+import { useAuth } from "@clerk/nextjs";
+import { AuthOrderForms } from "./orders/auth-order-forms";
+import { UnauthOrderForms } from "./orders/unauth-order-form";
 
 export function OrdersPage() {
   const router = useRouter();
+  const { isSignedIn } = useAuth();
   const { store } = useStoreStore();
-  const { isLoadingCartItems, serverItems, totalPrice } = useAppStore();
-
+  const { isLoadingCartItems, totalPrice } = useAppStore();
+  const { items } = useCart();
   const { setOrder, order } = useOrderStore();
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -67,24 +76,23 @@ export function OrdersPage() {
 
   const formattedItems = useMemo(
     () =>
-      serverItems?.map((item) => ({
+      items?.map((item) => ({
         productId: item.productId,
         quantity: item.quantity,
       })) ?? [],
-    [serverItems]
+    [items]
   );
 
-  const hasContent = useMemo(
-    () => (serverItems?.length ?? 0) > 0,
-    [serverItems]
-  );
+  const hasContent = useMemo(() => (items?.length ?? 0) > 0, [items]);
 
   // Form initialization
   const form = useForm<OrderFormData>({
-    resolver: zodResolver(orderSchema),
+    resolver: zodResolver(isSignedIn ? orderSchema : unauthOrderSchema),
     defaultValues: {
       userId: "",
       vendorId: "",
+      email: "",
+      name: "",
       items: [],
       total: 0,
       deliveryAddressLabel: "",
@@ -94,7 +102,7 @@ export function OrdersPage() {
 
   // Update form when data loads
   useEffect(() => {
-    if (!currentUser || !vendors) return;
+    if (!vendors) return;
 
     const defaultVendor = order?.vendorId ?? vendors?.[0]?._id ?? "";
     const defaultAddress =
@@ -105,6 +113,8 @@ export function OrdersPage() {
     form.reset({
       userId: currentUser?._id ?? "",
       vendorId: defaultVendor,
+      email: order?.email ?? "",
+      name: order?.name ?? "",
       items: formattedItems,
       total: orderTotal,
       deliveryAddressLabel: defaultAddress,
@@ -129,6 +139,8 @@ export function OrdersPage() {
           total: orderTotal,
           deliveryAddressLabel: data.deliveryAddressLabel,
           deliveryNote: data.deliveryNote,
+          name: data.name ?? "",
+          email: data.email ?? "",
         });
 
         // Navigate to payment
@@ -248,7 +260,7 @@ export function OrdersPage() {
                     </CardContent>
                   </Card>
                   {/* Delivery Information */}
-                  <Card className="w-full">
+                  {/* <Card className="w-full">
                     <CardHeader>
                       <CardTitle className="flex items-center gap-2">
                         <ShoppingBag className="h-5 w-5" />
@@ -305,14 +317,16 @@ export function OrdersPage() {
                         )}
                       />
                     </CardContent>
-                  </Card>
+                  </Card> */}
+
+                  {isSignedIn ? <AuthOrderForms /> : <UnauthOrderForms />}
 
                   {/* Order Summary */}
                   <Card className="w-full">
                     <CardContent className="pt-6">
                       <div className="space-y-3">
                         <div className="flex justify-between text-sm">
-                          <span>Subtotal ({serverItems?.length} items)</span>
+                          <span>Subtotal ({items?.length} items)</span>
                           <span>{displayMoney(totalPrice ?? 0)}</span>
                         </div>
 
@@ -341,14 +355,7 @@ export function OrdersPage() {
                         className="w-full mt-6"
                         size="lg"
                       >
-                        {isSubmitting ? (
-                          <>
-                            <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                            Processing Order...
-                          </>
-                        ) : (
-                          "Continue to Payment"
-                        )}
+                        Continue to Payment
                       </Button>
                     </CardContent>
                   </Card>

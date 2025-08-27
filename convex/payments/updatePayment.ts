@@ -32,7 +32,7 @@ export const completePayment = internalMutation({
   args: {
     paymentId: v.id("payments"),
     orderId: v.id("orders"),
-    cartId: v.id("carts"),
+    cartId: v.optional(v.id("carts")),
     storeId: v.id("stores"),
   },
   handler: async (ctx, args) => {
@@ -50,36 +50,36 @@ export const completePayment = internalMutation({
       });
 
       //delete cart items and updates product stock
-      const cartItems = await ctx.db
-        .query("cartItems")
-        .withIndex("byCart", (q) => q.eq("cartId", args.cartId))
-        .collect();
+      if (args.cartId) {
+        const cartItems = await ctx.db
+          .query("cartItems")
+          .withIndex("byCart", (q) => q.eq("cartId", args.cartId!))
+          .collect();
 
-      await Promise.all(
-        cartItems.map(async (item) => {
-          const productByStore = await ctx.db
-            .query("productsByStore")
-            .withIndex("byStoreAndProduct", (q) =>
-              q.eq("storeId", args.storeId).eq("productId", item.productId)
-            )
-            .first();
-          if (!productByStore) return;
-          const product = await ctx.db.get(productByStore.productId);
-          if (!product) return;
-          if (productByStore.quantity < item.quantity) {
-            throw new Error(`Not enough stock for ${product.title}`);
-          }
-          await ctx.db.patch(productByStore._id, {
-            quantity: productByStore.quantity - item.quantity,
-            updatedAt: now,
-          });
-          return await ctx.db.delete(item._id);
-        })
-      );
-
+        await Promise.all(
+          cartItems.map(async (item) => {
+            const productByStore = await ctx.db
+              .query("productsByStore")
+              .withIndex("byStoreAndProduct", (q) =>
+                q.eq("storeId", args.storeId).eq("productId", item.productId)
+              )
+              .first();
+            if (!productByStore) return;
+            const product = await ctx.db.get(productByStore.productId);
+            if (!product) return;
+            if (productByStore.quantity < item.quantity) {
+              throw new Error(`Not enough stock for ${product.title}`);
+            }
+            await ctx.db.patch(productByStore._id, {
+              quantity: productByStore.quantity - item.quantity,
+              updatedAt: now,
+            });
+            return await ctx.db.delete(item._id);
+          })
+        );
+      }
       return args.paymentId;
-    } catch (err) {
-      console.log(err);
+    } catch {
       throw new Error("Failed to complete payment");
     }
   },

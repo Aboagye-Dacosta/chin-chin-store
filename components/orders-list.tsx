@@ -4,13 +4,29 @@ import { OrderCard } from "@/components/order-card";
 import { useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { useStoreStore } from "@/store/use-store-store";
-
+import { OrderWithItems } from "@/types/convex-types";
+import { useLocalOrdersStore } from "@/store/user-local-orders";
+import { Flex } from "./ui/flex";
+import { Skeleton } from "./ui/skeleton";
 
 export function OrdersList() {
   const { store } = useStoreStore();
+  const { orders: localOrders } = useLocalOrdersStore();
+
   const orders = useQuery(api.orders.getOrdersByStoreAndUser, {
-    storeId: store?._id!,  
+    storeId: store?._id!,
+    orders: localOrders,
   });
+
+  if (orders == undefined) {
+    return (
+      <Flex direction="col" gap="md" className="max-w-md mx-auto py-2">
+        {Array.from({ length: 3 }, (_, i) => (
+          <Skeleton className="h-[100px] w-full max-w-sm" key={i}/>
+        ))}
+      </Flex>
+    );
+  }
 
   if (!orders || orders.length === 0) {
     return (
@@ -25,7 +41,7 @@ export function OrdersList() {
   return (
     <div className="grid gap-6">
       {orders.map((order) => (
-        <OrderCard key={order._id} order={order} />
+        <OrderCard key={order._id} order={order as OrderWithItems} />
       ))}
     </div>
   );

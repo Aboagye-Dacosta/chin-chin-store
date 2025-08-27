@@ -52,7 +52,7 @@ export const makePayOnDeliveryPayment = mutation({
   args: {
     orderId: v.id("orders"),
     amount: v.float64(),
-    cartId: v.id("carts"),
+    cartId: v.optional(v.id("carts")),
     storeId: v.id("stores"),
   },
 
@@ -76,34 +76,37 @@ export const makePayOnDeliveryPayment = mutation({
       });
 
       //delete cart items and updates product stock
-      const cartItems = await ctx.db
-        .query("cartItems")
-        .withIndex("byCart", (q) => q.eq("cartId", args.cartId))
-        .collect();
+      const identity = await ctx.auth.getUserIdentity();
+      if (identity && args.cartId) {
+        const cartItems = await ctx.db
+          .query("cartItems")
+          .withIndex("byCart", (q) => q.eq("cartId", args.cartId!))
+          .collect();
 
-      await Promise.all(
-        cartItems.map(async (item) => {
-          const productByStore = await ctx.db
-            .query("productsByStore")
-            .withIndex("byStoreAndProduct", (q) =>
-              q.eq("storeId", args.storeId).eq("productId", item.productId)
-            )
-            .first();
+        await Promise.all(
+          cartItems.map(async (item) => {
+            const productByStore = await ctx.db
+              .query("productsByStore")
+              .withIndex("byStoreAndProduct", (q) =>
+                q.eq("storeId", args.storeId).eq("productId", item.productId)
+              )
+              .first();
 
-          if (!productByStore) return;
-          const product = await ctx.db.get(productByStore.productId);
-          if (!product) return;
-          if (productByStore.quantity < item.quantity) {
-            throw new Error(`Not enough stock for ${product.title}`);
-          }
-          await ctx.db.patch(productByStore._id, {
-            quantity: productByStore.quantity - item.quantity,
-            updatedAt: new Date().toISOString(),
-          });
-          
-          return await ctx.db.delete(item._id);
-        })
-      );
+            if (!productByStore) return;
+            const product = await ctx.db.get(productByStore.productId);
+            if (!product) return;
+            if (productByStore.quantity < item.quantity) {
+              throw new Error(`Not enough stock for ${product.title}`);
+            }
+            await ctx.db.patch(productByStore._id, {
+              quantity: productByStore.quantity - item.quantity,
+              updatedAt: new Date().toISOString(),
+            });
+
+            return await ctx.db.delete(item._id);
+          })
+        );
+      }
 
       return payment;
     } catch (err) {
@@ -112,6 +115,3 @@ export const makePayOnDeliveryPayment = mutation({
     }
   },
 });
-
-
-

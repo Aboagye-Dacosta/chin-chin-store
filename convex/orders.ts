@@ -1,6 +1,7 @@
 import { internalMutation, mutation, query } from "./_generated/server";
 import { v } from "convex/values";
 import { OrderStatus } from "./schema";
+import { Id } from "./_generated/dataModel";
 
 export const getAllOrders = query({
   handler: async (ctx) => {
@@ -38,33 +39,47 @@ export const getOrdersByVendor = query({
 export const getOrdersByStoreAndUser = query({
   args: {
     storeId: v.id("stores"),
+    orders: v.optional(v.array(v.string())),
   },
   handler: async (ctx, args) => {
     const identity = await ctx.auth.getUserIdentity();
     const clerkId = identity?.subject;
-    if (!clerkId) return null;
-    const user = await ctx.db
-      .query("users")
-      .withIndex("byClerkId", (q) => q.eq("clerkId", clerkId))
-      .first();
-    if (!user) return null;
-    const orders = await ctx.db
-      .query("orders")
-      .withIndex("byUserAndStore", (q) =>
-        q.eq("userId", user._id).eq("storeId", args.storeId)
-      )
-      .collect();
+    let orders;
+
+    if (clerkId) {
+      const user = await ctx.db
+        .query("users")
+        .withIndex("byClerkId", (q) => q.eq("clerkId", clerkId))
+        .first();
+      if (!user) return null;
+      orders = await ctx.db
+        .query("orders")
+        .withIndex("byUserAndStore", (q) =>
+          q.eq("userId", user._id).eq("storeId", args.storeId)
+        )
+        .collect();
+    } else if (args.orders) {
+      orders = await Promise.all(
+        args.orders.map(async (orderId) => {
+          return await ctx.db.get(orderId as Id<"orders">);
+        })
+      );
+    }
 
     const enrichedOrders = await Promise.all(
-      orders.map(async (order) => {
+      (orders ?? []).map(async (order) => {
         const payment = await ctx.db
           .query("payments")
-          .withIndex("byOrder", (q) => q.eq("orderId", order._id))
+          .withIndex("byOrder", (q) =>
+            q.eq("orderId", order?._id as Id<"orders">)
+          )
           .first();
 
         const orderItems = await ctx.db
           .query("orderItems")
-          .withIndex("byOrder", (q) => q.eq("orderId", order._id))
+          .withIndex("byOrder", (q) =>
+            q.eq("orderId", order?._id as Id<"orders">)
+          )
           .collect();
 
         const enrichedOrderItems = await Promise.all(
@@ -130,9 +145,11 @@ export const getOrderById = query({
 
 export const createOrder = mutation({
   args: {
-    userId: v.id("users"),
+    userId: v.optional(v.id("users")),
     storeId: v.id("stores"),
     vendorId: v.id("vendors"),
+    name: v.optional(v.string()),
+    email: v.optional(v.string()),
     deliveryCharge: v.optional(v.number()),
     amount: v.number(),
     method: v.union(
@@ -156,6 +173,8 @@ export const createOrder = mutation({
       userId: args.userId,
       storeId: args.storeId,
       vendorId: args.vendorId,
+      name: args.name,
+      email: args.email,
       total: args.amount,
       status: "PENDING",
       trackingNumber: args.trackingNumber,
@@ -234,26 +253,29 @@ export const cancelOrder = mutation({
     }
 
     //restore product stock
-    const orderItems = await ctx.db
-      .query("orderItems")
-      .withIndex("byOrder", (q) => q.eq("orderId", args.orderId))
-      .collect();
+    const identity = await ctx.auth.getUserIdentity();
+    if (identity) {
+      const orderItems = await ctx.db
+        .query("orderItems")
+        .withIndex("byOrder", (q) => q.eq("orderId", args.orderId))
+        .collect();
 
-    await Promise.all(
-      orderItems.map(async (item) => {
-        const productByStore = await ctx.db
-          .query("productsByStore")
-          .withIndex("byStoreAndProduct", (q) =>
-            q.eq("storeId", args.storeId).eq("productId", item.productId)
-          )
-          .first();
-        if (!productByStore) return;
-        await ctx.db.patch(productByStore._id, {
-          quantity: productByStore.quantity + item.quantity,
-          updatedAt: now,
-        });
-      })
-    );
+      await Promise.all(
+        orderItems.map(async (item) => {
+          const productByStore = await ctx.db
+            .query("productsByStore")
+            .withIndex("byStoreAndProduct", (q) =>
+              q.eq("storeId", args.storeId).eq("productId", item.productId)
+            )
+            .first();
+          if (!productByStore) return;
+          await ctx.db.patch(productByStore._id, {
+            quantity: productByStore.quantity + item.quantity,
+            updatedAt: now,
+          });
+        })
+      );
+    }
   },
 });
 
@@ -272,7 +294,10 @@ export const getAdminAndVendorsOrders = query({
       const orders = await ctx.db.query("orders").collect();
       const enrichedOrders = await Promise.all(
         orders.map(async (order) => {
-          const user = await ctx.db.get(order.userId);
+          let user;
+          if (order.userId) {
+            user = await ctx.db.get(order.userId);
+          }
           const vendor = await ctx.db.get(order.vendorId);
           if (!vendor) return null;
           const vendorUser = await ctx.db.get(vendor.userId);
@@ -302,7 +327,10 @@ export const getAdminAndVendorsOrders = query({
 
       const enrichedOrders = await Promise.all(
         orders.map(async (order) => {
-          const user = await ctx.db.get(order.userId);
+          let user;
+          if (order.userId) {
+            user = await ctx.db.get(order.userId);
+          }
           const vendor = await ctx.db.get(order.vendorId);
           if (!vendor) return null;
           const vendorUser = await ctx.db.get(vendor.userId);
@@ -321,5 +349,29 @@ export const getAdminAndVendorsOrders = query({
     }
 
     return [];
+  },
+});
+
+export const attachOrderToUser = mutation({
+  args: {
+    orders: v.array(v.string()),
+  },
+  handler: async (ctx, args) => {
+    const identity = await ctx.auth.getUserIdentity();
+    const clerkId = identity?.subject;
+    if (!clerkId) return null;
+    const user = await ctx.db
+      .query("users")
+      .withIndex("byClerkId", (q) => q.eq("clerkId", clerkId))
+      .first();
+    if (!user) return null;
+
+    await Promise.all(
+      args.orders.map(async (orderId) => {
+        await ctx.db.patch(orderId as Id<"orders">, {
+          userId: user._id,
+        });
+      })
+    );
   },
 });

@@ -11,18 +11,22 @@ import { useMemo } from "react";
 import { useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { useAppThemeStore } from "@/store/use-app-theme";
+import { useCart } from "@/hooks/use-cart";
 
 interface CartSummaryProps {
   deliveryPrice?: number;
 }
 
 export function CartSummary({ deliveryPrice = 0 }: Readonly<CartSummaryProps>) {
-  const { totalPrice, serverItems, isLoadingCartItems, products } =
-    useAppStore();
+  const { totalPrice, isLoadingCartItems, products } = useAppStore();
+  const { items: serverItems } = useCart();
   const categories = useQuery(api.categories.getCategories);
   const { categoryColors } = useAppThemeStore();
 
-  const hasContent = useMemo(() => serverItems?.length > 0, [serverItems]);
+  const hasContent = useMemo(
+    () => (serverItems?.length ?? 0) > 0,
+    [serverItems]
+  );
   return (
     <Card className="h-fit">
       <CardHeader>

@@ -97,8 +97,7 @@ export default defineSchema({
     categoryId: v.id("categories"),
     createdAt: v.string(),
     updatedAt: v.string(),
-  })
-    .index("byCategory", ["categoryId"]),
+  }).index("byCategory", ["categoryId"]),
 
   productsByStore: defineTable({
     storeId: v.id("stores"),
@@ -146,7 +145,9 @@ export default defineSchema({
 
   orders: defineTable({
     vendorId: v.id("vendors"),
-    userId: v.id("users"),
+    userId: v.optional(v.id("users")),
+    name: v.optional(v.string()),
+    email: v.optional(v.string()),
     total: v.float64(),
     deliveryAddressLabel: v.string(),
     deliveryNote: v.optional(v.string()),

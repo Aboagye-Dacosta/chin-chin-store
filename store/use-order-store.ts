@@ -1,4 +1,4 @@
-import { OrderFormData } from "@/schema/order-schema";
+import { OrderFormData, UnauthOrderFormData } from "@/schema/order-schema";
 import { create } from "zustand";
 import { createJSONStorage, devtools, persist } from "zustand/middleware";
 
@@ -7,8 +7,9 @@ interface OrderState {
 }
 
 interface OrderActions {
-  setOrder: (order: OrderFormData) => void;
+  setOrder: (order: OrderFormData & UnauthOrderFormData) => void;
   clearOrder: () => void;
+  clearTotal: () => void;
 }
 
 type OrderStore = OrderState & OrderActions;
@@ -20,6 +21,15 @@ export const useOrderStore = create<OrderStore>()(
         order: null,
         setOrder: (order) => set(() => ({ order: order })),
         clearOrder: () => set({ order: null }),
+        clearTotal: () =>
+          set((order) => ({
+            order: order?.order
+              ? {
+                  ...order?.order,
+                  total: 0,
+                }
+              : null,
+          })),
       }),
       {
         name: "order-storage",

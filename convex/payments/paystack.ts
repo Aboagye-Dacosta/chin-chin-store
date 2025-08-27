@@ -117,7 +117,7 @@ export const verifyPaystackTransaction = action({
     reference: v.string(),
     paymentId: v.id("payments"),
     vendorId: v.id("vendors"),
-    cartId: v.id("carts"),
+    cartId: v.optional(v.id("carts")),
     storeId: v.id("stores"),
   },
   handler: async (ctx, args): Promise<PaystackVerificationResponse["data"]> => {

@@ -62,7 +62,7 @@ export default function UserOrderDetails({
   const handleCancelOrder = () => {
     startTransition(async () => {
       try {
-        await cancelOrder({ orderId: order?._id! });
+        await cancelOrder({ orderId: order?._id!, storeId: order?.storeId! });
         toast.success("Order cancelled successfully");
       } catch (error) {
         toast.error((error as Error)?.message);
