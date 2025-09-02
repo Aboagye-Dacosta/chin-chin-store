@@ -1,4 +1,4 @@
-"use client"
+"use client";
 import { useEffect, useRef, useState } from "react";
 
 interface TextPressureProps {
@@ -139,7 +139,7 @@ const TextPressure: React.FC<TextPressureProps> = ({
           const getAttr = (
             distance: number,
             minVal: number,
-            maxVal: number,
+            maxVal: number
           ) => {
             const val = maxVal - Math.abs((maxVal * distance) / maxDist);
             return Math.max(minVal, val + minVal);

@@ -6,7 +6,7 @@ const dateTimeSchema = z.string().datetime();
 export function useDataTableFiltering<T extends Record<string, unknown>>(
   data: T[],
   searchTerm: string,
-  filterBy?: Record<string, string>,
+  filterBy?: Record<string, string>
 ) {
   const compareDates = useCallback(
     (rowValue: unknown, filterValue: string): boolean => {
@@ -20,7 +20,7 @@ export function useDataTableFiltering<T extends Record<string, unknown>>(
         return false;
       }
     },
-    [],
+    []
   );
 
   const filteredData = useMemo(() => {
@@ -38,9 +38,10 @@ export function useDataTableFiltering<T extends Record<string, unknown>>(
           }
 
           if (typeof rowValue === "object") {
-            return Object.values(rowValue as Record<string, unknown>).some((rowValue) => rowValue === value);
+            return Object.values(rowValue as Record<string, unknown>).some(
+              (rowValue) => rowValue === value
+            );
           }
-
 
           return String(rowValue) === String(value);
         });
@@ -51,7 +52,7 @@ export function useDataTableFiltering<T extends Record<string, unknown>>(
       const normalizedSearch = searchTerm.trim().toLowerCase();
       result = result.filter((row) => {
         return Object.values(row).some((value) =>
-          String(value).toLowerCase().includes(normalizedSearch),
+          String(value).toLowerCase().includes(normalizedSearch)
         );
       });
     }

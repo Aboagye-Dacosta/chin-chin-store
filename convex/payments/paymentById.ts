@@ -12,7 +12,7 @@ import { v } from "convex/values";
  * @returns {object|null} The payment object, or null if not found.
  */
 export const getInternalPaymentById = internalQuery({
-  args: {   
+  args: {
     paymentId: v.id("payments"),
   },
   handler: async (ctx, args) => {

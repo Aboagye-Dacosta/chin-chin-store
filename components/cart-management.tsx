@@ -10,7 +10,8 @@ import { useAuth } from "@clerk/nextjs";
 import { Skeleton } from "./ui/skeleton";
 
 export function CartManagement() {
-  const { items, isAnyInactive, isAnyOutOfStock, isAnyMoreThanStock } = useCart();
+  const { items, isAnyInactive, isAnyOutOfStock, isAnyMoreThanStock } =
+    useCart();
   const { isSignedIn } = useAuth();
 
   const totalPrice = useMemo(() => {

@@ -1,9 +1,7 @@
-
-
 /**
  * Functions for managing products in stores.
  */
-import {  ConvexError, v } from "convex/values";
+import { ConvexError, v } from "convex/values";
 import { mutation, query } from "./_generated/server";
 
 /**
@@ -40,7 +38,9 @@ export const productsByStore = query({
         productsByStore.map(async (product) => {
           const store = await ctx.db.get(product.storeId);
           const productData = await ctx.db.get(product.productId);
-          const category = productData ? await ctx.db.get(productData.categoryId) : null;
+          const category = productData
+            ? await ctx.db.get(productData.categoryId)
+            : null;
           let image;
           if (productData?.image) {
             const result = await ctx.db.get(productData.image);
@@ -77,7 +77,9 @@ export const productsByStore = query({
         products.map(async (product) => {
           const store = await ctx.db.get(product.storeId);
           const productData = await ctx.db.get(product.productId);
-          const category = productData ? await ctx.db.get(productData.categoryId) : null;
+          const category = productData
+            ? await ctx.db.get(productData.categoryId)
+            : null;
           let image;
           if (productData?.image) {
             const result = await ctx.db.get(productData.image);
@@ -136,7 +138,8 @@ export const addProductToStore = mutation({
       )
       .first();
 
-    if (existingProduct) throw new ConvexError<string>("Product already exists in this store");
+    if (existingProduct)
+      throw new ConvexError<string>("Product already exists in this store");
 
     const now = new Date().toISOString();
     const product = await ctx.db.insert("productsByStore", {
@@ -166,17 +169,25 @@ export const removeProductFromStore = mutation({
   },
   handler: async (ctx, args) => {
     //check cart items
-    const productInAnyCart = await ctx.db.query("cartItems").withIndex("byProduct", (q) => q.eq("productId", args.productId)).collect()
+    const productInAnyCart = await ctx.db
+      .query("cartItems")
+      .withIndex("byProduct", (q) => q.eq("productId", args.productId))
+      .collect();
     for (const cartItem of productInAnyCart) {
-      const cart = await ctx.db.get(cartItem?.cartId)
-      if (cart?.storeId === args.storeId) throw new ConvexError("Product exists in a cart for this store")
+      const cart = await ctx.db.get(cartItem?.cartId);
+      if (cart?.storeId === args.storeId)
+        throw new ConvexError("Product exists in a cart for this store");
     }
 
     //check order items
-    const productInAnyOrder = await ctx.db.query("orderItems").withIndex("byProduct", (q) => q.eq("productId", args.productId)).collect()
+    const productInAnyOrder = await ctx.db
+      .query("orderItems")
+      .withIndex("byProduct", (q) => q.eq("productId", args.productId))
+      .collect();
     for (const orderItem of productInAnyOrder) {
-      const order = await ctx.db.get(orderItem?.orderId)
-      if (order?.storeId === args.storeId) throw new ConvexError("Product exists in an order for this store")
+      const order = await ctx.db.get(orderItem?.orderId);
+      if (order?.storeId === args.storeId)
+        throw new ConvexError("Product exists in an order for this store");
     }
 
     const productByStore = await ctx.db
@@ -185,8 +196,9 @@ export const removeProductFromStore = mutation({
         q.eq("storeId", args.storeId).eq("productId", args.productId)
       )
       .first();
-    if (!productByStore) throw new ConvexError("Product not found in this store");
-    
+    if (!productByStore)
+      throw new ConvexError("Product not found in this store");
+
     await ctx.db.delete(productByStore._id);
   },
 });
@@ -214,8 +226,9 @@ export const updateProductQuantity = mutation({
         q.eq("storeId", args.storeId).eq("productId", args.productId)
       )
       .first();
-    if (!productByStore) throw new ConvexError("Product not found in this store");
-    
+    if (!productByStore)
+      throw new ConvexError("Product not found in this store");
+
     const product = await ctx.db.patch(productByStore._id, {
       quantity: args.quantity,
       updatedAt: new Date().toISOString(),

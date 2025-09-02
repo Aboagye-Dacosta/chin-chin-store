@@ -1,7 +1,7 @@
 /**
  * Paystack API integration for initializing and verifying transactions.
  */
-import { v , ConvexError} from "convex/values";
+import { v, ConvexError } from "convex/values";
 import { internal } from "../_generated/api";
 import { action } from "../_generated/server";
 
@@ -62,7 +62,7 @@ export const initializePaystackTransaction = action({
     );
     if (!secretKey) {
       throw new ConvexError("Paystack secret key is not configured.");
-    } 
+    }
 
     const vendor = await ctx.runQuery(internal.vendors.readVendorById, {
       vendorId: args.vendorId,
@@ -116,7 +116,9 @@ export const initializePaystackTransaction = action({
 
     const result: PaystackAuthorizationResponse = await response.json();
     if (!response.ok || !result.status) {
-      throw new ConvexError(result.message || "Failed to initialize transaction");
+      throw new ConvexError(
+        result.message || "Failed to initialize transaction"
+      );
     }
 
     return {

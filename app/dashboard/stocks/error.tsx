@@ -9,7 +9,10 @@ type AdminErrorPageProps = {
   reset: () => void;
 };
 
-export default function AdminErrorPage({ error, reset }: Readonly<AdminErrorPageProps>) {
+export default function AdminErrorPage({
+  error,
+  reset,
+}: Readonly<AdminErrorPageProps>) {
   const router = useRouter();
   const errorMessage =
     error instanceof ConvexError ? error.data : error.message;

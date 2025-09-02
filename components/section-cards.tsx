@@ -48,7 +48,7 @@ export function SectionCards() {
         <CardHeader>
           <CardDescription>Total Revenue</CardDescription>
           <CardTitle className="text-2xl font-semibold tabular-nums @[250px]/card:text-3xl">
-            {displayMoney(totalRevenue,false)}
+            {displayMoney(totalRevenue, false)}
           </CardTitle>
           <CardAction>
             <Badge variant="outline">

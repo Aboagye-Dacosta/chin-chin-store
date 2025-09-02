@@ -31,6 +31,8 @@ export function ProductCard({ product }: Readonly<ProductCardProps>) {
   const { categoryColors } = useAppThemeStore();
   const { isSignedIn } = useAuth();
 
+  console.log(product);
+
   const handleAddToCart = async () => {
     try {
       setIsAdding(true);

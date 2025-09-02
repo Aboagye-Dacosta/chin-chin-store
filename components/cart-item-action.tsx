@@ -26,8 +26,6 @@ export const CartItemAction = ({ product, cartItem }: CartItemActionProps) => {
   const [isIncrementing, setIsIncrementing] = useState(false);
   const [isDecrementing, setIsDecrementing] = useState(false);
 
-  console.log(product);
-
   const handleIncrement = useCallback(async () => {
     setIsIncrementing(true);
     try {

@@ -38,13 +38,13 @@ export const addCategory = mutation({
     if (existingCategory) {
       throw new ConvexError("Category already exists");
     }
-    
+
     const now = new Date().toISOString();
     return await ctx.db.insert("categories", {
-        name: args.name,
-        color: args.color,
-        createdAt: now,
-        updatedAt: now,
+      name: args.name,
+      color: args.color,
+      createdAt: now,
+      updatedAt: now,
     });
   },
 });
@@ -64,8 +64,8 @@ export const updateCategory = mutation({
   handler: async (ctx, args) => {
     const now = new Date().toISOString();
     await ctx.db.patch(args.id, {
-        color: args.color,
-        updatedAt: now,
+      color: args.color,
+      updatedAt: now,
     });
   },
 });

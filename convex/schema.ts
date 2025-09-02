@@ -66,7 +66,7 @@ export const Role = v.union(
 /**
  * Defines the possible vendor statuses.
  */
-export const VendorStatus = v.union(v.literal("ACTIVE"), v.literal("INACTIVE"))
+export const VendorStatus = v.union(v.literal("ACTIVE"), v.literal("INACTIVE"));
 
 export default defineSchema({
   /**
@@ -235,7 +235,9 @@ export default defineSchema({
     quantity: v.number(),
     createdAt: v.string(),
     updatedAt: v.string(),
-  }).index("byOrder", ["orderId"]).index("byProduct", ["productId"]),
+  })
+    .index("byOrder", ["orderId"])
+    .index("byProduct", ["productId"]),
 
   /**
    * Carts table.
@@ -313,7 +315,7 @@ export default defineSchema({
     createdAt: v.string(),
     updatedAt: v.string(),
   }).index("byName", ["name"]),
-  
+
   /**
    * Support table.
    */
@@ -325,7 +327,7 @@ export default defineSchema({
     createdAt: v.string(),
     updatedAt: v.string(),
   }).index("byEmail", ["email"]),
-  
+
   /**
    * Sales Analytics table.
    */

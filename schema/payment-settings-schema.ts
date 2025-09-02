@@ -11,4 +11,6 @@ export const paymentGatewaySettingsSchema = z.object({
   supportedNetworks: z.array(z.enum(["MTN", "AIRTELTIGO", "VODAFONE"])),
 });
 
-export type PaymentGatewaySettings = z.infer<typeof paymentGatewaySettingsSchema>;
+export type PaymentGatewaySettings = z.infer<
+  typeof paymentGatewaySettingsSchema
+>;

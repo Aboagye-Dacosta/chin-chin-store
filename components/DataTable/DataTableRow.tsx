@@ -14,10 +14,7 @@ export function DataTableRow<T extends Record<string, unknown>>({
   onRowSelect,
 }: Readonly<DataTableRowProps<T>>) {
   return (
-    <tr
-      key={rowId}
-      className="border-b hover:bg-accent transition-colors"
-    >
+    <tr key={rowId} className="border-b hover:bg-accent transition-colors">
       {showCheckboxes && (
         <td className="py-3 px-4">
           <Checkbox

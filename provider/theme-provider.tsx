@@ -20,11 +20,9 @@ export default function ThemeProvider({ children }: ThemeProviderProps) {
     setIsHydrated(true);
   }, [appColor]);
 
-
   if (!appColor || !isHydrated) {
     return null;
   }
-
 
   return <MemoizedChildren>{children}</MemoizedChildren>;
 }

@@ -65,7 +65,9 @@ export const addCartItem = mutation({
 
       const existingCart = await ctx.db
         .query("carts")
-        .withIndex("byUserAndStore", (q) => q.eq("userId", user._id).eq("storeId", storeId))
+        .withIndex("byUserAndStore", (q) =>
+          q.eq("userId", user._id).eq("storeId", storeId)
+        )
         .first();
 
       if (existingCart) {

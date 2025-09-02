@@ -21,7 +21,7 @@ export const StocksTableColumns: Column<StockTableProps>[] = [
           alt={row.product?.title ?? ""}
           width={20}
           height={20}
-          className="object-contain"  
+          className="object-contain"
         />
       </div>
     ),

@@ -46,7 +46,6 @@ export const DASHBOARD_SECONDARY_ROUTES = [
     url: "#",
     icon: IconHelp,
     allowedRoles: [ROLES.VENDOR],
-
   },
 ];
 

@@ -10,12 +10,12 @@ export const DataTableLoadingSkeleton = ({
 }: Readonly<DataTableLoadingSkeletonProps>) => {
   const columnIds = useMemo(
     () => Array.from({ length: columns }, () => nanoid()),
-    [columns],
+    [columns]
   );
 
   const rowIds = useMemo(
     () => Array.from({ length: rows }, () => nanoid()),
-    [rows],
+    [rows]
   );
 
   return (

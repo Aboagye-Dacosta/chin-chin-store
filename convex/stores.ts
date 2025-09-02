@@ -1,4 +1,3 @@
-
 /**
  * Functions for managing stores.
  */
@@ -131,11 +130,11 @@ export const addStore = mutation({
     }
     const now = new Date().toISOString();
     return await ctx.db.insert("stores", {
-        name: args.name,
-        locationId: args.locationId,
-        deliveryCharge: args.deliveryCharge,
-        createdAt: now,
-        updatedAt: now,
+      name: args.name,
+      locationId: args.locationId,
+      deliveryCharge: args.deliveryCharge,
+      createdAt: now,
+      updatedAt: now,
     });
   },
 });
@@ -152,31 +151,42 @@ export const deleteStore = mutation({
     id: v.id("stores"),
   },
   handler: async (ctx, args) => {
-    //check productsByStore 
-    const productByStore = await ctx.db.query("productsByStore").withIndex("byStore", (q) => q.eq("storeId", args.id)).collect();
-    if(productByStore?.length > 0){
+    //check productsByStore
+    const productByStore = await ctx.db
+      .query("productsByStore")
+      .withIndex("byStore", (q) => q.eq("storeId", args.id))
+      .collect();
+    if (productByStore?.length > 0) {
       throw new ConvexError("Store has products");
     }
     //check orders
-    const orders = await ctx.db.query("orders").withIndex("byStore", (q) => q.eq("storeId", args.id)).collect();
-    if(orders?.length > 0){
+    const orders = await ctx.db
+      .query("orders")
+      .withIndex("byStore", (q) => q.eq("storeId", args.id))
+      .collect();
+    if (orders?.length > 0) {
       throw new ConvexError("Store has orders");
     }
     //check carts
-    const carts = await ctx.db.query("carts").withIndex("byStore", (q) => q.eq("storeId", args.id)).collect();
-    if(carts?.length > 0){
+    const carts = await ctx.db
+      .query("carts")
+      .withIndex("byStore", (q) => q.eq("storeId", args.id))
+      .collect();
+    if (carts?.length > 0) {
       throw new ConvexError("Store has carts");
     }
     //check vendors
-    const vendors = await ctx.db.query("vendors").withIndex("byStore", (q) => q.eq("storeId", args.id)).collect();
-    if(vendors?.length > 0){
+    const vendors = await ctx.db
+      .query("vendors")
+      .withIndex("byStore", (q) => q.eq("storeId", args.id))
+      .collect();
+    if (vendors?.length > 0) {
       throw new ConvexError("Store has vendors");
     }
-    
+
     await ctx.db.delete(args.id);
   },
 });
-
 
 /**
  * Updates an existing store.
@@ -202,8 +212,7 @@ export const updateStore = mutation({
       updatedAt: new Date().toISOString(),
     });
   },
-})
-
+});
 
 // export const updateStore = mutation({
 //   args: {

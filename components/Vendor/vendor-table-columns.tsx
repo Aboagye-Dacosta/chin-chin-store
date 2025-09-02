@@ -51,7 +51,9 @@ export const VendorColumns: Column<TableVendor>[] = [
   {
     key: "status",
     header: "Status",
-    render: (_v,row) => <VendorStatusUpdateSelect id={row._id} initialValue={row.status} />
+    render: (_v, row) => (
+      <VendorStatusUpdateSelect id={row._id} initialValue={row.status} />
+    ),
   },
   {
     key: "createdAt",

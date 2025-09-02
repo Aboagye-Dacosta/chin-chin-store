@@ -90,19 +90,13 @@ export function MultiSelect({
 
   const renderChips = () => {
     if (!value?.length) {
-      return (
-        <span className="text-muted-foreground">{placeholder}</span>
-      );
+      return <span className="text-muted-foreground">{placeholder}</span>;
     }
     const selectedOptions = options.filter((o) => selectedSet.has(o.value));
     return (
       <div className="flex flex-wrap gap-1.5">
         {selectedOptions.map((opt) => (
-          <Badge
-            key={opt.value}
-            variant="secondary"
-            className="px-2 py-0.5"
-          >
+          <Badge key={opt.value} variant="secondary" className="px-2 py-0.5">
             <span className="mr-1">{opt.label}</span>
             <button
               type="button"
@@ -147,7 +141,9 @@ export function MultiSelect({
                   >
                     {checked && <Check className="h-3 w-3" />}
                   </div>
-                  <span className={cn(opt.disabled && "opacity-50")}>{opt.label}</span>
+                  <span className={cn(opt.disabled && "opacity-50")}>
+                    {opt.label}
+                  </span>
                 </CommandItem>
               );
             })}
@@ -186,11 +182,7 @@ export function MultiSelect({
           <div className="px-4 pb-2">{list}</div>
           <DrawerFooter>
             <div className="flex items-center justify-between gap-2">
-              <Button
-                type="button"
-                variant="secondary"
-                onClick={clearAll}
-              >
+              <Button type="button" variant="secondary" onClick={clearAll}>
                 Clear
               </Button>
               <Button type="button" onClick={() => setOpen(false)}>

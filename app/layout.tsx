@@ -23,10 +23,10 @@ export default function RootLayout({
     <html lang="en">
       <body className={cn(inter.className, "h-screen overflow-hidden")}>
         <Provider>
-            {children}
-            <Toaster richColors />
-            <AppThemeFloatingActionButton />
-          </Provider>
+          {children}
+          <Toaster richColors />
+          <AppThemeFloatingActionButton />
+        </Provider>
       </body>
     </html>
   );

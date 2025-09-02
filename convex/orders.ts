@@ -4,7 +4,6 @@ import { Id } from "./_generated/dataModel";
 import { internalMutation, mutation, query } from "./_generated/server";
 import { OrderStatus } from "./schema";
 
-
 /**
  * Retrieves all orders.
  *
@@ -117,16 +116,16 @@ export const getOrdersByStoreAndUser = query({
             const product = await ctx.db.get(orderItem.productId);
             let image;
             if (product?.image) {
-              const asset = await ctx.db.get(product.image)
+              const asset = await ctx.db.get(product.image);
               if (asset) {
-                image = await ctx.storage.getUrl(asset?.storageId)
+                image = await ctx.storage.getUrl(asset?.storageId);
               }
             }
             return {
               ...orderItem,
               product: {
                 ...product,
-                image
+                image,
               },
             };
           })
@@ -174,16 +173,16 @@ export const getOrderById = query({
         const product = await ctx.db.get(orderItem.productId);
         let image;
         if (product?.image) {
-          const asset = await ctx.db.get(product.image)
+          const asset = await ctx.db.get(product.image);
           if (asset) {
-            image = await ctx.storage.getUrl(asset?.storageId)
+            image = await ctx.storage.getUrl(asset?.storageId);
           }
         }
         return {
           ...orderItem,
           product: {
             ...product,
-            image
+            image,
           },
         };
       })
@@ -294,7 +293,9 @@ export const updateOrderStatus = internalMutation({
     });
 
     if (args.status === "DELIVERED") {
-      await ctx.scheduler.runAfter(0, internal.orders.updateAnalytics, { orderId: args.orderId });
+      await ctx.scheduler.runAfter(0, internal.orders.updateAnalytics, {
+        orderId: args.orderId,
+      });
     }
   },
 });
@@ -318,7 +319,9 @@ export const updateStatus = mutation({
     });
 
     if (args.status === "DELIVERED") {
-      await ctx.scheduler.runAfter(0, internal.orders.updateAnalytics, { orderId: args.orderId });
+      await ctx.scheduler.runAfter(0, internal.orders.updateAnalytics, {
+        orderId: args.orderId,
+      });
     }
   },
 });
@@ -379,7 +382,8 @@ export const updateAnalytics = internalMutation({
       if (productAnalytics) {
         await ctx.db.patch(productAnalytics._id, {
           totalSold: productAnalytics.totalSold + item.quantity,
-          totalRevenue: productAnalytics.totalRevenue + product.price * item.quantity,
+          totalRevenue:
+            productAnalytics.totalRevenue + product.price * item.quantity,
         });
       } else {
         await ctx.db.insert("productAnalytics", {
@@ -460,7 +464,8 @@ export const updateAnalyticsForRefund = internalMutation({
       if (productAnalytics) {
         await ctx.db.patch(productAnalytics._id, {
           totalSold: productAnalytics.totalSold - item.quantity,
-          totalRevenue: productAnalytics.totalRevenue - product.price * item.quantity,
+          totalRevenue:
+            productAnalytics.totalRevenue - product.price * item.quantity,
         });
       }
     }
@@ -479,7 +484,6 @@ export const updateAnalyticsForRefund = internalMutation({
     }
   },
 });
-
 
 /**
  * Retrieves orders for admin and vendors.
@@ -590,7 +594,6 @@ export const attachOrderToUser = mutation({
   },
 });
 
-
 /**
  * Cancels an order.
  *
@@ -683,10 +686,6 @@ export const cancelOrder = mutation({
           });
         })
       );
-
     }
   },
 });
-
-
-

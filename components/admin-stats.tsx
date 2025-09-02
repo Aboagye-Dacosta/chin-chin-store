@@ -12,7 +12,7 @@ export function AdminStats() {
       <div className="flex flex-col gap-8 py-8 px-4 lg:px-6">
         <SectionCards />
         <ChartAreaInteractive />
-        <div >
+        <div>
           <h2 className="text-2xl font-bold tracking-tight">
             Store Performance
           </h2>

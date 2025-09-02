@@ -54,7 +54,9 @@ export const handleClerkWebhook = httpAction(async (ctx, request) => {
       "svix-signature": svix_signature,
     }) as ClerkWebhookPayload;
   } catch (err) {
-    throw new ConvexError(`Webhook verification failed: ${err instanceof Error ? err.message : "Unknown error"}`);
+    throw new ConvexError(
+      `Webhook verification failed: ${err instanceof Error ? err.message : "Unknown error"}`
+    );
   }
 
   const { type, data } = payload;
@@ -63,8 +65,10 @@ export const handleClerkWebhook = httpAction(async (ctx, request) => {
     await ctx.runMutation(api.users.upsertUserFromClerk, {
       clerkId: data.id,
       email: data.email_addresses[0]?.email_address || "",
-      name: `${data.first_name || ""} ${data.last_name || ""}`.trim() || "Unknown",
-      emailVerified: data.email_addresses[0]?.verification.status === "verified",
+      name:
+        `${data.first_name || ""} ${data.last_name || ""}`.trim() || "Unknown",
+      emailVerified:
+        data.email_addresses[0]?.verification.status === "verified",
       updatedAt: new Date(data.updated_at).toISOString(),
     });
   } else {

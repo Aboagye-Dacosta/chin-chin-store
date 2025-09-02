@@ -13,7 +13,7 @@ export const getCart = query({
   args: { storeId: v.optional(v.id("stores")) },
   handler: async (ctx, args) => {
     if (!args.storeId) return null;
-    
+
     const identity = await ctx.auth.getUserIdentity();
     if (!identity) return null;
     const clerkId = identity.subject;
@@ -33,4 +33,3 @@ export const getCart = query({
     return cart;
   },
 });
-

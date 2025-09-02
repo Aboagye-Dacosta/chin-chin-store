@@ -5,7 +5,6 @@ import { action, internalAction } from "./_generated/server";
 import { v, ConvexError } from "convex/values";
 import { internal } from "./_generated/api";
 
-
 /**
  * Creates a subaccount for a vendor on Paystack.
  *
@@ -42,7 +41,9 @@ export const createSubaccount = internalAction({
     );
     const telcos = await telcoResponse.json();
     if (!telcos.status) {
-      throw new ConvexError("Failed to fetch supported telcos: " + telcos.message);
+      throw new ConvexError(
+        "Failed to fetch supported telcos: " + telcos.message
+      );
     }
 
     const telco = telcos.data.find((t: any) =>
@@ -82,4 +83,3 @@ export const createSubaccount = internalAction({
     });
   },
 });
-

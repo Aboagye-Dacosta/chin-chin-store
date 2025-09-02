@@ -3,7 +3,7 @@ import { useState, useCallback, useMemo, useEffect } from "react";
 type RowWithOptionalId<T> = T & { id?: string | number };
 
 export function useDataTableSelection<T extends Record<string, unknown>>(
-  filteredData: T[],
+  filteredData: T[]
 ) {
   const [selectedRows, setSelectedRows] = useState<Set<string>>(new Set());
   const [selectAll, setSelectAll] = useState(false);
@@ -15,7 +15,7 @@ export function useDataTableSelection<T extends Record<string, unknown>>(
 
   const filteredRowIds = useMemo(
     () => filteredData.map((row, index) => getRowId(row, index)),
-    [filteredData, getRowId],
+    [filteredData, getRowId]
   );
 
   const isAllSelected = useMemo(() => {
@@ -38,7 +38,7 @@ export function useDataTableSelection<T extends Record<string, unknown>>(
         setSelectedRows(new Set());
       }
     },
-    [filteredData, filteredRowIds],
+    [filteredData, filteredRowIds]
   );
 
   const handleRowSelect = useCallback(
@@ -56,7 +56,7 @@ export function useDataTableSelection<T extends Record<string, unknown>>(
         return newSelectedRows;
       });
     },
-    [filteredRowIds],
+    [filteredRowIds]
   );
 
   return {

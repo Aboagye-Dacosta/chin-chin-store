@@ -18,17 +18,14 @@ export default function SideBarItem({
     isActive = false;
   }
   return (
-    <Link
-      href={url}
-      className="flex w-full items-center justify-start "
-    >
+    <Link href={url} className="flex w-full items-center justify-start ">
       <Button
         variant={isActive ? "default" : "ghost"}
         size="icon"
         className="flex items-center justify-start w-full gap-2 px-3"
         asChild
       >
-       {children}
+        {children}
       </Button>
     </Link>
   );

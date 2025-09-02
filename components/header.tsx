@@ -36,7 +36,11 @@ export function Header() {
               </Authenticated>
               <Unauthenticated>
                 <Link href="/auth/signin">
-                  <Button className="w-full cursor-pointer" asChild variant={"ghost"}>
+                  <Button
+                    className="w-full cursor-pointer"
+                    asChild
+                    variant={"ghost"}
+                  >
                     Sign In
                   </Button>
                 </Link>

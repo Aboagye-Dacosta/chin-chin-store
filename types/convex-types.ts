@@ -60,22 +60,21 @@ export type ProductWithStoreAndCategory = Product & {
 };
 
 export type ProductByStore = Doc<"productsByStore"> & {
-    store: Store | null;
-    product: Product | null; 
-    category: Category | null;
+  store: Store | null;
+  product: Product | null;
+  category: Category | null;
 };
 
 export type OrderWithUserAndStore = Order & {
-    user: User | null;
-    vendor: User | null;
-    store: Store | null;
+  user: User | null;
+  vendor: User | null;
+  store: Store | null;
 };
 
 export type ProductWithStock = Product & {
-    stock: number | undefined;
+  stock: number | undefined;
 };
 
-export type Asset  = Doc<"assets"> & {
+export type Asset = Doc<"assets"> & {
   url: string | null;
-}
-
+};

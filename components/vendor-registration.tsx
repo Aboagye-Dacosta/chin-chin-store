@@ -1,50 +1,48 @@
-"use client"
+"use client";
 
-import { useState } from 'react'
-import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { Textarea } from '@/components/ui/textarea'
-import { toast } from 'sonner'
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { toast } from "sonner";
 
 export function VendorRegistration() {
-  const [loading, setLoading] = useState(false)
+  const [loading, setLoading] = useState(false);
 
   const [formData, setFormData] = useState({
-    email: '',
-    password: '',
-    name: '',
-    location: '',
-    phone: '',
-    description: ''
-  })
+    email: "",
+    password: "",
+    name: "",
+    location: "",
+    phone: "",
+    description: "",
+  });
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setLoading(true)
+    e.preventDefault();
+    setLoading(true);
 
     try {
-   
-
-      toast("Vendor registered successfully!")
+      toast("Vendor registered successfully!");
 
       // Reset form
       setFormData({
-        email: '',
-        password: '',
-        name: '',
-        location: '',
-        phone: '',
-        description: ''
-      })
+        email: "",
+        password: "",
+        name: "",
+        location: "",
+        phone: "",
+        description: "",
+      });
     } catch (error) {
-      console.error('Error registering vendor:', error)
-      toast("Error registering vendor")
+      console.error("Error registering vendor:", error);
+      toast("Error registering vendor");
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   return (
     <div className="space-y-6">
@@ -63,7 +61,9 @@ export function VendorRegistration() {
                   id="email"
                   type="email"
                   value={formData.email}
-                  onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
+                  onChange={(e) =>
+                    setFormData((prev) => ({ ...prev, email: e.target.value }))
+                  }
                   required
                 />
               </div>
@@ -74,7 +74,12 @@ export function VendorRegistration() {
                   id="password"
                   type="password"
                   value={formData.password}
-                  onChange={(e) => setFormData(prev => ({ ...prev, password: e.target.value }))}
+                  onChange={(e) =>
+                    setFormData((prev) => ({
+                      ...prev,
+                      password: e.target.value,
+                    }))
+                  }
                   required
                   minLength={6}
                 />
@@ -86,7 +91,9 @@ export function VendorRegistration() {
               <Input
                 id="name"
                 value={formData.name}
-                onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
+                onChange={(e) =>
+                  setFormData((prev) => ({ ...prev, name: e.target.value }))
+                }
                 required
               />
             </div>
@@ -96,7 +103,9 @@ export function VendorRegistration() {
               <Input
                 id="location"
                 value={formData.location}
-                onChange={(e) => setFormData(prev => ({ ...prev, location: e.target.value }))}
+                onChange={(e) =>
+                  setFormData((prev) => ({ ...prev, location: e.target.value }))
+                }
                 required
               />
             </div>
@@ -107,7 +116,9 @@ export function VendorRegistration() {
                 id="phone"
                 type="tel"
                 value={formData.phone}
-                onChange={(e) => setFormData(prev => ({ ...prev, phone: e.target.value }))}
+                onChange={(e) =>
+                  setFormData((prev) => ({ ...prev, phone: e.target.value }))
+                }
                 required
               />
             </div>
@@ -117,17 +128,22 @@ export function VendorRegistration() {
               <Textarea
                 id="description"
                 value={formData.description}
-                onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
+                onChange={(e) =>
+                  setFormData((prev) => ({
+                    ...prev,
+                    description: e.target.value,
+                  }))
+                }
                 placeholder="Brief description of the vendor..."
               />
             </div>
 
             <Button type="submit" className="w-full" disabled={loading}>
-              {loading ? 'Registering...' : 'Register Vendor'}
+              {loading ? "Registering..." : "Register Vendor"}
             </Button>
           </form>
         </CardContent>
       </Card>
     </div>
-  )
+  );
 }

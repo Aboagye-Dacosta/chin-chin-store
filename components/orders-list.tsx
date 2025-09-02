@@ -15,7 +15,7 @@ export function OrdersList() {
   const { orders: localOrders } = useLocalOrdersStore();
 
   const orders = useQuery(api.orders.getOrdersByStoreAndUser, {
-    storeId: (store?._id ?? "" ) as Id<"stores">,
+    storeId: (store?._id ?? "") as Id<"stores">,
     orders: localOrders,
   });
 
@@ -23,7 +23,7 @@ export function OrdersList() {
     return (
       <Flex direction="col" gap="md" className="max-w-md mx-auto py-2">
         {Array.from({ length: 3 }, (_, i) => (
-          <Skeleton className="h-[100px] w-full max-w-sm" key={i}/>
+          <Skeleton className="h-[100px] w-full max-w-sm" key={i} />
         ))}
       </Flex>
     );
@@ -34,7 +34,9 @@ export function OrdersList() {
       <div className="flex flex-col items-center justify-center h-[400px] text-gray-500 dark:text-gray-400">
         <PackageIcon className="h-16 w-16 mb-4" />
         <p className="text-xl font-semibold">No orders found.</p>
-        <p className="text-sm">Looks like you haven&apos;t placed any orders yet.</p>
+        <p className="text-sm">
+          Looks like you haven&apos;t placed any orders yet.
+        </p>
       </div>
     );
   }

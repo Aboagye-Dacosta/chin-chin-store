@@ -49,7 +49,10 @@ export const ProductsTableActions = ({ row }: { row: Product }) => {
           <DropdownMenuItem onClick={() => setOpenUpdateDialog(true)}>
             Edit
           </DropdownMenuItem>
-          <DropdownMenuItem onClick={() => setOpenDeleteDialog(true)} disabled={isRemoving}>
+          <DropdownMenuItem
+            onClick={() => setOpenDeleteDialog(true)}
+            disabled={isRemoving}
+          >
             Delete
           </DropdownMenuItem>
         </DropdownMenuContent>

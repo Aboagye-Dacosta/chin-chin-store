@@ -1,4 +1,4 @@
-export const PRODUCT_PACKAGING ={
-    CAN: "Can",
-    BAG: "Bag"
-}
+export const PRODUCT_PACKAGING = {
+  CAN: "Can",
+  BAG: "Bag",
+};

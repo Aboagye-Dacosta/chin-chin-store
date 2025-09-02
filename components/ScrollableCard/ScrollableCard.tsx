@@ -47,7 +47,7 @@ export function ScrollableCard({
       const hasChanged = Object.keys(newState).some(
         (key) =>
           newState[key as keyof ScrollState] !==
-          prevState[key as keyof ScrollState],
+          prevState[key as keyof ScrollState]
       );
       return hasChanged ? newState : prevState;
     });
@@ -95,7 +95,7 @@ export function ScrollableCard({
         behavior: "smooth",
       });
     },
-    [scrollStep],
+    [scrollStep]
   );
 
   const scrollToEdge = useCallback((edge: "start" | "end") => {
@@ -129,7 +129,7 @@ export function ScrollableCard({
         handler();
       }
     },
-    [scroll, scrollToEdge],
+    [scroll, scrollToEdge]
   );
 
   const ScrollButton = ({
@@ -157,7 +157,7 @@ export function ScrollableCard({
         size="sm"
         className={cn(
           "absolute z-5 h-[32px] w-[32px] p-0 bg-background/80 backdrop-blur-sm border shadow-sm hover:bg-background/90 transition-opacity",
-          position,
+          position
         )}
         onClick={() => scroll(direction)}
         aria-label={`Scroll ${direction}`}

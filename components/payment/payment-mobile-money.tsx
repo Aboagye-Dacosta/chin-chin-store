@@ -1,9 +1,13 @@
-import { NETWORK_LABELS, NetworkCode } from "@/constants/payment-constants"
-import { Input } from "../ui/input"
-import { Label } from "../ui/label"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select"
-
-
+import { NETWORK_LABELS, NetworkCode } from "@/constants/payment-constants";
+import { Input } from "../ui/input";
+import { Label } from "../ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "../ui/select";
 
 export const MobileMoneyFields = ({
   phone,
@@ -13,12 +17,12 @@ export const MobileMoneyFields = ({
   onNetworkChange,
   errors,
 }: {
-  phone: string
-  network?: NetworkCode
-  networkOptions: NetworkCode[]
-  onPhoneChange: (phone: string) => void
-  onNetworkChange: (network: NetworkCode) => void
-  errors: { phone?: string; network?: string }
+  phone: string;
+  network?: NetworkCode;
+  networkOptions: NetworkCode[];
+  onPhoneChange: (phone: string) => void;
+  onNetworkChange: (network: NetworkCode) => void;
+  errors: { phone?: string; network?: string };
 }) => (
   <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
     <div className="space-y-2">
@@ -46,7 +50,9 @@ export const MobileMoneyFields = ({
           ))}
         </SelectContent>
       </Select>
-      {errors.network && <p className="text-xs text-red-500">{errors.network}</p>}
+      {errors.network && (
+        <p className="text-xs text-red-500">{errors.network}</p>
+      )}
     </div>
   </div>
-)
+);

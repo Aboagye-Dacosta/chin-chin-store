@@ -12,4 +12,4 @@ export const DisplayUserField = ({
   const user = useQuery(api.users.getUser, { userId });
   return <>{user?.[field]}</>;
 };
-// 
+//

@@ -61,7 +61,10 @@ export const OrderSummary = memo(
             </div>
 
             <Tooltip>
-              <TooltipTrigger className="w-full" onClick={handleProceedToCheckout}>
+              <TooltipTrigger
+                className="w-full"
+                onClick={handleProceedToCheckout}
+              >
                 <Button
                   className="w-full"
                   disabled={
@@ -89,29 +92,29 @@ export const OrderSummary = memo(
           </CardContent>
         </Card>
         {!isSignedIn && (
-            <Card className="w-full p-2 mt-4">
-              <CardContent className="space-y-2">
-                <CardDescription>
-                  Sign in before checkout if you want to persist your payments
-                  and track your order history and other features.
-                </CardDescription>
-                <Link href="/auth/signin">
-                  <Button
-                    className="w-full cursor-pointer"
-                    variant="outline"
-                    asChild
-                  >
-                    Sign In
-                  </Button>
+          <Card className="w-full p-2 mt-4">
+            <CardContent className="space-y-2">
+              <CardDescription>
+                Sign in before checkout if you want to persist your payments and
+                track your order history and other features.
+              </CardDescription>
+              <Link href="/auth/signin">
+                <Button
+                  className="w-full cursor-pointer"
+                  variant="outline"
+                  asChild
+                >
+                  Sign In
+                </Button>
+              </Link>
+              <p className="text-xs text-muted-foreground text-center">
+                New customer?{" "}
+                <Link href="/auth/signup" className="underline">
+                  Create an account
                 </Link>
-                <p className="text-xs text-muted-foreground text-center">
-                  New customer?{" "}
-                  <Link href="/auth/signup" className="underline">
-                    Create an account
-                  </Link>
-                </p>
-              </CardContent>
-            </Card>
+              </p>
+            </CardContent>
+          </Card>
         )}
       </TooltipProvider>
     );

@@ -25,10 +25,14 @@ export const internalUpdateStatus = internalMutation({
     });
 
     if (args.status === "REFUNDED") {
-        const payment = await ctx.db.get(args.paymentId);
-        if (payment) {
-            await ctx.scheduler.runAfter(0, internal.orders.updateAnalyticsForRefund, { orderId: payment.orderId });
-        }
+      const payment = await ctx.db.get(args.paymentId);
+      if (payment) {
+        await ctx.scheduler.runAfter(
+          0,
+          internal.orders.updateAnalyticsForRefund,
+          { orderId: payment.orderId }
+        );
+      }
     }
   },
 });
@@ -52,10 +56,14 @@ export const updateStatus = mutation({
     });
 
     if (args.status === "REFUNDED") {
-        const payment = await ctx.db.get(args.paymentId);
-        if (payment) {
-            await ctx.scheduler.runAfter(0, internal.orders.updateAnalyticsForRefund, { orderId: payment.orderId });
-        }
+      const payment = await ctx.db.get(args.paymentId);
+      if (payment) {
+        await ctx.scheduler.runAfter(
+          0,
+          internal.orders.updateAnalyticsForRefund,
+          { orderId: payment.orderId }
+        );
+      }
     }
   },
 });
@@ -121,13 +129,13 @@ export const completePayment = internalMutation({
           })
         );
       }
-      if ( !identity) {
-         const orderItems = await ctx.db
-         .query("orderItems")
-         .withIndex("byOrder", (q) => q.eq("orderId", args.orderId))
-         .collect();
+      if (!identity) {
+        const orderItems = await ctx.db
+          .query("orderItems")
+          .withIndex("byOrder", (q) => q.eq("orderId", args.orderId))
+          .collect();
 
-         await Promise.all(
+        await Promise.all(
           orderItems.map(async (item) => {
             const productByStore = await ctx.db
               .query("productsByStore")
@@ -148,10 +156,11 @@ export const completePayment = internalMutation({
             return await ctx.db.delete(item._id);
           })
         );
-         
       }
 
-      await ctx.scheduler.runAfter(0, internal.orders.updateAnalytics, { orderId: args.orderId });
+      await ctx.scheduler.runAfter(0, internal.orders.updateAnalytics, {
+        orderId: args.orderId,
+      });
 
       return args.paymentId;
     } catch (error) {

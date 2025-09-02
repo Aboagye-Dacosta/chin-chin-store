@@ -11,7 +11,7 @@ import { decryptSecret } from "../paymentGateway";
  */
 export const paymentSettings = query({
   handler: async (ctx) => {
-    const ident
+    const ident;
     const settings = await ctx.db.query("paymentGatewaySettings").first();
 
     if (!settings) {

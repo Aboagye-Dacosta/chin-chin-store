@@ -45,7 +45,6 @@ export const AssetsList = () => {
     }
   };
 
-
   if (!assets) return null;
   if (assets.length === 0) return null;
 

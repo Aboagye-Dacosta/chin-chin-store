@@ -1,4 +1,3 @@
-
 /**
  * Functions for managing products.
  */
@@ -131,16 +130,16 @@ export const addProduct = mutation({
   handler: async (ctx, args) => {
     const now = new Date().toISOString();
     return await ctx.db.insert("products", {
-        title: args.title,
-        description: args.description,
-        price: args.price,
-        image: args.image,
-        model: args.model,
-        status: args.status,
-        packaging: args.packaging,
-        categoryId: args.categoryId,
-        createdAt: now,
-        updatedAt: now,
+      title: args.title,
+      description: args.description,
+      price: args.price,
+      image: args.image,
+      model: args.model,
+      status: args.status,
+      packaging: args.packaging,
+      categoryId: args.categoryId,
+      createdAt: now,
+      updatedAt: now,
     });
   },
 });
@@ -174,15 +173,15 @@ export const updateProduct = mutation({
   handler: async (ctx, args) => {
     const now = new Date().toISOString();
     await ctx.db.patch(args.productId, {
-        title: args.title,
-        description: args.description,
-        price: args.price,
-        image: args.image,
-        model: args.model,
-        status: args.status,
-        packaging: args.packaging,
-        categoryId: args.categoryId,
-        updatedAt: now,
+      title: args.title,
+      description: args.description,
+      price: args.price,
+      image: args.image,
+      model: args.model,
+      status: args.status,
+      packaging: args.packaging,
+      categoryId: args.categoryId,
+      updatedAt: now,
     });
   },
 });
@@ -200,8 +199,12 @@ export const deleteProduct = mutation({
   },
   handler: async (ctx, args) => {
     //check productBy Store
-    const productExistInStore = await ctx.db.query("productsByStore").withIndex("byProduct", (q) => q.eq("productId", args.productId)).first()
-    if (productExistInStore) throw new ConvexError("Product is used in a store")
+    const productExistInStore = await ctx.db
+      .query("productsByStore")
+      .withIndex("byProduct", (q) => q.eq("productId", args.productId))
+      .first();
+    if (productExistInStore)
+      throw new ConvexError("Product is used in a store");
     await ctx.db.delete(args.productId);
   },
 });

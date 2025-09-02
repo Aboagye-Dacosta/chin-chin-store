@@ -1,5 +1,5 @@
-export const PRODUCT_COLORS:{
-    [key: string]: string;
+export const PRODUCT_COLORS: {
+  [key: string]: string;
 } = {
   chocolate:
     "bg-[#8B4513] text-white border-[#8B4513] hover:bg-[#6E3610] hover:border-[#6E3610]",

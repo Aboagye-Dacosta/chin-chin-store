@@ -1,9 +1,13 @@
-
 /**
  * Functions for managing users and user-related data.
  */
 import { v, ConvexError } from "convex/values";
-import { internalQuery, mutation, query, internalMutation } from "../convex/_generated/server";
+import {
+  internalQuery,
+  mutation,
+  query,
+  internalMutation,
+} from "../convex/_generated/server";
 import { Role } from "./schema";
 import { internal } from "./_generated/api";
 
@@ -63,26 +67,26 @@ export const upsertUserFromClerk = mutation({
  * Updates user analytics data, specifically for new customer count.
  */
 export const updateUserAnalytics = internalMutation({
-    handler: async (ctx) => {
-        const today = new Date().toISOString().split("T")[0];
+  handler: async (ctx) => {
+    const today = new Date().toISOString().split("T")[0];
 
-        let userAnalytics = await ctx.db
-            .query("userAnalytics")
-            .withIndex("byDate", (q) => q.eq("date", today))
-            .first();
+    let userAnalytics = await ctx.db
+      .query("userAnalytics")
+      .withIndex("byDate", (q) => q.eq("date", today))
+      .first();
 
-        if (userAnalytics) {
-            await ctx.db.patch(userAnalytics._id, {
-                newCustomers: userAnalytics.newCustomers + 1,
-            });
-        } else {
-            await ctx.db.insert("userAnalytics", {
-                date: today,
-                newCustomers: 1,
-                activeUsers: 0, // Active users will be updated separately
-            });
-        }
-    },
+    if (userAnalytics) {
+      await ctx.db.patch(userAnalytics._id, {
+        newCustomers: userAnalytics.newCustomers + 1,
+      });
+    } else {
+      await ctx.db.insert("userAnalytics", {
+        date: today,
+        newCustomers: 1,
+        activeUsers: 0, // Active users will be updated separately
+      });
+    }
+  },
 });
 
 /**
@@ -233,4 +237,3 @@ export const addAddress = mutation({
     });
   },
 });
-

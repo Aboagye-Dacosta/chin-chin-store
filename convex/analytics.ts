@@ -27,56 +27,110 @@ export const getDashboardAnalytics = query({
       .query("salesAnalytics")
       .filter((q) =>
         q.and(
-          storeId ? q.eq(q.field("storeId"), storeId) : q.neq(q.field("storeId"), null),
+          storeId
+            ? q.eq(q.field("storeId"), storeId)
+            : q.neq(q.field("storeId"), null),
           q.gte(q.field("date"), fourteenDaysAgo.toISOString().split("T")[0])
         )
       )
       .collect();
 
     const last14DaysUsers = await ctx.db
-        .query("userAnalytics")
-        .filter((q) => q.gte(q.field("date"), fourteenDaysAgo.toISOString().split("T")[0]))
-        .collect();
+      .query("userAnalytics")
+      .filter((q) =>
+        q.gte(q.field("date"), fourteenDaysAgo.toISOString().split("T")[0])
+      )
+      .collect();
 
-    const currentWeekSales = last14DaysSales.filter(s => new Date(s.date) >= sevenDaysAgo);
-    const previousWeekSales = last14DaysSales.filter(s => new Date(s.date) < sevenDaysAgo);
+    const currentWeekSales = last14DaysSales.filter(
+      (s) => new Date(s.date) >= sevenDaysAgo
+    );
+    const previousWeekSales = last14DaysSales.filter(
+      (s) => new Date(s.date) < sevenDaysAgo
+    );
 
-    const currentWeekUsers = last14DaysUsers.filter(u => new Date(u.date) >= sevenDaysAgo);
-    const previousWeekUsers = last14DaysUsers.filter(u => new Date(u.date) < sevenDaysAgo);
+    const currentWeekUsers = last14DaysUsers.filter(
+      (u) => new Date(u.date) >= sevenDaysAgo
+    );
+    const previousWeekUsers = last14DaysUsers.filter(
+      (u) => new Date(u.date) < sevenDaysAgo
+    );
 
-    const totalRevenueCurrentWeek = currentWeekSales.reduce((acc, curr) => acc + curr.totalRevenue, 0);
-    const totalRevenuePreviousWeek = previousWeekSales.reduce((acc, curr) => acc + curr.totalRevenue, 0);
+    const totalRevenueCurrentWeek = currentWeekSales.reduce(
+      (acc, curr) => acc + curr.totalRevenue,
+      0
+    );
+    const totalRevenuePreviousWeek = previousWeekSales.reduce(
+      (acc, curr) => acc + curr.totalRevenue,
+      0
+    );
 
-    const totalOrdersCurrentWeek = currentWeekSales.reduce((acc, curr) => acc + curr.totalOrders, 0);
-    const totalOrdersPreviousWeek = previousWeekSales.reduce((acc, curr) => acc + curr.totalOrders, 0);
+    const totalOrdersCurrentWeek = currentWeekSales.reduce(
+      (acc, curr) => acc + curr.totalOrders,
+      0
+    );
+    const totalOrdersPreviousWeek = previousWeekSales.reduce(
+      (acc, curr) => acc + curr.totalOrders,
+      0
+    );
 
-    const newCustomersCurrentWeek = currentWeekUsers.reduce((acc, curr) => acc + curr.newCustomers, 0);
-    const newCustomersPreviousWeek = previousWeekUsers.reduce((acc, curr) => acc + curr.newCustomers, 0);
+    const newCustomersCurrentWeek = currentWeekUsers.reduce(
+      (acc, curr) => acc + curr.newCustomers,
+      0
+    );
+    const newCustomersPreviousWeek = previousWeekUsers.reduce(
+      (acc, curr) => acc + curr.newCustomers,
+      0
+    );
 
-    const revenueTrend = totalRevenueCurrentWeek >= totalRevenuePreviousWeek ? "up" : "down";
-    const customerTrend = newCustomersCurrentWeek >= newCustomersPreviousWeek ? "up" : "down";
-    const orderTrend = totalOrdersCurrentWeek >= totalOrdersPreviousWeek ? "up" : "down";
+    const revenueTrend =
+      totalRevenueCurrentWeek >= totalRevenuePreviousWeek ? "up" : "down";
+    const customerTrend =
+      newCustomersCurrentWeek >= newCustomersPreviousWeek ? "up" : "down";
+    const orderTrend =
+      totalOrdersCurrentWeek >= totalOrdersPreviousWeek ? "up" : "down";
 
     const calculatePercentageChange = (current: number, previous: number) => {
-        if (previous > 0) {
-            return ((current - previous) / previous) * 100;
-        }
-        return current > 0 ? 100 : 0;
-    }
+      if (previous > 0) {
+        return ((current - previous) / previous) * 100;
+      }
+      return current > 0 ? 100 : 0;
+    };
 
-    const revenuePercentageChange = calculatePercentageChange(totalRevenueCurrentWeek, totalRevenuePreviousWeek);
-    const customerPercentageChange = calculatePercentageChange(newCustomersCurrentWeek, newCustomersPreviousWeek);
-    const orderPercentageChange = calculatePercentageChange(totalOrdersCurrentWeek, totalOrdersPreviousWeek);
+    const revenuePercentageChange = calculatePercentageChange(
+      totalRevenueCurrentWeek,
+      totalRevenuePreviousWeek
+    );
+    const customerPercentageChange = calculatePercentageChange(
+      newCustomersCurrentWeek,
+      newCustomersPreviousWeek
+    );
+    const orderPercentageChange = calculatePercentageChange(
+      totalOrdersCurrentWeek,
+      totalOrdersPreviousWeek
+    );
 
     const totalRevenue = await ctx.db.query("salesAnalytics").collect();
     const newCustomers = await ctx.db.query("userAnalytics").collect();
     const totalOrders = await ctx.db.query("salesAnalytics").collect();
 
-    const totalRevenueAmount = totalRevenue.reduce((acc, curr) => acc + curr.totalRevenue, 0);
-    const totalNewCustomers = newCustomers.reduce((acc, curr) => acc + curr.newCustomers, 0);
-    const totalOrdersCount = totalOrders.reduce((acc, curr) => acc + curr.totalOrders, 0);
+    const totalRevenueAmount = totalRevenue.reduce(
+      (acc, curr) => acc + curr.totalRevenue,
+      0
+    );
+    const totalNewCustomers = newCustomers.reduce(
+      (acc, curr) => acc + curr.newCustomers,
+      0
+    );
+    const totalOrdersCount = totalOrders.reduce(
+      (acc, curr) => acc + curr.totalOrders,
+      0
+    );
 
-    const growthRate = calculatePercentageChange(totalRevenueCurrentWeek, totalRevenuePreviousWeek);
+    const growthRate = calculatePercentageChange(
+      totalRevenueCurrentWeek,
+      totalRevenuePreviousWeek
+    );
 
     return {
       totalRevenue: totalRevenueAmount,
@@ -122,12 +176,14 @@ export const getSalesAnalytics = query({
       .query("salesAnalytics")
       .filter((q) =>
         q.and(
-          storeId ? q.eq(q.field("storeId"), storeId) : q.neq(q.field("storeId"), null),
+          storeId
+            ? q.eq(q.field("storeId"), storeId)
+            : q.neq(q.field("storeId"), null),
           q.gte(q.field("date"), startDate.toISOString().split("T")[0])
         )
       )
       .collect();
-      
+
     return sales.map((s) => ({ date: s.date, sales: s.totalRevenue }));
   },
 });
@@ -171,22 +227,27 @@ export const getStorePerformance = query({
  * category, total sold, and total revenue.
  */
 export const getTopSellingProducts = query({
-    handler: async (ctx) => {
-        const productAnalytics = await ctx.db.query("productAnalytics").order("desc").collect();
+  handler: async (ctx) => {
+    const productAnalytics = await ctx.db
+      .query("productAnalytics")
+      .order("desc")
+      .collect();
 
-        const topSellingProducts = await Promise.all(
-            productAnalytics.map(async (pa) => {
-                const product = await ctx.db.get(pa.productId);
-                const category = product ? await ctx.db.get(product.categoryId) : null;
-                return {
-                    ...product,
-                    category: category?.name,
-                    totalSold: pa.totalSold,
-                    totalRevenue: pa.totalRevenue,
-                };
-            })
-        );
+    const topSellingProducts = await Promise.all(
+      productAnalytics.map(async (pa) => {
+        const product = await ctx.db.get(pa.productId);
+        const category = product ? await ctx.db.get(product.categoryId) : null;
+        return {
+          ...product,
+          category: category?.name,
+          totalSold: pa.totalSold,
+          totalRevenue: pa.totalRevenue,
+        };
+      })
+    );
 
-        return topSellingProducts.sort((a, b) => b.totalSold - a.totalSold).slice(0, 10);
-    }
+    return topSellingProducts
+      .sort((a, b) => b.totalSold - a.totalSold)
+      .slice(0, 10);
+  },
 });

@@ -195,11 +195,14 @@ export const createPaymentGatewaySetting = mutation({
     if (!identity) throw new ConvexError("Not authenticated");
     const admins = parseAdminEmails();
     const email = identity.email?.toLowerCase();
-    if (!email || !admins.includes(email)) throw new ConvexError("Unauthorized");
+    if (!email || !admins.includes(email))
+      throw new ConvexError("Unauthorized");
 
     const hasMoMo = args.supportedMethods.includes("MOBILE_MONEY");
     if (hasMoMo && args.supportedNetworks.length === 0) {
-      throw new ConvexError("MOBILE_MONEY requires at least one supported network");
+      throw new ConvexError(
+        "MOBILE_MONEY requires at least one supported network"
+      );
     }
     if (!hasMoMo && args.supportedNetworks.length > 0) {
       throw new ConvexError(
@@ -218,7 +221,9 @@ export const createPaymentGatewaySetting = mutation({
       )
       .first();
     if (dup)
-      throw new ConvexError("Gateway with this name and environment already exists");
+      throw new ConvexError(
+        "Gateway with this name and environment already exists"
+      );
 
     await sodium.ready;
     const keys = getKeys();
@@ -303,9 +308,7 @@ export const decryptSecret = async function (
  */
 export const getPaymentGatewaySettings = internalQuery({
   handler: async (ctx) => {
-    const settings = await ctx.db
-      .query("paymentGatewaySettings")
-      .first();
+    const settings = await ctx.db.query("paymentGatewaySettings").first();
 
     if (!settings) {
       throw new ConvexError("Payment gateway settings not found");
@@ -330,7 +333,6 @@ export const getPaymentGatewaySettings = internalQuery({
         )
       : undefined;
 
-
     return {
       ...rest,
       apiKey: decryptedApiKey,
@@ -339,7 +341,6 @@ export const getPaymentGatewaySettings = internalQuery({
     };
   },
 });
-
 
 // /**
 //  * Updates an existing payment gateway setting.
@@ -374,7 +375,7 @@ export const getPaymentGatewaySettings = internalQuery({
 //     if (!settings) {
 //       throw new ConvexError("Payment gateway settings not found");
 //     }
-    
+
 //     const identity = await ctx.auth.getUserIdentity();
 //     if (!identity) throw new ConvexError("Not authenticated");
 //     const admins = parseAdminEmails();
@@ -533,7 +534,6 @@ export const getPaymentGatewaySettings = internalQuery({
 //         )
 //       : undefined;
 
-
 //     return {
 //       ...rest,
 //       apiKey: decryptedApiKey,
@@ -542,7 +542,6 @@ export const getPaymentGatewaySettings = internalQuery({
 //     };
 //   },
 // });
-
 
 export const updatePaymentGatewaySetting = mutation({
   args: {
@@ -561,7 +560,7 @@ export const updatePaymentGatewaySetting = mutation({
     if (!settings) {
       throw new Error("Payment gateway settings not found");
     }
-    
+
     const identity = await ctx.auth.getUserIdentity();
     if (!identity) throw new Error("Not authenticated");
     const admins = parseAdminEmails();
@@ -621,4 +620,3 @@ export const updatePaymentGatewaySetting = mutation({
     });
   },
 });
-

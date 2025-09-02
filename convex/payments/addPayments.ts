@@ -2,7 +2,7 @@
  * Functions for adding payments.
  */
 import { internalMutation, mutation } from "../_generated/server";
-import { v , ConvexError} from "convex/values";
+import { v, ConvexError } from "convex/values";
 
 /**
  * Inserts a new payment record.
@@ -139,9 +139,9 @@ export const makePayOnDeliveryPayment = mutation({
       }
       if (!identity) {
         const orderItems = await ctx.db
-        .query("orderItems")
-        .withIndex("byOrder", (q) => q.eq("orderId", args.orderId))
-        .collect();
+          .query("orderItems")
+          .withIndex("byOrder", (q) => q.eq("orderId", args.orderId))
+          .collect();
 
         await Promise.all(
           orderItems.map(async (item) => {
@@ -162,13 +162,12 @@ export const makePayOnDeliveryPayment = mutation({
               quantity: productByStore.quantity - item.quantity,
               updatedAt: new Date().toISOString(),
             });
-
           })
         );
       }
 
       return payment;
-    } catch(error) {
+    } catch (error) {
       if (error instanceof ConvexError) {
         throw error;
       }

@@ -1,4 +1,3 @@
-
 /**
  * Functions for managing vendors.
  */
@@ -23,13 +22,17 @@ export const getAllVendors = query({
   handler: async (ctx) => {
     const vendors = await ctx.db.query("vendors").collect();
     const allVendorsWithName = await Promise.all(
-      vendors.filter((vendor) => vendor?.status ? vendor?.status === "ACTIVE" : true).map(async (vendor) => {
-        const user = await ctx.db.get(vendor.userId);
-        return {
-          ...vendor,
-          user,
-        };
-      })
+      vendors
+        .filter((vendor) =>
+          vendor?.status ? vendor?.status === "ACTIVE" : true
+        )
+        .map(async (vendor) => {
+          const user = await ctx.db.get(vendor.userId);
+          return {
+            ...vendor,
+            user,
+          };
+        })
     );
     return allVendorsWithName;
   },
@@ -94,37 +97,37 @@ export const addVendor = mutation({
     const identity = await ctx.auth.getUserIdentity();
     if (!identity) throw new ConvexError("Not authenticated");
     const clerkId = identity.subject;
-    
+
     const existingVendor = await ctx.db
-        .query("vendors")
-        .withIndex("byUser", (q) => q.eq("userId", args.userId))
-        .first();
+      .query("vendors")
+      .withIndex("byUser", (q) => q.eq("userId", args.userId))
+      .first();
 
     if (existingVendor) {
-        throw new ConvexError("Vendor already exists.");
+      throw new ConvexError("Vendor already exists.");
     }
 
     const vendorId = await ctx.db.insert("vendors", {
-        userId: args.userId,
-        storeId: args.storeId,
-        role: "VENDOR",
-        mobileMoney: args.mobileMoneyAccounts,
-        clerkId: clerkId,
-        status: "ACTIVE",
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
+      userId: args.userId,
+      storeId: args.storeId,
+      role: "VENDOR",
+      mobileMoney: args.mobileMoneyAccounts,
+      clerkId: clerkId,
+      status: "ACTIVE",
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
     });
 
     await ctx.db.patch(args.userId, {
-        role: "VENDOR",
+      role: "VENDOR",
     });
 
     await ctx.scheduler.runAfter(
-        0,
-        internal.createTransferRecipient.createSubaccount,
-        {
-            vendorId,
-        }
+      0,
+      internal.createTransferRecipient.createSubaccount,
+      {
+        vendorId,
+      }
     );
 
     return vendorId;
@@ -281,7 +284,6 @@ export const deleteVendor = mutation({
   },
 });
 
-
 /**
  * Updates a vendor's status.
  *
@@ -292,12 +294,12 @@ export const deleteVendor = mutation({
 export const updateVendorStatus = mutation({
   args: {
     vendorId: v.id("vendors"),
-    status: VendorStatus
+    status: VendorStatus,
   },
   async handler(ctx, args) {
     await ctx.db.patch(args.vendorId, {
       status: args.status,
-      updatedAt: new Date().toISOString()
-    })
+      updatedAt: new Date().toISOString(),
+    });
   },
-})
+});

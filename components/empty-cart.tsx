@@ -6,7 +6,6 @@ import { ShoppingBag } from "lucide-react";
 import { Container } from "@/components/ui/contaner";
 import { memo } from "react";
 
-
 export const EmptyCart = memo(() => (
   <div className="min-h-screen bg-background">
     <Container className="container mx-auto px-4 py-8">
@@ -24,4 +23,4 @@ export const EmptyCart = memo(() => (
   </div>
 ));
 
-EmptyCart.displayName = 'EmptyCart';
+EmptyCart.displayName = "EmptyCart";

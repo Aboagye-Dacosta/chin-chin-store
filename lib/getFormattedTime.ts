@@ -1,6 +1,6 @@
 export const getFormattedTime = (
   date: string,
-  options?: Intl.DateTimeFormatOptions,
+  options?: Intl.DateTimeFormatOptions
 ) => {
   return new Date(date).toLocaleTimeString("en-US", {
     hour: "2-digit",
