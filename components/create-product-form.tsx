@@ -1,6 +1,5 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import {
   Select,
   SelectContent,
@@ -8,7 +7,19 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
+import { api } from "@/convex/_generated/api";
+import { Id } from "@/convex/_generated/dataModel";
+import { handleStatus } from "@/lib/handle-status";
+import { cn } from "@/lib/utils";
+import { productSchema, ProductSchema } from "@/schema/product-schema";
+import { Product } from "@/types/convex-types";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useMutation, useQuery } from "convex/react";
+import { useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
+import { toast } from "sonner";
+import ProductImageModelPickerDialog from "./product-image-model-picker";
 import {
   Form,
   FormControl,
@@ -17,17 +28,6 @@ import {
   FormLabel,
   FormMessage,
 } from "./ui/form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useMemo, useState } from "react";
-import { productSchema, ProductSchema } from "@/schema/product-schema";
-import { cn } from "@/lib/utils";
-import { Product } from "@/types/convex-types";
-import { useMutation, useQuery } from "convex/react";
-import { api } from "@/convex/_generated/api";
-import { Id } from "@/convex/_generated/dataModel";
-import { handleStatus } from "@/lib/handle-status";
-import ProductImageModelPickerDialog from "./product-image-model-picker";
-import { toast } from "sonner";
 
 interface CreateProductFormProps {
   defaultProduct?: Product;
@@ -68,7 +68,7 @@ export function CreateProductForm({
       title: computedDefaultProduct?.title ?? "",
       description: computedDefaultProduct?.description ?? "",
       price: computedDefaultProduct?.price ?? 0,
-      image: computedDefaultProduct?.image ?? "",
+      image: computedDefaultProduct?.image,
       model: computedDefaultProduct?.model ?? "",
       status: computedDefaultProduct?.status ?? "Active",
       packaging: computedDefaultProduct?.packaging ?? "Bag",
@@ -85,8 +85,8 @@ export function CreateProductForm({
           title: data.title,
           description: data.description,
           price: data.price,
-          image: data.image as Id<"assets">,
-          model: data.model as Id<"assets">,
+          image: data.image,
+          model: data.model,
           status: data.status,
           packaging: data.packaging,
           categoryId: data.categoryId as Id<"categories">,
@@ -98,8 +98,8 @@ export function CreateProductForm({
           title: data.title,
           description: data.description,
           price: data.price,
-          image: data.image as Id<"assets">,
-          model: data.model as Id<"assets">,
+          image: data.image,
+          model: data.model,
           status: data.status,
           packaging: data.packaging,
           categoryId: data.categoryId as Id<"categories">,

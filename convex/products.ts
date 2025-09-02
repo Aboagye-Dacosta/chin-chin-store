@@ -1,8 +1,9 @@
 /**
  * Functions for managing products.
  */
-import { mutation, query } from "./_generated/server";
 import { ConvexError, v } from "convex/values";
+import { Id } from "./_generated/dataModel";
+import { mutation, query } from "./_generated/server";
 
 /**
  * Retrieves products for a specific store.
@@ -121,8 +122,8 @@ export const addProduct = mutation({
     title: v.string(),
     description: v.string(),
     price: v.float64(),
-    image: v.optional(v.id("assets")),
-    model: v.optional(v.id("assets")),
+    image: v.optional(v.string()),
+    model: v.optional(v.string()),
     status: v.union(v.literal("Active"), v.literal("Inactive")),
     packaging: v.union(v.literal("Bag"), v.literal("Can")),
     categoryId: v.id("categories"),
@@ -133,8 +134,8 @@ export const addProduct = mutation({
       title: args.title,
       description: args.description,
       price: args.price,
-      image: args.image,
-      model: args.model,
+      image: args?.image ? (args.image as Id<"assets">) : undefined,
+      model: args?.model ? (args?.model as Id<"assets">) : undefined,
       status: args.status,
       packaging: args.packaging,
       categoryId: args.categoryId,
@@ -164,8 +165,8 @@ export const updateProduct = mutation({
     title: v.string(),
     description: v.string(),
     price: v.float64(),
-    image: v.optional(v.id("assets")),
-    model: v.optional(v.id("assets")),
+    image: v.optional(v.string()),
+    model: v.optional(v.string()),
     status: v.union(v.literal("Active"), v.literal("Inactive")),
     packaging: v.union(v.literal("Bag"), v.literal("Can")),
     categoryId: v.id("categories"),
@@ -176,8 +177,8 @@ export const updateProduct = mutation({
       title: args.title,
       description: args.description,
       price: args.price,
-      image: args.image,
-      model: args.model,
+      image: args?.image ? (args.image as Id<"assets">) : undefined,
+      model: args?.model ? (args?.model as Id<"assets">) : undefined,
       status: args.status,
       packaging: args.packaging,
       categoryId: args.categoryId,

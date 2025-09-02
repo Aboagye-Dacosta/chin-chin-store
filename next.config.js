@@ -1,4 +1,5 @@
 /** @type {import('next').NextConfig} */
+const baseUrl = process.env.BASE_URL
 const nextConfig = {
   eslint: {
     ignoreDuringBuilds: true,
@@ -10,7 +11,7 @@ const nextConfig = {
     remotePatterns: [
       {
         protocol: "https",
-        hostname: "energetic-clownfish-28.convex.cloud",
+        hostname: baseUrl,
         pathname: "/**", // ✅ Fix here
       },
     ],
