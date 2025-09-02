@@ -4,22 +4,22 @@ import { Button } from "./ui/button";
 import { ShoppingCart } from "lucide-react";
 import Link from "next/link";
 import { useCart } from "@/hooks/use-cart";
-import { useMemo, useEffect, useRef, memo, useTransition } from "react";
+import { useMemo, useEffect, useRef, memo, useState, useCallback } from "react";
 import { CartBadge } from "./cart-badge";
 import { useAppStore } from "@/hooks/use-app-store";
 import { useAuth } from "@clerk/nextjs";
+import { handleStatus } from "@/lib/handle-status";
 
 export default function Cart() {
   const { syncCartToServer } = useCart();
   const { isSignedIn } = useAuth();
-  const [isPending, startTransition] = useTransition();
+  const [isPending, setIsPending] = useState(false);
 
   const hasSyncedRef = useRef(false);
   const lastAuthStateRef = useRef(isSignedIn);
   const syncCartToServerRef = useRef(syncCartToServer);
 
-  const { itemCount, isLoadingCartItems, selectedCart } =
-    useAppStore();
+  const { itemCount, isLoadingCartItems, selectedCart } = useAppStore();
 
   useEffect(() => {
     syncCartToServerRef.current = syncCartToServer;
@@ -30,17 +30,29 @@ export default function Cart() {
     [selectedCart?.storeId]
   );
 
+  const syncToServer = useCallback(async () => {
+    try {
+      setIsPending(true);
+      await syncCartToServerRef.current().finally(() => {
+        hasSyncedRef.current = true;
+      });
+      handleStatus({
+        message: "Cart synced successfully",
+        success: true,
+      });
+    } catch (error) {
+      handleStatus({ error });
+    } finally {
+      setIsPending(false);
+    }
+  }, [syncCartToServerRef]);
+
   useEffect(() => {
     const justSignedIn = !lastAuthStateRef.current && isSignedIn;
 
     if (isSignedIn && (!hasSyncedRef.current || justSignedIn)) {
       if (storeId) {
-        startTransition(
-          async () =>
-            await syncCartToServerRef.current().finally(() => {
-              hasSyncedRef.current = true;
-            })
-        );
+        syncToServer();
       }
     }
 

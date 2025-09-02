@@ -1,5 +1,9 @@
-import { DropdownMenu, DropdownMenuTrigger ,  DropdownMenuContent,
-    DropdownMenuItem,} from "../ui/dropdown-menu";
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuItem,
+} from "../ui/dropdown-menu";
 import { Button } from "../ui/button";
 import { MoreVertical } from "lucide-react";
 import { useState } from "react";
@@ -9,15 +13,30 @@ import { CreateProductForm } from "../create-product-form";
 import { Product } from "@/types/convex-types";
 import { useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
+import { Id } from "@/convex/_generated/dataModel";
+import { handleStatus } from "@/lib/handle-status";
+import { toast } from "sonner";
 
-export const ProductsTableActions = ({
-  row,
-}: {
-  row: Product;
-}) => {
+export const ProductsTableActions = ({ row }: { row: Product }) => {
   const [openUpdateDialog, setOpenUpdateDialog] = useState(false);
   const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
+  const [isRemoving, setIsRemoving] = useState(false);
   const deleteProduct = useMutation(api.products.deleteProduct);
+
+  const handleRemoveProduct = async (productId: Id<"products">) => {
+    try {
+      setIsRemoving(true);
+      await deleteProduct({
+        productId,
+      });
+      toast.success("Product successfully deleted");
+    } catch (error) {
+      handleStatus({ error });
+    } finally {
+      setIsRemoving(false);
+    }
+  };
+
   return (
     <div>
       <DropdownMenu>
@@ -30,7 +49,7 @@ export const ProductsTableActions = ({
           <DropdownMenuItem onClick={() => setOpenUpdateDialog(true)}>
             Edit
           </DropdownMenuItem>
-          <DropdownMenuItem onClick={() => setOpenDeleteDialog(true)}>
+          <DropdownMenuItem onClick={() => setOpenDeleteDialog(true)} disabled={isRemoving}>
             Delete
           </DropdownMenuItem>
         </DropdownMenuContent>
@@ -42,8 +61,9 @@ export const ProductsTableActions = ({
           title="Delete Product"
           description="Are you sure you want to delete this product?"
           actionText="Delete"
+          loading={isRemoving}
           cancelText="Cancel"
-          action={() => deleteProduct({productId: row._id})}
+          action={() => handleRemoveProduct(row._id)}
           cancel={() => setOpenDeleteDialog(false)}
         />
       )}
@@ -53,9 +73,7 @@ export const ProductsTableActions = ({
             <DialogTitle>Edit Product</DialogTitle>
           </DialogHeader>
           <DialogContent>
-            <CreateProductForm
-              defaultProduct={row}
-            />
+            <CreateProductForm defaultProduct={row} />
           </DialogContent>
         </Dialog>
       )}

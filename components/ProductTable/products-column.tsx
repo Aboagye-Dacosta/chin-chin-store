@@ -1,9 +1,9 @@
-import { Column } from "../DataTable";
-import { getFormattedTime } from "@/lib/getFormattedTime";
 import { displayMoney } from "@/lib/display-money";
-import Image from "next/image";
-import { ProductsTableActions } from "./products-table-actions";
+import { getFormattedTime } from "@/lib/getFormattedTime";
 import { ProductWithCategory } from "@/types/convex-types";
+import Image from "next/image";
+import { Column } from "../DataTable";
+import { ProductsTableActions } from "./products-table-actions";
 
 export const productsColumn: Column<Omit<ProductWithCategory, "stock">>[] = [
   {

@@ -13,6 +13,7 @@ import type {
   FilterApi,
   FunctionReference,
 } from "convex/server";
+import type * as analytics from "../analytics.js";
 import type * as assets from "../assets.js";
 import type * as cart from "../cart.js";
 import type * as cartItems from "../cartItems.js";
@@ -46,6 +47,7 @@ import type * as vendors from "../vendors.js";
  * ```
  */
 declare const fullApi: ApiFromModules<{
+  analytics: typeof analytics;
   assets: typeof assets;
   cart: typeof cart;
   cartItems: typeof cartItems;

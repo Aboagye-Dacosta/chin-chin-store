@@ -1,23 +1,24 @@
 "use client";
 
-import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Trash2 } from "lucide-react";
-import { useCallback, memo, useTransition, useMemo } from "react";
 import { useCart } from "@/hooks/use-cart";
 import { displayMoney } from "@/lib/display-money";
+import { handleStatus } from "@/lib/handle-status";
+import { cn } from "@/lib/utils";
 import { CartItem as CartItemType } from "@/types/convex-types";
-import { Flex } from "./ui/flex";
 import { TooltipProvider } from "@radix-ui/react-tooltip";
+import { Trash2 } from "lucide-react";
+import Image from "next/image";
+import { memo, useCallback, useMemo, useState } from "react";
 import { CartItemAction } from "./cart-item-action";
 import { Badge } from "./ui/badge";
-import { cn } from "@/lib/utils";
+import { Flex } from "./ui/flex";
 
 export const CartItem = memo(({ cartItem }: { cartItem: CartItemType }) => {
   const { removeItem, products, categories } = useCart();
 
-  const [isRemoving, startRemoveTransition] = useTransition();
+  const [isRemoving, setIsRemoving] = useState(false);
 
   const product = useMemo(
     () => products?.find((p) => p?._id === cartItem.productId),
@@ -29,26 +30,32 @@ export const CartItem = memo(({ cartItem }: { cartItem: CartItemType }) => {
     [categories, product?.categoryId]
   );
 
-  const handleRemove = useCallback(() => {
-    startRemoveTransition(async () => {
+  const handleRemove = useCallback(async () => {
+    try {
+      setIsRemoving(true);
       await removeItem(cartItem._id);
-    });
+      handleStatus({
+        message: "Cart item removed successfully",
+        success: true,
+      });
+    } catch (error) {
+      handleStatus({ error });
+    } finally {
+      setIsRemoving(false);
+    }
   }, [cartItem._id, removeItem]);
 
-  const isDisabled = useMemo(() => product?.stock === 0 || product?.status === "Inactive", [product]);
+  const isDisabled = useMemo(
+    () => product?.stock === 0 || product?.status === "Inactive",
+    [product]
+  );
 
   return (
     <TooltipProvider>
-      <Card
-        className={cn(
-          isDisabled && "opacity-50"
-        )}
-      >
+      <Card className={cn(isDisabled && "opacity-50")}>
         <CardContent className="p-6 relative">
           <div className="absolute -top-3 right-2 flex items-center gap-2">
-            {isDisabled && (
-              <Badge variant="destructive">Out of stock</Badge>
-            )}
+            {isDisabled && <Badge variant="destructive">Out of stock</Badge>}
             {product?.stock && product?.stock < cartItem.quantity && (
               <Badge variant="default">In stock: {product?.stock}</Badge>
             )}
@@ -77,14 +84,15 @@ export const CartItem = memo(({ cartItem }: { cartItem: CartItemType }) => {
             </div>
 
             <Flex direction="row" gap="md" align="center">
-              {
-                //conditions not to show actions
-                //1. out of stock
-                //2. product is inacative
-                //3.
-              }
-              {!isDisabled && (
-                <CartItemAction product={product!} cartItem={cartItem} />
+              {!isDisabled && product && (
+                <CartItemAction
+                  product={{
+                    ...(product as any),
+                    image: product.image ?? null,
+                    model: product.model ?? null,
+                  }}
+                  cartItem={cartItem}
+                />
               )}
 
               <Button

@@ -2,7 +2,7 @@
 
 import type React from "react";
 
-import { useRef, useState, useTransition } from "react";
+import { useRef, useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@/components/ui/button";
@@ -16,13 +16,18 @@ import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
 import { Switch } from "../ui/switch";
 import Image from "next/image";
+import { Asset } from "@/types/convex-types";
+import { toast } from "sonner";
 
-export function FileUploadForm() {
+export function FileUploadForm({
+  defaultAsset,
+}: Readonly<{ defaultAsset?: Asset }>) {
   const ref = useRef<HTMLInputElement>(null);
   const [preview, setPreview] = useState<string | null>(null);
-  const [isPending, startTransition] = useTransition();
+  const [isUploading, setIsUploading] = useState(false);
   const generateUploadUrl = useMutation(api.assets.generateUploadUrl);
   const addAsset = useMutation(api.assets.addAsset);
+  const updateAsset = useMutation(api.assets.updateAsset);
 
   const {
     register,
@@ -34,7 +39,8 @@ export function FileUploadForm() {
   } = useForm<FileUploadType>({
     resolver: zodResolver(fileUploadSchema),
     defaultValues: {
-      isModel: false,
+      isModel: defaultAsset?.isModel ?? false,
+      name: defaultAsset?.name ?? "",
     },
   });
 
@@ -66,35 +72,58 @@ export function FileUploadForm() {
 
   const onSubmit = async (data: FileUploadType) => {
     try {
-      startTransition(async () => {
-        const uploadUrl = await generateUploadUrl();
-        const response = await fetch(uploadUrl, {
-          method: "POST",
-          body: data.file,
-        });
+      setIsUploading(true);
+      const uploadUrl = await generateUploadUrl();
+      const response = await fetch(uploadUrl, {
+        method: "POST",
+        body: data.file,
+      });
 
-        if (!response.ok) {
-          throw new Error("Failed to upload file");
-        }
+      if (!response.ok) {
+        throw new Error("Failed to upload file");
+      }
 
-        const responseData = await response.json();
-        const { storageId } = responseData;
+      const responseData = await response.json();
+      const { storageId } = responseData;
 
-        await addAsset({
+      if (defaultAsset) {
+        await updateAsset({
+          id: defaultAsset._id,
           name: data.name,
           storageId: storageId as Id<"_storage">,
           isModel: data.isModel,
+          prevStorageId: defaultAsset.storageId,
         });
+        toast.success("File updated successfully");
+        return;
+      }
+
+      await addAsset({
+        name: data.name,
+        storageId: storageId as Id<"_storage">,
+        isModel: data.isModel,
       });
+
+      toast.success("File uploaded successfully");
 
       reset();
       setPreview(null);
 
       if (ref.current) ref.current.value = "";
-    } catch (error) {
-      console.error("Upload failed:", error);
+    } catch {
+      toast.error("Upload failed");
+    } finally {
+      setIsUploading(false);
     }
   };
+
+  useEffect(() => {
+    if (defaultAsset) {
+      setValue("name", defaultAsset.name);
+      setValue("isModel", defaultAsset.isModel);
+      setPreview(defaultAsset.url);
+    }
+  }, [defaultAsset]);
 
   return (
     <Card className="w-full border-none shadow-none">
@@ -134,21 +163,23 @@ export function FileUploadForm() {
             )}
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="isModel">Is Model</Label>
-            <Switch
-              checked={watch("isModel")}
-              onCheckedChange={(value) => {
-                setValue("isModel", value as unknown as boolean);
-              }}
-              className={errors.isModel ? "border-destructive" : ""}
-            />
-            {errors.isModel && (
-              <p className="text-sm text-destructive">
-                {errors.isModel.message}
-              </p>
-            )}
-          </div>
+          {!defaultAsset && (
+            <div className="space-y-2">
+              <Label htmlFor="isModel">Is Model</Label>
+              <Switch
+                checked={watch("isModel")}
+                onCheckedChange={(value) => {
+                  setValue("isModel", value as unknown as boolean);
+                }}
+                className={errors.isModel ? "border-destructive" : ""}
+              />
+              {errors.isModel && (
+                <p className="text-sm text-destructive">
+                  {errors.isModel.message}
+                </p>
+              )}
+            </div>
+          )}
 
           {selectedFile && (
             <div className="space-y-2">
@@ -197,8 +228,8 @@ export function FileUploadForm() {
           <Button
             type="submit"
             className="w-full"
-            disabled={isPending}
-            loading={isPending}
+            disabled={isUploading}
+            loading={isUploading}
           >
             Upload File
           </Button>

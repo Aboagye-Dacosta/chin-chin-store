@@ -3,7 +3,7 @@ import { Inter } from "next/font/google";
 import { Toaster } from "sonner";
 import { Provider } from "@/provider";
 import { AppThemeFloatingActionButton } from "@/components/app-theme-floating-action-button";
-import { ThemeProvider } from "next-themes";
+
 import { cn } from "@/lib/utils";
 
 const inter = Inter({ subsets: ["latin"] });
@@ -22,13 +22,11 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={cn(inter.className, "h-screen overflow-hidden")}>
-        <ThemeProvider>
-          <Provider>
+        <Provider>
             {children}
             <Toaster richColors />
             <AppThemeFloatingActionButton />
           </Provider>
-        </ThemeProvider>
       </body>
     </html>
   );

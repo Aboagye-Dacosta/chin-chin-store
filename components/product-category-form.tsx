@@ -1,6 +1,6 @@
 "use client";
 
-import { useTransition } from "react";
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { MapPin, Save } from "lucide-react";
@@ -33,6 +33,7 @@ import {
 } from "@/schema/product-category-schema";
 
 import { ColorPicker } from "./color-picker";
+import { toast } from "sonner";
 
 type Props = {
   title?: string;
@@ -47,7 +48,7 @@ export default function CategoryForm({
   defaultCategory,
   className,
 }: Readonly<Props>) {
-  const [isPending, startTransition] = useTransition();
+  const [isPending, setIsPending] = useState(false);
   const addCategory = useMutation(api.categories.addCategory);
 
   const form = useForm<ProductCategorySchemaType>({
@@ -61,20 +62,19 @@ export default function CategoryForm({
 
   const isEditing = !!defaultCategory;
 
-  const onSubmit = (values: ProductCategorySchemaType) => {
-    startTransition(async () => {
-      const response = await addCategory({
+  const onSubmit = async (values: ProductCategorySchemaType) => {
+    try {
+      setIsPending(true);
+      await addCategory({
         name: values.name.trim().toLowerCase(),
         color: values.color,
       });
-      if (response.success) {
-        form.reset({
-          name: "",
-          color: "#000000",
-        });
-      }
-      handleStatus(response);
-    });
+      toast.success("Category added successfully");
+    } catch (error) {
+      handleStatus({ error });
+    } finally {
+      setIsPending(false);
+    }
   };
 
   return (

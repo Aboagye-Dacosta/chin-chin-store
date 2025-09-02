@@ -1,6 +1,6 @@
 "use client";
 
-import { memo, useTransition } from "react";
+import { memo, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import type { z } from "zod";
@@ -52,38 +52,65 @@ interface VendorFormProps {
 
 export const VendorForm = memo(
   ({ mode = "create", initialData }: Readonly<VendorFormProps>) => {
-    const [isPending, startTransition] = useTransition();
+    const [isPending, setIsPending] = useState(false);
     const isUpdateMode = mode === "update";
 
     const users = useQuery(api.users.getAllUsers);
     const stores = useQuery(api.stores.getStores);
     const addVendorMutation = useMutation(api.vendors.addVendor);
+    const updateVendor = useMutation(api.vendors.updateVendor);
 
     const form = useForm<CreateVendorFormData>({
       resolver: zodResolver(createVendorSchema),
       defaultValues: {
         userId: initialData?.userId || "",
         storeId: initialData?.storeId || "",
+        mobileMoneyAccounts: {
+          provider: initialData?.mobileMoney.provider as MobileMoneyProvider,
+          phoneNumber: initialData?.mobileMoney.phoneNumber,
+        },
       },
     });
 
     const handleSubmit = async (data: CreateVendorFormData) => {
-      startTransition(async () => {
-        const response = await addVendorMutation({
-          userId: data.userId as Id<"users">,
-          storeId: data.storeId as Id<"stores">,
-          mobileMoneyAccounts: {
-            provider: data.mobileMoneyAccounts.provider as MobileMoneyProvider,
-            phoneNumber: data.mobileMoneyAccounts.phoneNumber,
-          },
-        });
+      try {
+        if (mode === "update") {
+          await updateVendor({
+            vendorId: initialData?._id as Id<"vendors">,
+            userId: data.userId as Id<"users">,
+            storeId: data.storeId as Id<"stores">,
+            mobileMoneyAccounts: {
+              provider: data.mobileMoneyAccounts
+                .provider as MobileMoneyProvider,
+              phoneNumber: data.mobileMoneyAccounts.phoneNumber,
+            },
+          });
 
-        if (response?.success) {
-          form.reset();
+          handleStatus({
+            message: "Vendor is updated successfully",
+            success: true,
+          });
+        } else {
+          await addVendorMutation({
+            userId: data.userId as Id<"users">,
+            storeId: data.storeId as Id<"stores">,
+            mobileMoneyAccounts: {
+              provider: data.mobileMoneyAccounts
+                .provider as MobileMoneyProvider,
+              phoneNumber: data.mobileMoneyAccounts.phoneNumber,
+            },
+          });
+
+          handleStatus({
+            message: "Vendor is added successfully",
+            success: true,
+          });
         }
-
-        handleStatus(response!);
-      });
+      } catch (error) {
+        handleStatus({ error });
+      } finally {
+        setIsPending(false);
+      }
     };
 
     return (
@@ -253,7 +280,7 @@ export const VendorForm = memo(
 VendorForm.displayName = "VendorForm";
 
 export const UpdateVendorForm = memo(
-  ({ initialData }: Readonly<Omit<VendorFormProps, "mode">>) => {
+  ({ initialData }: { initialData: Vendor }) => {
     return <VendorForm mode="update" initialData={initialData} />;
   }
 );
@@ -265,4 +292,3 @@ export const CreateVendorForm = memo(() => {
 });
 
 CreateVendorForm.displayName = "CreateVendorForm";
-

@@ -1,6 +1,5 @@
 "use client";
 
-import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import {
@@ -10,18 +9,19 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { MenuIcon, Pencil, Plus, Trash, Trash2 } from "lucide-react";
-import { ProductsTable } from "./ProductTable/products-table";
 import { Flex } from "@/components/ui/flex";
-import { CreateProductForm } from "./create-product-form";
-import { CardHeaderFilters } from "./card-header-with-filters";
-import { useMutation, useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
+import { cn } from "@/lib/utils";
+import { useMutation, useQuery } from "convex/react";
+import { MenuIcon, Pencil, Plus, Trash, Trash2 } from "lucide-react";
+import { useState } from "react";
+import { CardHeaderFilters } from "./card-header-with-filters";
+import { ColorPicker } from "./color-picker";
+import { CreateProductForm } from "./create-product-form";
+import CategoryForm from "./product-category-form";
+import { ProductRow, ProductsTable } from "./ProductTable/products-table";
 import { ScrollableCard } from "./ScrollableCard";
 import { Separator } from "./ui/separator";
-import { cn } from "@/lib/utils";
-import CategoryForm from "./product-category-form";
-import { ColorPicker } from "./color-picker";
 
 export function ProductManagement() {
   const [showMore, setShowMore] = useState(false);
@@ -36,7 +36,7 @@ export function ProductManagement() {
   const [selectedRows, setSelectedRows] = useState<Set<string>>(new Set());
 
   return (
-    <Flex direction="col" gap="lg" className="w-full">
+    <Flex direction="col" gap="lg" className="w-full p-7">
       <Flex direction="row" justify="between" align="center" className="w-full">
         <Flex direction="row" gap="md" justify="between" align="center">
           <h1 className="text-3xl font-bold">Product Management</h1>
@@ -69,56 +69,60 @@ export function ProductManagement() {
           showMore ? "lg:grid-cols-3" : ""
         )}
       >
-        <Card className={cn("w-full", showMore ? "lg:col-span-2" : "")}>
-          <CardHeaderFilters
-            title="Products"
-            className="w-full"
-            filters={[
-              {
-                key: "category",
-                options:
-                  categories?.map((category) => ({
-                    value: category._id,
-                    label: category.name,
-                  })) ?? [],
-              },
-              {
-                key: "store",
-                options:
-                  stores?.map((store) => ({
-                    value: store._id,
-                    label: store.name,
-                  })) ?? [],
-              },
-            ]}
-            onFilterChange={(filters) => {
-              setFilters(filters);
-            }}
-            initialValues={filters}
-            selectedIds={Array.from(selectedRows)}
-            groupActions={[
-              {
-                key: "edit",
-                label: "Edit",
-                icon: Pencil,
-                
-              },
-              {
-                key: "delete",
-                label: "Delete",
-                icon: Trash,
-               
-              },
-            ]}
-          />
-          <CardContent>
-            <ProductsTable
-              products={products ?? []}
-              filterBy={filters}
-              onRowSelect={setSelectedRows}
+        <div className="col-span-2">
+          <Card className={cn("w-full", showMore ? "lg:col-span-2" : "")}>
+            <CardHeaderFilters
+              title="Products"
+              className="w-full"
+              filters={[
+                {
+                  key: "category",
+                  options:
+                    categories?.map((category) => ({
+                      value: category._id,
+                      label: category.name,
+                    })) ?? [],
+                },
+                {
+                  key: "store",
+                  options:
+                    stores?.map((store) => ({
+                      value: store._id,
+                      label: store.name,
+                    })) ?? [],
+                },
+              ]}
+              onFilterChange={(filters) => {
+                setFilters(filters);
+              }}
+              initialValues={filters}
+              selectedIds={Array.from(selectedRows)}
+              groupActions={[
+                {
+                  key: "edit",
+                  label: "Edit",
+                  icon: Pencil,
+                },
+                {
+                  key: "delete",
+                  label: "Delete",
+                  icon: Trash,
+                },
+              ]}
             />
-          </CardContent>
-        </Card>
+            <CardContent>
+              <ProductsTable
+                products={(products ?? []).map((p) => ({
+                  ...p,
+                  image: p.image ?? null,
+                  model: p.model ?? null,
+                }))}
+                filterBy={filters}
+                onRowSelect={setSelectedRows}
+              />
+            </CardContent>
+          </Card>
+        </div>
         {showMore && (
           <div className="col-span-1 w-full">
             <Flex direction="col" gap="md" className="w-full">

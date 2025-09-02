@@ -6,9 +6,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "./ui/select";
-import { useEffect, useMemo, useTransition, memo, useState } from "react";
-import { toast } from "sonner";
-import { LoadingSpinner } from "./ui/loading-spinner";
+import { useEffect, useMemo, memo, useState } from "react";
 import { useStoreStore } from "@/store/use-store-store";
 import { useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
@@ -18,19 +16,15 @@ import { StoreDetailCard } from "./store-detail-card";
 import { Label } from "./ui/label";
 
 export const LocationSelector = memo(() => {
-  const [isPending, startTransition] = useTransition();
   const [open, setOpen] = useState(false);
   const { setStore, store } = useStoreStore();
-  const stores = useQuery(api.stores.getStores);
+  const stores = useQuery(api.stores.getUserStores);
 
-  const handleSelectLocation = (id: string) => {
-    startTransition(() => {
-      const selectedStore = stores?.find((store) => store._id === id);
-      if (selectedStore) {
-        setStore(selectedStore);
-      }
-      toast.success("Location updated successfully");
-    });
+  const handleSelectLocation = async (id: string) => {
+    const selectedStore = stores?.find((store) => store._id === id);
+    if (selectedStore) {
+      setStore(selectedStore);
+    }
   };
 
   const defaultStore = useMemo(() => stores?.at(0), [stores]);
@@ -45,13 +39,8 @@ export const LocationSelector = memo(() => {
     <>
       <Flex direction="row" gap="sm" align="center">
         <Label htmlFor="store">Store</Label>
-        <Select
-          onValueChange={handleSelectLocation}
-          value={store?._id}
-          disabled={isPending}
-        >
+        <Select onValueChange={handleSelectLocation} value={store?._id}>
           <SelectTrigger id="store">
-            {isPending && <LoadingSpinner className="!w-4 !h-4" />}
             <SelectValue placeholder="choose you location" />
           </SelectTrigger>
           <SelectContent>
@@ -62,9 +51,6 @@ export const LocationSelector = memo(() => {
             ))}
           </SelectContent>
         </Select>
-        {/* <Button variant="ghost" size="icon" onClick={() => setOpen(true)}>
-              <Info />
-            </Button> */}
       </Flex>
 
       <Dialog open={open} onOpenChange={setOpen}>

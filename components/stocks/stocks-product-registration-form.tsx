@@ -27,6 +27,7 @@ import { Button } from "../ui/button";
 import { Flex } from "../ui/flex";
 import { Id } from "@/convex/_generated/dataModel";
 import { toast } from "sonner";
+import { handleStatus } from "@/lib/handle-status";
 
 export default function StocksProductRegistrationForm({
   initialValues,
@@ -54,48 +55,44 @@ export default function StocksProductRegistrationForm({
     },
   });
 
-  const saveProduct = useCallback(
-    async (data: ProductByStoreType) => {
-      setIsSubmitting(true);
-      try {
-        if (initialValues) {
-          await updateProductQuantity({
-            storeId: data.storeId as Id<"stores">,
-            productId: data.productId as Id<"products">,
-            quantity: data.quantity,
-          });
-        } else {
-          await addProductToStore({
-            storeId: data.storeId as Id<"stores">,
-            productId: data.productId as Id<"products">,
-            quantity: data.quantity,
-          });
-        }
-      } catch (error) {
-        toast.error((error as Error)?.message);
-      }
-
-      setIsSubmitting(false);
-    },
-    [ setIsSubmitting, initialValues, addProductToStore, updateProductQuantity]
-  );
-
   const {
     formState: { isDirty, isValid },
   } = form;
 
-  const onSubmit = (values: ProductByStoreType) => {
+  const onSubmit = async (data: ProductByStoreType) => {
     if (!isDirty || !isValid) {
       return;
     }
-    saveProduct(values);
+    setIsSubmitting(true);
+    try {
+      if (initialValues) {
+        await updateProductQuantity({
+          storeId: data.storeId as Id<"stores">,
+          productId: data.productId as Id<"products">,
+          quantity: data.quantity,
+        });
+
+        toast.success("Product updated successfully");
+      } else {
+        await addProductToStore({
+          storeId: data.storeId as Id<"stores">,
+          productId: data.productId as Id<"products">,
+          quantity: data.quantity,
+        });
+        toast.success("Product added successfully");
+      }
+    } catch (error) {
+      handleStatus({ error });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   useEffect(() => {
     if (currentUser?.role === "VENDOR") {
       form.setValue("storeId", verdor?.storeId ?? "");
     }
-  }, [currentUser, verdor,form]);
+  }, [currentUser, verdor, form]);
 
   return (
     <div className="max-w-md w-full flex flex-col gap-3">
@@ -160,6 +157,7 @@ export default function StocksProductRegistrationForm({
                     <Input
                       {...field}
                       onChange={(e) => field.onChange(Number(e.target.value))}
+                      type="number"
                     />
                   </FormControl>
                   <FormMessage />

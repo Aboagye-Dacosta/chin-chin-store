@@ -6,8 +6,8 @@ export const productSchema = z.object({
     .string()
     .min(10, "Description must be at least 10 characters long"),
   price: z.number().min(0, "Price must be a positive number"),
-  image: z.string().url("Image must be a valid URL").optional(),
-  model: z.string().url("Model must be a valid URL").optional(),
+  image: z.string().min(1, "Image is required"),
+  model: z.string().optional(),
   status: z.enum(["Active", "Inactive"]).default("Active"),
   packaging: z.enum(["Bag", "Can"]).default("Bag"),
   categoryId: z.string().min(1, "Category ID is required"),

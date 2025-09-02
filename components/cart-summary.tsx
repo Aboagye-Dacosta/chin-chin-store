@@ -69,7 +69,7 @@ export function CartSummary({ deliveryPrice = 0 }: Readonly<CartSummaryProps>) {
                         </Badge>
                       </div>
                       <Flex direction="col" gap="md" className="flex-1 min-w-0">
-                        <h4 className="hidden md:block text-md font-medium text-gray-900 truncate">
+                        <h4 className="hidden md:block text-md font-medium truncate">
                           {product?.title}
                         </h4>
                         <Flex

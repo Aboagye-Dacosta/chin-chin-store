@@ -10,6 +10,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { Button } from "@/components/ui/button";
 
 interface CustomAlertDialogProps {
   open: boolean;
@@ -18,6 +19,7 @@ interface CustomAlertDialogProps {
   description: string;
   actionText: string;
   cancelText: string;
+  loading?: boolean;
   action: () => void;
   cancel: () => void;
 }
@@ -29,21 +31,26 @@ export const CustomAlertDialog = ({
   description,
   actionText,
   cancelText,
+  loading,
   action,
   cancel,
 }: Readonly<CustomAlertDialogProps>) => {
   return (
-    <AlertDialog open={open} onOpenChange={onOpenChange} >
-      <AlertDialogContent >
+    <AlertDialog open={open} onOpenChange={onOpenChange}>
+      <AlertDialogContent>
         <AlertDialogHeader>
           <AlertDialogTitle>{title}</AlertDialogTitle>
-          <AlertDialogDescription>
-            {description}
-          </AlertDialogDescription>
+          <AlertDialogDescription>{description}</AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel onClick={cancel}>{cancelText}</AlertDialogCancel>
-          <AlertDialogAction onClick={action}>{actionText}</AlertDialogAction>
+          <AlertDialogCancel onClick={cancel} disabled={loading}>
+            {cancelText}
+          </AlertDialogCancel>
+          <AlertDialogAction onClick={action} disabled={loading}>
+            <Button asChild loading={loading} disabled={loading}>
+              {actionText}
+            </Button>
+          </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>

@@ -1,6 +1,16 @@
-import { internalMutation, mutation, query } from "./_generated/server";
+/**
+ * Functions for managing cart items.
+ */
 import { v } from "convex/values";
+import { mutation, query } from "./_generated/server";
 
+/**
+ * Retrieves the items in a cart.
+ *
+ * @param {object} args - The arguments for the query.
+ * @param {string} [args.cartId] - The ID of the cart to retrieve the items for.
+ * @returns {Array<object>} An array of cart item objects.
+ */
 export const getCartItems = query({
   args: {
     cartId: v.optional(v.id("carts")),
@@ -15,6 +25,18 @@ export const getCartItems = query({
   },
 });
 
+/**
+ * Adds an item to a cart. If the cart does not exist, it will be created.
+ * If the item already exists in the cart, its quantity will be updated.
+ *
+ * @param {object} args - The arguments for the mutation.
+ * @param {string} args.storeId - The ID of the store the cart belongs to.
+ * @param {string} [args.cartId] - The ID of the cart to add the item to.
+ * @param {string} args.productId - The ID of the product to add to the cart.
+ * @param {number} args.quantity - The quantity of the product to add.
+ * @param {number} args.productPrice - The price of the product.
+ * @returns {string|null} The ID of the new or existing cart item, or null if the user is not authenticated.
+ */
 export const addCartItem = mutation({
   args: {
     storeId: v.id("stores"),
@@ -27,71 +49,70 @@ export const addCartItem = mutation({
     ctx,
     { storeId, cartId, productId, quantity, productPrice }
   ) => {
-    let newCartId = cartId;
-    const now = new Date().toISOString();
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) return null;
 
-    if (!cartId) {
-      const identity = await ctx.auth.getUserIdentity();
-      if (!identity) return null;
-      const clerkId = identity.subject;
+    const now = new Date().toISOString();
+    let cartIdToUpdate = cartId;
+
+    if (!cartIdToUpdate) {
       const user = await ctx.db
         .query("users")
-        .withIndex("byClerkId", (q) => q.eq("clerkId", clerkId))
+        .withIndex("byClerkId", (q) => q.eq("clerkId", identity.subject))
         .first();
 
       if (!user) return null;
 
-      const cart = await ctx.db
+      const existingCart = await ctx.db
         .query("carts")
-        .withIndex("byUser", (q) => q.eq("userId", user._id))
-        .filter((q) => q.eq("storeId", storeId as string))
+        .withIndex("byUserAndStore", (q) => q.eq("userId", user._id).eq("storeId", storeId))
         .first();
 
-      if (!cart) {
-        newCartId = await ctx.db.insert("carts", {
+      if (existingCart) {
+        cartIdToUpdate = existingCart._id;
+      } else {
+        cartIdToUpdate = await ctx.db.insert("carts", {
           userId: user._id,
           storeId,
           status: "ACTIVE",
           createdAt: now,
           updatedAt: now,
         });
-
-        return await ctx.db.insert("cartItems", {
-          cartId: newCartId,
-          productId,
-          quantity,
-          total: quantity * productPrice,
-          createdAt: now,
-          updatedAt: now,
-        });
       }
     }
 
-    const existing = await ctx.db
+    const existingCartItem = await ctx.db
       .query("cartItems")
       .withIndex("byCartAndProduct", (q) =>
-        q.eq("cartId", newCartId!).eq("productId", productId)
+        q.eq("cartId", cartIdToUpdate).eq("productId", productId)
       )
       .first();
 
-    if (existing) {
-      return await ctx.db.patch(existing._id, {
-        quantity: existing.quantity + quantity,
-        total: (existing.quantity + quantity) * productPrice,
+    if (existingCartItem) {
+      const newQuantity = existingCartItem.quantity + quantity;
+      return await ctx.db.patch(existingCartItem._id, {
+        quantity: newQuantity,
+        total: newQuantity * productPrice,
       });
     }
 
     return await ctx.db.insert("cartItems", {
-      cartId: newCartId!,
+      cartId: cartIdToUpdate,
       productId,
       quantity,
       total: quantity * productPrice,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
+      createdAt: now,
+      updatedAt: now,
     });
   },
 });
 
+/**
+ * Removes an item from a cart.
+ *
+ * @param {object} args - The arguments for the mutation.
+ * @param {string} args.id - The ID of the cart item to remove.
+ */
 export const removeCartItem = mutation({
   args: {
     id: v.id("cartItems"),
@@ -101,6 +122,14 @@ export const removeCartItem = mutation({
   },
 });
 
+/**
+ * Updates the quantity of an item in a cart.
+ *
+ * @param {object} args - The arguments for the mutation.
+ * @param {string} args.id - The ID of the cart item to update.
+ * @param {number} args.quantity - The new quantity of the item.
+ * @param {number} args.productPrice - The price of the product.
+ */
 export const updateCartItem = mutation({
   args: {
     id: v.id("cartItems"),

@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState, useTransition } from "react";
+import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { ShieldCheck, ArrowLeft, XCircle, RefreshCcw } from "lucide-react";
 
@@ -29,6 +29,7 @@ import { nanoid } from "nanoid";
 import { Flex } from "../ui/flex";
 import { useLocalOrdersStore } from "@/store/user-local-orders";
 import { useAuth } from "@clerk/nextjs";
+import { handleStatus } from "@/lib/handle-status";
 
 export default function PaymentPage() {
   const [error, setError] = useState<string | null>(null);
@@ -43,7 +44,7 @@ export default function PaymentPage() {
   const router = useRouter();
   const { order, clearTotal } = useOrderStore();
   const { store } = useStoreStore();
-  const [isPending, startTransition] = useTransition();
+  const [isPending, setIsPending] = useState(false);
 
   const currentUser = useQuery(api.users.getCurrentUser);
   const createOrder = useMutation(api.orders.createOrder);
@@ -58,107 +59,113 @@ export default function PaymentPage() {
   );
 
   const onSubmit = async () => {
-    startTransition(async () => {
-      try {
-        const orderResponse = await createOrder({
-          vendorId: order?.vendorId as Id<"vendors">,
-          deliveryAddressLabel: order?.deliveryAddressLabel ?? "",
-          deliveryNote: order?.deliveryNote ?? "",
-          amount: order?.total ?? 0,
-          userId: currentUser?._id,
-          name: order?.name,
-          email: order?.email,
-          storeId: store?._id as Id<"stores">,
-          trackingNumber: nanoid(),
-          method: paymentMethod,
-          items:
-            serverItems?.map((item) => ({
-              productId: item.productId,
-              quantity: item.quantity,
-            })) ?? [],
-          deliveryCharge: store?.deliveryCharge ?? 0,
-        });
+    try {
+      setIsPending(true);
+      const orderResponse = await createOrder({
+        vendorId: order?.vendorId as Id<"vendors">,
+        deliveryAddressLabel: order?.deliveryAddressLabel ?? "",
+        deliveryNote: order?.deliveryNote ?? "",
+        amount: order?.total ?? 0,
+        userId: currentUser?._id,
+        name: order?.name,
+        email: order?.email,
+        storeId: store?._id as Id<"stores">,
+        trackingNumber: nanoid(),
+        method: paymentMethod,
+        items:
+          serverItems?.map((item) => ({
+            productId: item.productId,
+            quantity: item.quantity,
+          })) ?? [],
+        deliveryCharge: store?.deliveryCharge ?? 0,
+      });
 
-        if (paymentMethod === "PAYMENT_ON_DELIVERY") {
-          try {
-            await makePayOnDelivery({
-              orderId: orderResponse,
-              amount: order?.total ?? 0,
-              cartId: cart?._id,
-              storeId: store?._id as Id<"stores">,
-            });
-            toast.success("Payment successful");
-            if (!isSignedIn) {
-              addOrder(orderResponse);
-              clearCart();
-            }
-            clearTotal();
-            router.push(`/orders/${orderResponse}`);
-          } catch (error) {
-            toast.error((error as Error)?.message);
-          }
-        }
-
-        if (paymentMethod === "MOBILE_MONEY") {
-          const paymentResponse = await triggerPaymentWithPaystack({
-            amount: order?.total ?? 0,
-            email: currentUser?.email ?? order?.email ?? "",
+      if (paymentMethod === "PAYMENT_ON_DELIVERY") {
+        try {
+          await makePayOnDelivery({
             orderId: orderResponse,
-            vendorId: order?.vendorId as Id<"vendors">,
-            callback_url: "",
+            amount: order?.total ?? 0,
+            cartId: cart?._id,
+            storeId: store?._id as Id<"stores">,
           });
-
-          const popup = new PaystackPop();
-          popup.resumeTransaction(paymentResponse.access_code, {
-            onSuccess: async (response) => {
-              if (response.status === "success") {
-                try {
-                  await validatePayment({
-                    orderId: orderResponse,
-                    reference: response.reference,
-                    paymentId: paymentResponse?.paymentId as Id<"payments">,
-                    vendorId: order?.vendorId as Id<"vendors">,
-                    cartId: cart?._id,
-                    storeId: store?._id as Id<"stores">,
-                  });
-                  toast.success("Payment successful");
-                  if (!isSignedIn) {
-                    addOrder(orderResponse);
-                    clearCart();
-                  }
-                  clearTotal();
-                  router.push(`/orders/${orderResponse}`);
-                } catch (error) {
-                  toast.error((error as Error)?.message);
-                  setError((error as Error)?.message);
-                }
-              } else {
-                toast.error("Payment failed");
-                setError(
-                  "Payment failed, please try again if it was not intentional"
-                );
-              }
-            },
-            onCancel: () => {
-              toast.error("Payment cancelled");
-              setError(
-                "Payment cancelled, please try again if it was not intentional"
-              );
-            },
-            onError: (err) => {
-              toast.error(err.message);
-              setError(err.message);
-            },
-          });
-        } else {
-          toast.success("Order placed successfully");
+          toast.success("Payment successful");
+          if (!isSignedIn) {
+            addOrder(orderResponse);
+            clearCart();
+          }
           clearTotal();
           router.push(`/orders/${orderResponse}`);
+        } catch (error) {
+          handleStatus({
+            error,
+          });
         }
-      } catch (error) {
-        toast.error((error as Error)?.message);
       }
-    });
+
+      if (paymentMethod === "MOBILE_MONEY") {
+        const paymentResponse = await triggerPaymentWithPaystack({
+          amount: order?.total ?? 0,
+          email: currentUser?.email ?? order?.email ?? "",
+          orderId: orderResponse,
+          vendorId: order?.vendorId as Id<"vendors">,
+          callback_url: "",
+        });
+
+        const popup = new PaystackPop();
+        popup.resumeTransaction(paymentResponse.access_code, {
+          onSuccess: async (response) => {
+            if (response.status === "success") {
+              try {
+                await validatePayment({
+                  orderId: orderResponse,
+                  reference: response.reference,
+                  paymentId: paymentResponse?.paymentId as Id<"payments">,
+                  vendorId: order?.vendorId as Id<"vendors">,
+                  cartId: cart?._id,
+                  storeId: store?._id as Id<"stores">,
+                });
+                toast.success("Payment successful");
+                if (!isSignedIn) {
+                  addOrder(orderResponse);
+                  clearCart();
+                }
+                clearTotal();
+                router.push(`/orders/${orderResponse}`);
+              } catch (error) {
+                handleStatus({
+                  error,
+                });
+              }
+            } else {
+              toast.error("Payment failed");
+              setError(
+                "Payment failed, please try again if it was not intentional"
+              );
+            }
+          },
+          onCancel: () => {
+            toast.error("Payment cancelled");
+            setError(
+              "Payment cancelled, please try again if it was not intentional"
+            );
+          },
+          onError: (err) => {
+            toast.error(err.message);
+            setError(err.message);
+          },
+        });
+      } else {
+        toast.success("Order placed successfully");
+        clearTotal();
+        router.push(`/orders/${orderResponse}`);
+      }
+    } catch (error) {
+      handleStatus({
+        error,
+      });
+    } finally {
+      setIsPending(false);
+    }
   };
 
   return (

@@ -1,73 +1,44 @@
-"use client"
+"use client";
 
-import { ChevronRight, type LucideIcon } from "lucide-react"
+import { type Icon } from "@tabler/icons-react";
 
-import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from "@/components/ui/collapsible"
 import {
   SidebarGroup,
-  SidebarGroupLabel,
+  SidebarGroupContent,
   SidebarMenu,
-  SidebarMenuButton,
-  SidebarMenuItem,
-  SidebarMenuSub,
-  SidebarMenuSubButton,
-  SidebarMenuSubItem,
-} from "@/components/ui/sidebar"
+} from "@/components/ui/sidebar";
+import SideBarItem from "./side-bar-nav-item";
 
 export function NavMain({
   items,
-}: {
+  userRole,
+}: Readonly<{
   items: {
-    title: string
-    url: string
-    icon?: LucideIcon
-    isActive?: boolean
-    items?: {
-      title: string
-      url: string
-    }[]
-  }[]
-}) {
+    title: string;
+    url: string;
+    icon?: Icon;
+    allowedRoles?: string[];
+  }[];
+  userRole?: string;
+}>) {
   return (
     <SidebarGroup>
-      <SidebarGroupLabel>Platform</SidebarGroupLabel>
-      <SidebarMenu>
-        {items.map((item) => (
-          <Collapsible
-            key={item.title}
-            asChild
-            defaultOpen={item.isActive}
-            className="group/collapsible"
-          >
-            <SidebarMenuItem>
-              <CollapsibleTrigger asChild>
-                <SidebarMenuButton tooltip={item.title}>
-                  {item.icon && <item.icon />}
-                  <span>{item.title}</span>
-                  <ChevronRight className="ml-auto transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90" />
-                </SidebarMenuButton>
-              </CollapsibleTrigger>
-              <CollapsibleContent>
-                <SidebarMenuSub>
-                  {item.items?.map((subItem) => (
-                    <SidebarMenuSubItem key={subItem.title}>
-                      <SidebarMenuSubButton asChild>
-                        <a href={subItem.url}>
-                          <span>{subItem.title}</span>
-                        </a>
-                      </SidebarMenuSubButton>
-                    </SidebarMenuSubItem>
-                  ))}
-                </SidebarMenuSub>
-              </CollapsibleContent>
-            </SidebarMenuItem>
-          </Collapsible>
-        ))}
-      </SidebarMenu>
+      <SidebarGroupContent className="flex flex-col gap-2">
+        <SidebarMenu>
+          {items
+            .filter((item) =>
+              item?.allowedRoles
+                ? item.allowedRoles?.includes(userRole ?? "")
+                : true
+            )
+            .map((item) => (
+              <SideBarItem url={item.url} key={item.title}>
+                {item.icon && <item.icon />}
+                <span>{item.title}</span>
+              </SideBarItem>
+            ))}
+        </SidebarMenu>
+      </SidebarGroupContent>
     </SidebarGroup>
-  )
+  );
 }

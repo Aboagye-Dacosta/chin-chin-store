@@ -5,21 +5,16 @@ import { useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { Flex } from "../ui/flex";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import DeliverySettings from "./delivery-settings";
-import UsersSettings from "./users-settings";
 import { AssetsManagement } from "../file-upload/assets-management";
 import { SupportForm } from "./support-form";
 
 export const Settings = () => {
   const paymentSetting = useQuery(api.payments.paymentSettings.paymentSettings);
   return (
-    <div className="w-full h-full">
-      <h1>Settings</h1>
+    <div className="w-full h-full p-7">
       <Tabs defaultValue="payment">
         <TabsList>
           <TabsTrigger value="payment">Payment</TabsTrigger>
-          <TabsTrigger value="delivery">Delivery</TabsTrigger>
-          <TabsTrigger value="users">Users</TabsTrigger>
           <TabsTrigger value="assets">Assets</TabsTrigger>
           <TabsTrigger value="support">Support</TabsTrigger>
         </TabsList>
@@ -41,12 +36,6 @@ export const Settings = () => {
               </CardContent>
             </Card>
           </Flex>
-        </TabsContent>
-        <TabsContent value="delivery">
-          <DeliverySettings />
-        </TabsContent>
-        <TabsContent value="users">
-          <UsersSettings />
         </TabsContent>
         <TabsContent value="assets">
           <AssetsManagement />

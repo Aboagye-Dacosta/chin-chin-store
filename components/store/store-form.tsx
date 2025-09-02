@@ -33,9 +33,10 @@ import { Store } from "@/types/convex-types";
 import { Input } from "../ui/input";
 import { useMutation, useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
-import { useTransition } from "react";
+import { useState } from "react";
 import { Id } from "@/convex/_generated/dataModel";
 import { toast } from "sonner";
+import { handleStatus } from "@/lib/handle-status";
 
 type Props = {
   title?: string;
@@ -52,7 +53,8 @@ export default function StoreForm({
 }: Readonly<Props>) {
   const locations = useQuery(api.locations.getLocations);
   const addStore = useMutation(api.stores.addStore);
-  const [isPending, startTransition] = useTransition();
+  const updateStore = useMutation(api.stores.updateStore);
+  const [isCreatingStore, setIsCreatingStore] = useState(false);
 
   const form = useForm<StoreFormValues>({
     resolver: zodResolver(storeFormSchema),
@@ -63,26 +65,34 @@ export default function StoreForm({
     },
   });
 
-  const onSubmit = (values: StoreFormValues) => {
-    startTransition(async () => {
-      const response = await addStore({
-        name: values.name.trim().toLowerCase(),
-        locationId: values.locationId as Id<"locations">,
-        deliveryCharge: values.deliveryCharge,
-      });
-      if (response.success) {
-        form.reset({
-          name: "",
-          locationId: "",
+  const onSubmit = async (values: StoreFormValues) => {
+    setIsCreatingStore(true);
+    try {
+      if (defaultValue) {
+        await updateStore({
+          id: defaultValue._id,
+          name: values.name.trim().toLowerCase(),
+          locationId: values.locationId as Id<"locations">,
+          deliveryCharge: values.deliveryCharge,
         });
-
-        toast.success(response.message);
+        toast.success("Store updated successfully");
+      } else {
+        await addStore({
+          name: values.name.trim().toLowerCase(),
+          locationId: values.locationId as Id<"locations">,
+          deliveryCharge: values.deliveryCharge,
+        });
+        toast.success("Store created successfully");
       }
-
-      if (!response.success) {
-        toast.error(response.message);
-      }
-    });
+      form.reset({
+        name: "",
+        locationId: "",
+      });
+    } catch (error) {
+      handleStatus({ error });
+    } finally {
+      setIsCreatingStore(false);
+    }
   };
 
   const hasDefaultValue = !!defaultValue;
@@ -164,8 +174,8 @@ export default function StoreForm({
             <div className="flex items-center justify-end gap-3 pt-2">
               <Button
                 type="submit"
-                disabled={isPending}
-                loading={isPending}
+                disabled={isCreatingStore}
+                loading={isCreatingStore}
                 className="flex items-center gap-2"
               >
                 {hasDefaultValue ? "Save changes" : "Create store"}

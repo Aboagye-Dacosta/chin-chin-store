@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useTransition } from "react";
+import { useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import type { z } from "zod";
@@ -29,6 +29,7 @@ import { toast } from "sonner";
 import { useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { Location } from "@/types/convex-types";
+import { handleStatus } from "@/lib/handle-status";
 
 type Props = {
   title?: string;
@@ -45,7 +46,7 @@ export default function LocationForm({
 }: Readonly<Props>) {
   const schema = useMemo(() => locationFormSchema, []);
   type FormValues = z.infer<typeof schema>;
-  const [isPending, startTransition] = useTransition();
+  const [isCreating, setIsCreating] = useState(false);
   const addLocation = useMutation(api.locations.addLocation);
 
   const form = useForm<FormValues>({
@@ -58,25 +59,15 @@ export default function LocationForm({
 
   const isEditing = !!defaultLocation;
 
-  const onSubmit = (values: FormValues) => {
-    startTransition(async () => {
-      const response = await addLocation(values);
-      if (response.success) {
-        form.reset({
-          name: "",
-        });
-        toast.success(response.message);
-      }
-
-      if (!response.success) {
-        toast.error(response.message);
-      }
-    });
-
-    if (!isEditing) {
-      form.reset({
-        name: "",
-      });
+  const onSubmit = async (values: FormValues) => {
+    try {
+      setIsCreating(true);
+      await addLocation(values);
+      handleStatus({ message: "Location created successfully", success: true });
+    } catch (error) {
+      handleStatus({ error });
+    } finally {
+      setIsCreating(false);
     }
   };
 
@@ -116,8 +107,8 @@ export default function LocationForm({
               )}
             />
             <div className="flex items-center justify-end gap-3 pt-2">
-              <Button type="submit" disabled={isPending} loading={isPending}>
-                <Save className="mr-2 h-4 w-4" />
+              <Button type="submit" disabled={isCreating} loading={isCreating}>
+                {!isCreating && <Save className="mr-2 h-4 w-4" />}
                 {isEditing ? "Save changes" : "Create location"}
               </Button>
             </div>

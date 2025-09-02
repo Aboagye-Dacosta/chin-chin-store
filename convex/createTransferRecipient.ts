@@ -1,9 +1,19 @@
-import { action, internalAction, mutation } from "./_generated/server";
-import { v } from "convex/values";
+/**
+ * Functions for creating transfer recipients (subaccounts) for vendors.
+ */
+import { action, internalAction } from "./_generated/server";
+import { v, ConvexError } from "convex/values";
 import { internal } from "./_generated/api";
 
 
-// Create Subaccount
+/**
+ * Creates a subaccount for a vendor on Paystack.
+ *
+ * @param {object} args - The arguments for the internal action.
+ * @param {string} args.vendorId - The ID of the vendor to create the subaccount for.
+ * @throws {ConvexError} If Paystack secret key is not configured, vendor or mobile money details are not found,
+ * failed to fetch supported telcos, telco not supported by Paystack, or failed to create subaccount.
+ */
 export const createSubaccount = internalAction({
   args: {
     vendorId: v.id("vendors"),
@@ -13,7 +23,7 @@ export const createSubaccount = internalAction({
       internal.paymentGateway.getPaymentGatewaySettings
     );
     if (!secretKey) {
-      throw new Error("Paystack secret key is not configured.");
+      throw new ConvexError("Paystack secret key is not configured.");
     }
 
     const vendor = await ctx.runQuery(internal.vendors.readVendorById, {
@@ -21,7 +31,7 @@ export const createSubaccount = internalAction({
     });
 
     if (!vendor?.mobileMoney) {
-      throw new Error("Vendor or mobile money details not found.");
+      throw new ConvexError("Vendor or mobile money details not found.");
     }
 
     const telcoResponse = await fetch(
@@ -32,7 +42,7 @@ export const createSubaccount = internalAction({
     );
     const telcos = await telcoResponse.json();
     if (!telcos.status) {
-      throw new Error("Failed to fetch supported telcos: " + telcos.message);
+      throw new ConvexError("Failed to fetch supported telcos: " + telcos.message);
     }
 
     const telco = telcos.data.find((t: any) =>
@@ -40,7 +50,7 @@ export const createSubaccount = internalAction({
     );
 
     if (!telco) {
-      throw new Error(
+      throw new ConvexError(
         `Telco ${vendor?.mobileMoney?.provider} not supported by Paystack.`
       );
     }
@@ -63,7 +73,7 @@ export const createSubaccount = internalAction({
 
     const result = await response.json();
     if (!response.ok || !result.status) {
-      throw new Error(result.message || "Failed to create subaccount");
+      throw new ConvexError(result.message || "Failed to create subaccount");
     }
 
     await ctx.runMutation(internal.vendors.updateVendorRecipientCode, {

@@ -75,4 +75,7 @@ export type ProductWithStock = Product & {
     stock: number | undefined;
 };
 
+export type Asset  = Doc<"assets"> & {
+  url: string | null;
+}
 

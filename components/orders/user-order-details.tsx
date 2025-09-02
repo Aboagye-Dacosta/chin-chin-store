@@ -24,12 +24,13 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { useState, useTransition } from "react";
+import { useState } from "react";
 import { Order, OrderStatus } from "@/types/convex-types";
 import { toast } from "sonner";
 import { PaymentDetailCard } from "./payment-card";
 import { Container } from "../ui/contaner";
 import { Id } from "@/convex/_generated/dataModel";
+import { handleStatus } from "@/lib/handle-status";
 
 export default function UserOrderDetails({
   orderId,
@@ -57,21 +58,22 @@ export default function UserOrderDetails({
   const canCancel =
     order?.status === "PENDING" || order?.status === "PROCESSING";
 
-  const [isPending, startTransition] = useTransition();
+  const [isPending, setIsPending] = useState(false);
   const cancelOrder = useMutation(api.orders.cancelOrder);
 
-  const handleCancelOrder = () => {
-    startTransition(async () => {
-      try {
-        await cancelOrder({
-          orderId: (order?._id ?? "") as Id<"orders">,
-          storeId: (order?.storeId ?? "") as Id<"stores">,
-        });
-        toast.success("Order cancelled successfully");
-      } catch (error) {
-        toast.error((error as Error)?.message);
-      }
-    });
+  const handleCancelOrder = async () => {
+    try {
+      setIsPending(true);
+      await cancelOrder({
+        orderId: (order?._id ?? "") as Id<"orders">,
+        storeId: (order?.storeId ?? "") as Id<"stores">,
+      });
+      toast.success("Order cancelled successfully");
+    } catch (error) {
+      handleStatus({ error });
+    } finally {
+      setIsPending(false);
+    }
   };
 
   return (
@@ -126,7 +128,7 @@ export default function UserOrderDetails({
                             alt={item?.product?.title}
                           />
                           <AvatarFallback>
-                            {item?.product?.title.charAt(0)}
+                            {item?.product?.title?.charAt(0)}
                           </AvatarFallback>
                         </Avatar>
                       </TableCell>

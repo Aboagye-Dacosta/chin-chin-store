@@ -1,5 +1,6 @@
 "use client";
 
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -7,18 +8,18 @@ import {
   CardFooter,
   CardHeader,
 } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { ShoppingCart, Package } from "lucide-react";
 import { useCart } from "@/hooks/use-cart";
-import { toast } from "sonner";
-import { Suspense, useTransition } from "react";
-import { cn } from "@/lib/utils";
 import { displayMoney } from "@/lib/display-money";
-import { ProductWithCategory } from "@/types/convex-types";
+import { handleStatus } from "@/lib/handle-status";
+import { cn } from "@/lib/utils";
 import { useAppThemeStore } from "@/store/use-app-theme";
+import { ProductWithCategory } from "@/types/convex-types";
 import { useAuth } from "@clerk/nextjs";
-import LargeModelCard from "./model";
+import { Package, ShoppingCart } from "lucide-react";
 import Image from "next/image";
+import { Suspense, useState } from "react";
+import { toast } from "sonner";
+import LargeModelCard from "./model";
 
 interface ProductCardProps {
   product: ProductWithCategory | undefined;
@@ -26,15 +27,20 @@ interface ProductCardProps {
 
 export function ProductCard({ product }: Readonly<ProductCardProps>) {
   const { addItem } = useCart();
-  const [isAdding, startTransition] = useTransition();
+  const [isAdding, setIsAdding] = useState(false);
   const { categoryColors } = useAppThemeStore();
   const { isSignedIn } = useAuth();
 
-  const handleAddToCart = () => {
-    startTransition(async () => {
+  const handleAddToCart = async () => {
+    try {
+      setIsAdding(true);
       await addItem(product!);
       toast.success(`${product?.title} has been added to your cart.`);
-    });
+    } catch (error) {
+      handleStatus({ error });
+    } finally {
+      setIsAdding(false);
+    }
   };
 
   const isLoading = isAdding && isSignedIn;

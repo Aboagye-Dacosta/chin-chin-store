@@ -8,7 +8,7 @@ import { AssetsList } from "./assets-list";
 export const AssetsManagement = () => {
   return (
     <Flex direction="col" gap="lg" className="w-full">
-      <h1>Assets Management</h1>
+      <h1 className="text-3xl font-bold">Assets Management</h1>
       <Dialog>
         <DialogTrigger asChild>
           <Button>

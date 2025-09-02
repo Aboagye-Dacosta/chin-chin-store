@@ -16,13 +16,39 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "../ui/dialog";
 import StocksProductRegistrationForm from "./stocks-product-registration-form";
 import { useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
+import { handleStatus } from "@/lib/handle-status";
+import { Id } from "@/convex/_generated/dataModel";
+import { toast } from "sonner";
 
 export const StocksTableActions = ({ stock }: { stock: ProductByStore }) => {
   const [open, setOpen] = useState(false);
   const [openDelete, setOpenDelete] = useState(false);
+  const [isRemoving, setIsRemoving] = useState(false);
+
   const removeProductFromStore = useMutation(
     api.productsByStore.removeProductFromStore
   );
+
+  const handleRemoveProductFromStore = async ({
+    productId,
+    storeId,
+  }: {
+    productId: Id<"products">;
+    storeId: Id<"stores">;
+  }) => {
+    try {
+      setIsRemoving(true);
+      await removeProductFromStore({
+        productId,
+        storeId,
+      });
+      toast.success("Product successfully removed from store");
+    } catch (error) {
+      handleStatus({ error });
+    } finally {
+      setIsRemoving(false);
+    }
+  };
 
   return (
     <>
@@ -68,8 +94,9 @@ export const StocksTableActions = ({ stock }: { stock: ProductByStore }) => {
           description="Are you sure you want to delete this product?"
           actionText="Delete"
           cancelText="Cancel"
+          loading={isRemoving}
           action={() =>
-            removeProductFromStore({
+            handleRemoveProductFromStore({
               productId: stock.productId,
               storeId: stock.storeId,
             })

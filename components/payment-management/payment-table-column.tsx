@@ -39,12 +39,26 @@ export const PaymentColumns: Column<PaymentTableColumn>[] = [
   {
     key: "method",
     header: "Method",
-    render: (_v, row) => <span>{row.method.toLowerCase().replaceAll("_"," ")}</span>,
+    render: (_v, row) => (
+      <span>{row.method.toLowerCase().replaceAll("_", " ")}</span>
+    ),
   },
   {
     key: "status",
     header: "Status",
-    render: (_v, row) => <PaymentStatusBadge status={row.status} paymentId={row._id} />,
+    render: (_v, row) => (
+      <PaymentStatusBadge
+        status={
+          row.status as
+            | "PENDING"
+            | "PAID"
+            | "FAILED"
+            | "REFUNDED"
+            | "AWAITING_CONFIRMATION"
+        }
+        paymentId={row._id}
+      />
+    ),
   },
   {
     key: "createdAt",

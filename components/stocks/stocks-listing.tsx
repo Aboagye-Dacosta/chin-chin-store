@@ -52,7 +52,7 @@ export function StocksListing() {
     return filters;
   }, [stores, categories, currentUser?.role]);
   return (
-    <Flex direction="col" gap="lg" className="w-full">
+    <Flex direction="col" gap="lg" className="w-full p-7">
       <Flex direction="row" justify="between" align="center" className="w-full">
         <Flex direction="col" gap="xl" className="w-full">
           <Flex

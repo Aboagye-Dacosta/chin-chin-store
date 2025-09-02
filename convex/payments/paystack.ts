@@ -1,4 +1,7 @@
-import { v } from "convex/values";
+/**
+ * Paystack API integration for initializing and verifying transactions.
+ */
+import { v , ConvexError} from "convex/values";
 import { internal } from "../_generated/api";
 import { action } from "../_generated/server";
 
@@ -27,7 +30,20 @@ type PaystackVerificationResponse = {
   };
 };
 
-// Initialize Paystack Transaction with Subaccount
+/**
+ * Initializes a Paystack transaction with a subaccount.
+ *
+ * @param {object} args - The arguments for the action.
+ * @param {string} args.email - The email of the customer.
+ * @param {number} args.amount - The amount of the transaction.
+ * @param {string} args.vendorId - The ID of the vendor.
+ * @param {string} args.orderId - The ID of the order.
+ * @param {string} [args.reference] - The transaction reference.
+ * @param {string} [args.callback_url] - The callback URL after payment.
+ * @returns {Promise<PaystackAuthorizationResponse["data"]>} The Paystack authorization response data.
+ * @throws {ConvexError} If Paystack secret key is not configured, vendor or subaccount code not found,
+ * or failed to initialize transaction.
+ */
 export const initializePaystackTransaction = action({
   args: {
     email: v.string(),
@@ -45,15 +61,15 @@ export const initializePaystackTransaction = action({
       internal.paymentGateway.getPaymentGatewaySettings
     );
     if (!secretKey) {
-      throw new Error("Paystack secret key is not configured.");
-    }
+      throw new ConvexError("Paystack secret key is not configured.");
+    } 
 
     const vendor = await ctx.runQuery(internal.vendors.readVendorById, {
       vendorId: args.vendorId,
     });
 
     if (!vendor?.paystackRecipientCode) {
-      throw new Error("Vendor or Paystack subaccount code not found.");
+      throw new ConvexError("Vendor or Paystack subaccount code not found.");
     }
 
     const paymentId = await ctx.runMutation(
@@ -100,7 +116,7 @@ export const initializePaystackTransaction = action({
 
     const result: PaystackAuthorizationResponse = await response.json();
     if (!response.ok || !result.status) {
-      throw new Error(result.message || "Failed to initialize transaction");
+      throw new ConvexError(result.message || "Failed to initialize transaction");
     }
 
     return {
@@ -110,7 +126,20 @@ export const initializePaystackTransaction = action({
   },
 });
 
-// Verify Paystack Transaction
+/**
+ * Verifies a Paystack transaction.
+ *
+ * @param {object} args - The arguments for the action.
+ * @param {string} args.orderId - The ID of the order.
+ * @param {string} args.reference - The transaction reference.
+ * @param {string} args.paymentId - The ID of the payment.
+ * @param {string} args.vendorId - The ID of the vendor.
+ * @param {string} [args.cartId] - The ID of the cart (optional).
+ * @param {string} args.storeId - The ID of the store.
+ * @returns {Promise<PaystackVerificationResponse["data"]>} The Paystack verification response data.
+ * @throws {ConvexError} If Paystack secret key is not configured, vendor or subaccount code not found,
+ * or failed to verify transaction.
+ */
 export const verifyPaystackTransaction = action({
   args: {
     orderId: v.id("orders"),
@@ -125,7 +154,7 @@ export const verifyPaystackTransaction = action({
       internal.paymentGateway.getPaymentGatewaySettings
     );
     if (!secretKey) {
-      throw new Error("Paystack secret key is not configured.");
+      throw new ConvexError("Paystack secret key is not configured.");
     }
 
     const vendor = await ctx.runQuery(internal.vendors.readVendorById, {
@@ -133,7 +162,7 @@ export const verifyPaystackTransaction = action({
     });
 
     if (!vendor?.paystackRecipientCode) {
-      throw new Error("Vendor or subaccount code not found.");
+      throw new ConvexError("Vendor or subaccount code not found.");
     }
 
     const response = await fetch(
@@ -150,7 +179,7 @@ export const verifyPaystackTransaction = action({
     const result: PaystackVerificationResponse = await response.json();
 
     if (!response.ok || !result.status) {
-      throw new Error(result.message || "Failed to verify transaction");
+      throw new ConvexError(result.message || "Failed to verify transaction");
     }
 
     //update payment status , order status and delete cart items and update product stock

@@ -1,6 +1,8 @@
 import { OrderWithUserAndStore } from "@/types/convex-types";
 import { Column } from "../DataTable";
-
+import { getFormattedTime } from "@/lib/getFormattedTime";
+import { StatusUpdateSelect } from "../status-update-select";
+import { displayMoney } from "@/lib/display-money";
 
 export const OrderColumns: Column<OrderWithUserAndStore>[] = [
   {
@@ -21,16 +23,18 @@ export const OrderColumns: Column<OrderWithUserAndStore>[] = [
   {
     key: "status",
     header: "Status",
-    render: (_value, row) => row.status,
+    render: (_value, row) => (
+      <StatusUpdateSelect initialValue={row.status} id={row._id} />
+    ),
   },
   {
     key: "total",
     header: "Total Amount",
-    render: (_value, row) => row.total,
+    render: (_value, row) => displayMoney(row.total, false),
   },
   {
     key: "createdAt",
     header: "Created At",
-    render: (_value, row) => row.createdAt,
+    render: (_value, row) => getFormattedTime(row.createdAt),
   },
 ];

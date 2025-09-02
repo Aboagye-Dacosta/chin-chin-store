@@ -68,11 +68,11 @@ export const SupportForm = () => {
     if (support) {
       form.reset(support);
     }
-  }, [support,form]);
+  }, [support, form]);
 
   return (
     <Flex direction="col" gap="lg" className="w-full h-full">
-      <h1>Support Form</h1>
+      <h1 className="text-3xl font-bold">Support Form</h1>
       <Card className="max-w-5xl w-full">
         <CardContent>
           <form onSubmit={form.handleSubmit(onSubmit)} className="w-full">

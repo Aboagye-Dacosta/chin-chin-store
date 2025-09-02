@@ -1,5 +1,13 @@
+/**
+ * Functions for retrieving all payments.
+ */
 import { query } from "../_generated/server";
 
+/**
+ * Retrieves all payments and enriches them with related order, user, vendor, and store details.
+ *
+ * @returns {Array<object>} An array of enriched payment objects.
+ */
 export const getAllPayments = query({
   handler: async (ctx) => {
     // 1. Fetch all payments

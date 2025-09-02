@@ -1,6 +1,26 @@
+/**
+ * Functions for adding payments.
+ */
 import { internalMutation, mutation } from "../_generated/server";
-import { v } from "convex/values";
+import { v , ConvexError} from "convex/values";
 
+/**
+ * Inserts a new payment record.
+ *
+ * @param {object} args - The arguments for the internal mutation.
+ * @param {string} args.orderId - The ID of the associated order.
+ * @param {number} args.amount - The payment amount.
+ * @param {string} args.currency - The payment currency.
+ * @param {string} args.method - The payment method.
+ * @param {string} args.status - The payment status.
+ * @param {string} [args.phoneNumber] - The phone number for mobile money payments.
+ * @param {string} [args.mobileNetwork] - The mobile network for mobile money payments.
+ * @param {string} [args.transactionId] - The transaction ID.
+ * @param {string} [args.transactionReference] - The transaction reference.
+ * @param {any} [args.metadata] - Additional metadata for the payment.
+ * @param {string} args.paymentGatewaySettingsId - The ID of the payment gateway settings used.
+ * @returns {string} The ID of the newly inserted payment.
+ */
 export const insert = internalMutation({
   args: {
     orderId: v.id("orders"),
@@ -48,6 +68,17 @@ export const insert = internalMutation({
   },
 });
 
+/**
+ * Handles "Pay on Delivery" payment creation.
+ *
+ * @param {object} args - The arguments for the mutation.
+ * @param {string} args.orderId - The ID of the associated order.
+ * @param {number} args.amount - The payment amount.
+ * @param {string} [args.cartId] - The ID of the cart (optional, for authenticated users).
+ * @param {string} args.storeId - The ID of the store.
+ * @returns {string} The ID of the newly created payment.
+ * @throws {ConvexError} If there's not enough stock for a product or if payment creation fails.
+ */
 export const makePayOnDeliveryPayment = mutation({
   args: {
     orderId: v.id("orders"),
@@ -95,7 +126,7 @@ export const makePayOnDeliveryPayment = mutation({
             const product = await ctx.db.get(productByStore.productId);
             if (!product) return;
             if (productByStore.quantity < item.quantity) {
-              throw new Error(`Not enough stock for ${product.title}`);
+              throw new ConvexError(`Not enough stock for ${product.title}`);
             }
             await ctx.db.patch(productByStore._id, {
               quantity: productByStore.quantity - item.quantity,
@@ -125,7 +156,7 @@ export const makePayOnDeliveryPayment = mutation({
             const product = await ctx.db.get(productByStore.productId);
             if (!product) return;
             if (productByStore.quantity < item.quantity) {
-              throw new Error(`Not enough stock for ${product.title}`);
+              throw new ConvexError(`Not enough stock for ${product.title}`);
             }
             await ctx.db.patch(productByStore._id, {
               quantity: productByStore.quantity - item.quantity,
@@ -137,8 +168,11 @@ export const makePayOnDeliveryPayment = mutation({
       }
 
       return payment;
-    } catch{
-      throw new Error("Failed to create payment");
+    } catch(error) {
+      if (error instanceof ConvexError) {
+        throw error;
+      }
+      throw new ConvexError("Failed to create payment");
     }
   },
 });

@@ -1,8 +1,15 @@
-import { internalMutation, mutation, query } from "./_generated/server";
-import { v } from "convex/values";
-import { OrderStatus } from "./schema";
+import { ConvexError, v } from "convex/values";
+import { internal } from "./_generated/api";
 import { Id } from "./_generated/dataModel";
+import { internalMutation, mutation, query } from "./_generated/server";
+import { OrderStatus } from "./schema";
 
+
+/**
+ * Retrieves all orders.
+ *
+ * @returns {Array<object>} An array of order objects.
+ */
 export const getAllOrders = query({
   handler: async (ctx) => {
     const orders = await ctx.db.query("orders").collect();
@@ -10,6 +17,13 @@ export const getAllOrders = query({
   },
 });
 
+/**
+ * Retrieves orders for a specific store.
+ *
+ * @param {object} args - The arguments for the query.
+ * @param {string} args.storeId - The ID of the store to retrieve orders for.
+ * @returns {Array<object>} An array of order objects.
+ */
 export const getOrdersByStore = query({
   args: {
     storeId: v.id("stores"),
@@ -23,6 +37,13 @@ export const getOrdersByStore = query({
   },
 });
 
+/**
+ * Retrieves orders for a specific vendor.
+ *
+ * @param {object} args - The arguments for the query.
+ * @param {string} args.vendorId - The ID of the vendor to retrieve orders for.
+ * @returns {Array<object>} An array of order objects.
+ */
 export const getOrdersByVendor = query({
   args: {
     vendorId: v.id("vendors"),
@@ -36,6 +57,14 @@ export const getOrdersByVendor = query({
   },
 });
 
+/**
+ * Retrieves orders for a specific store and user.
+ *
+ * @param {object} args - The arguments for the query.
+ * @param {string} args.storeId - The ID of the store to retrieve orders for.
+ * @param {Array<string>} [args.orders] - An optional array of order IDs.
+ * @returns {Array<object>|null} An array of enriched order objects, or null if the user is not authenticated.
+ */
 export const getOrdersByStoreAndUser = query({
   args: {
     storeId: v.id("stores"),
@@ -86,9 +115,19 @@ export const getOrdersByStoreAndUser = query({
         const enrichedOrderItems = await Promise.all(
           orderItems.map(async (orderItem) => {
             const product = await ctx.db.get(orderItem.productId);
+            let image;
+            if (product?.image) {
+              const asset = await ctx.db.get(product.image)
+              if (asset) {
+                image = await ctx.storage.getUrl(asset?.storageId)
+              }
+            }
             return {
               ...orderItem,
-              product,
+              product: {
+                ...product,
+                image
+              },
             };
           })
         );
@@ -106,6 +145,13 @@ export const getOrdersByStoreAndUser = query({
   },
 });
 
+/**
+ * Retrieves an order by its ID.
+ *
+ * @param {object} args - The arguments for the query.
+ * @param {string} args.orderId - The ID of the order to retrieve.
+ * @returns {object} The enriched order object.
+ */
 export const getOrderById = query({
   args: {
     orderId: v.id("orders"),
@@ -126,9 +172,19 @@ export const getOrderById = query({
     const enrichedOrderItems = await Promise.all(
       orderItems.map(async (orderItem) => {
         const product = await ctx.db.get(orderItem.productId);
+        let image;
+        if (product?.image) {
+          const asset = await ctx.db.get(product.image)
+          if (asset) {
+            image = await ctx.storage.getUrl(asset?.storageId)
+          }
+        }
         return {
           ...orderItem,
-          product,
+          product: {
+            ...product,
+            image
+          },
         };
       })
     );
@@ -143,6 +199,24 @@ export const getOrderById = query({
   },
 });
 
+/**
+ * Creates a new order.
+ *
+ * @param {object} args - The arguments for the mutation.
+ * @param {string} [args.userId] - The ID of the user who placed the order.
+ * @param {string} args.storeId - The ID of the store the order belongs to.
+ * @param {string} args.vendorId - The ID of the vendor the order belongs to.
+ * @param {string} [args.name] - The name of the customer.
+ * @param {string} [args.email] - The email of the customer.
+ * @param {number} [args.deliveryCharge] - The delivery charge for the order.
+ * @param {number} args.amount - The total amount of the order.
+ * @param {string} args.method - The payment method for the order.
+ * @param {Array<object>} args.items - An array of order items.
+ * @param {string} args.trackingNumber - The tracking number for the order.
+ * @param {string} args.deliveryAddressLabel - The delivery address label for the order.
+ * @param {string} [args.deliveryNote] - A note for the delivery.
+ * @returns {string} The ID of the new order.
+ */
 export const createOrder = mutation({
   args: {
     userId: v.optional(v.id("users")),
@@ -201,6 +275,13 @@ export const createOrder = mutation({
   },
 });
 
+/**
+ * Updates the status of an order (internal).
+ *
+ * @param {object} args - The arguments for the internal mutation.
+ * @param {string} args.orderId - The ID of the order to update.
+ * @param {string} args.status - The new status of the order.
+ */
 export const updateOrderStatus = internalMutation({
   args: {
     orderId: v.id("orders"),
@@ -211,98 +292,200 @@ export const updateOrderStatus = internalMutation({
       status: args.status,
       updatedAt: new Date().toISOString(),
     });
+
+    if (args.status === "DELIVERED") {
+      await ctx.scheduler.runAfter(0, internal.orders.updateAnalytics, { orderId: args.orderId });
+    }
   },
 });
 
-export const cancelOrder = mutation({
+/**
+ * Updates the status of an order.
+ *
+ * @param {object} args - The arguments for the mutation.
+ * @param {string} args.orderId - The ID of the order to update.
+ * @param {string} args.status - The new status of the order.
+ */
+export const updateStatus = mutation({
   args: {
     orderId: v.id("orders"),
-    storeId: v.id("stores"),
+    status: OrderStatus,
   },
   handler: async (ctx, args) => {
-    const order = await ctx.db.get(args.orderId);
-    if (!order) {
-      throw new Error("Order not found");
-    }
-
-    const now = new Date().toISOString();
     await ctx.db.patch(args.orderId, {
-      status: "CANCELLED",
-      updatedAt: now,
+      status: args.status,
+      updatedAt: new Date().toISOString(),
     });
 
-    const payment = await ctx.db
-      .query("payments")
-      .withIndex("byOrder", (q) => q.eq("orderId", args.orderId))
-      .first();
-    if (!payment) {
-      throw new Error("Payment not found");
-    }
-
-    //update payment status
-    if (payment.method === "MOBILE_MONEY") {
-      await ctx.db.patch(payment._id, {
-        status: "ORDER_CANCELLED",
-        updatedAt: now,
-      });
-    } else {
-      await ctx.db.patch(payment._id, {
-        status: "CANCELLED",
-        updatedAt: now,
-      });
-    }
-
-    //restore product stock
-    const identity = await ctx.auth.getUserIdentity();
-    if (identity) {
-      const orderItems = await ctx.db
-        .query("orderItems")
-        .withIndex("byOrder", (q) => q.eq("orderId", args.orderId))
-        .collect();
-
-      await Promise.all(
-        orderItems.map(async (item) => {
-          const productByStore = await ctx.db
-            .query("productsByStore")
-            .withIndex("byStoreAndProduct", (q) =>
-              q.eq("storeId", args.storeId).eq("productId", item.productId)
-            )
-            .first();
-          if (!productByStore) return;
-          await ctx.db.patch(productByStore._id, {
-            quantity: productByStore.quantity + item.quantity,
-            updatedAt: now,
-          });
-        })
-      );
-    }
-
-    if(!identity){
-      const orderItems = await ctx.db
-        .query("orderItems")
-        .withIndex("byOrder", (q) => q.eq("orderId", args.orderId))
-        .collect();
-
-      await Promise.all(
-        orderItems.map(async (item) => {
-          const productByStore = await ctx.db
-            .query("productsByStore")
-            .withIndex("byStoreAndProduct", (q) =>
-              q.eq("storeId", args.storeId).eq("productId", item.productId)
-            )
-            .first();
-          if (!productByStore) return;
-          await ctx.db.patch(productByStore._id, {
-            quantity: productByStore.quantity + item.quantity,
-            updatedAt: now,
-          });
-        })
-      );
-      
+    if (args.status === "DELIVERED") {
+      await ctx.scheduler.runAfter(0, internal.orders.updateAnalytics, { orderId: args.orderId });
     }
   },
 });
 
+/**
+ * Updates analytics data when an order is delivered.
+ *
+ * @param {object} args - The arguments for the internal mutation.
+ * @param {string} args.orderId - The ID of the order.
+ */
+export const updateAnalytics = internalMutation({
+  args: {
+    orderId: v.id("orders"),
+  },
+  handler: async (ctx, { orderId }) => {
+    const order = await ctx.db.get(orderId);
+    if (!order) {
+      return;
+    }
+
+    const today = new Date().toISOString().split("T")[0];
+
+    // Update sales analytics
+    let salesAnalytics = await ctx.db
+      .query("salesAnalytics")
+      .withIndex("byDate", (q) => q.eq("date", today))
+      .first();
+
+    if (salesAnalytics) {
+      await ctx.db.patch(salesAnalytics._id, {
+        totalRevenue: salesAnalytics.totalRevenue + order.total,
+        totalOrders: salesAnalytics.totalOrders + 1,
+      });
+    } else {
+      await ctx.db.insert("salesAnalytics", {
+        date: today,
+        totalRevenue: order.total,
+        totalOrders: 1,
+        storeId: order.storeId,
+      });
+    }
+
+    // Update product analytics
+    const orderItems = await ctx.db
+      .query("orderItems")
+      .withIndex("byOrder", (q) => q.eq("orderId", orderId))
+      .collect();
+
+    for (const item of orderItems) {
+      const product = await ctx.db.get(item.productId);
+      if (!product) continue;
+
+      let productAnalytics = await ctx.db
+        .query("productAnalytics")
+        .withIndex("byProduct", (q) => q.eq("productId", item.productId))
+        .first();
+
+      if (productAnalytics) {
+        await ctx.db.patch(productAnalytics._id, {
+          totalSold: productAnalytics.totalSold + item.quantity,
+          totalRevenue: productAnalytics.totalRevenue + product.price * item.quantity,
+        });
+      } else {
+        await ctx.db.insert("productAnalytics", {
+          productId: item.productId,
+          totalSold: item.quantity,
+          totalRevenue: product.price * item.quantity,
+        });
+      }
+    }
+
+    // Update store analytics
+    let storeAnalytics = await ctx.db
+      .query("storeAnalytics")
+      .withIndex("byStore", (q) => q.eq("storeId", order.storeId))
+      .first();
+
+    if (storeAnalytics) {
+      await ctx.db.patch(storeAnalytics._id, {
+        totalRevenue: storeAnalytics.totalRevenue + order.total,
+        totalOrders: storeAnalytics.totalOrders + 1,
+      });
+    } else {
+      await ctx.db.insert("storeAnalytics", {
+        storeId: order.storeId,
+        totalRevenue: order.total,
+        totalOrders: 1,
+      });
+    }
+  },
+});
+
+/**
+ * Updates analytics data when an order is refunded.
+ *
+ * @param {object} args - The arguments for the internal mutation.
+ * @param {string} args.orderId - The ID of the order.
+ */
+export const updateAnalyticsForRefund = internalMutation({
+  args: {
+    orderId: v.id("orders"),
+  },
+  handler: async (ctx, { orderId }) => {
+    const order = await ctx.db.get(orderId);
+    if (!order) {
+      return;
+    }
+
+    const today = new Date().toISOString().split("T")[0];
+
+    // Update sales analytics
+    let salesAnalytics = await ctx.db
+      .query("salesAnalytics")
+      .withIndex("byDate", (q) => q.eq("date", today))
+      .first();
+
+    if (salesAnalytics) {
+      await ctx.db.patch(salesAnalytics._id, {
+        totalRevenue: salesAnalytics.totalRevenue - order.total,
+        totalOrders: salesAnalytics.totalOrders - 1,
+      });
+    }
+
+    // Update product analytics
+    const orderItems = await ctx.db
+      .query("orderItems")
+      .withIndex("byOrder", (q) => q.eq("orderId", orderId))
+      .collect();
+
+    for (const item of orderItems) {
+      const product = await ctx.db.get(item.productId);
+      if (!product) continue;
+
+      let productAnalytics = await ctx.db
+        .query("productAnalytics")
+        .withIndex("byProduct", (q) => q.eq("productId", item.productId))
+        .first();
+
+      if (productAnalytics) {
+        await ctx.db.patch(productAnalytics._id, {
+          totalSold: productAnalytics.totalSold - item.quantity,
+          totalRevenue: productAnalytics.totalRevenue - product.price * item.quantity,
+        });
+      }
+    }
+
+    // Update store analytics
+    let storeAnalytics = await ctx.db
+      .query("storeAnalytics")
+      .withIndex("byStore", (q) => q.eq("storeId", order.storeId))
+      .first();
+
+    if (storeAnalytics) {
+      await ctx.db.patch(storeAnalytics._id, {
+        totalRevenue: storeAnalytics.totalRevenue - order.total,
+        totalOrders: storeAnalytics.totalOrders - 1,
+      });
+    }
+  },
+});
+
+
+/**
+ * Retrieves orders for admin and vendors.
+ *
+ * @returns {Array<object>|null} An array of enriched order objects, or null if the user is not authenticated.
+ */
 export const getAdminAndVendorsOrders = query({
   handler: async (ctx) => {
     const identity = await ctx.auth.getUserIdentity();
@@ -376,6 +559,13 @@ export const getAdminAndVendorsOrders = query({
   },
 });
 
+/**
+ * Attaches an order to a user.
+ *
+ * @param {object} args - The arguments for the mutation.
+ * @param {Array<string>} args.orders - An array of order IDs to attach to the user.
+ * @returns {void|null} Null if the user is not authenticated.
+ */
 export const attachOrderToUser = mutation({
   args: {
     orders: v.array(v.string()),
@@ -399,3 +589,104 @@ export const attachOrderToUser = mutation({
     );
   },
 });
+
+
+/**
+ * Cancels an order.
+ *
+ * @param {object} args - The arguments for the mutation.
+ * @param {string} args.orderId - The ID of the order to cancel.
+ * @param {string} args.storeId - The ID of the store the order belongs to.
+ * @throws {ConvexError} If the order or payment is not found.
+ */
+export const cancelOrder = mutation({
+  args: {
+    orderId: v.id("orders"),
+    storeId: v.id("stores"),
+  },
+  handler: async (ctx, args) => {
+    const order = await ctx.db.get(args.orderId);
+    if (!order) {
+      throw new ConvexError("Order not found");
+    }
+
+    const now = new Date().toISOString();
+    await ctx.db.patch(args.orderId, {
+      status: "CANCELLED",
+      updatedAt: now,
+    });
+
+    const payment = await ctx.db
+      .query("payments")
+      .withIndex("byOrder", (q) => q.eq("orderId", args.orderId))
+      .first();
+    if (!payment) {
+      throw new ConvexError("Payment not found");
+    }
+
+    //update payment status
+    if (payment.method === "MOBILE_MONEY") {
+      await ctx.db.patch(payment._id, {
+        status: "REFUND_REQUESTED",
+        updatedAt: now,
+      });
+    } else {
+      await ctx.db.patch(payment._id, {
+        status: "CANCELLED",
+        updatedAt: now,
+      });
+    }
+
+    //restore product stock
+    const identity = await ctx.auth.getUserIdentity();
+    if (identity) {
+      const orderItems = await ctx.db
+        .query("orderItems")
+        .withIndex("byOrder", (q) => q.eq("orderId", args.orderId))
+        .collect();
+
+      await Promise.all(
+        orderItems.map(async (item) => {
+          const productByStore = await ctx.db
+            .query("productsByStore")
+            .withIndex("byStoreAndProduct", (q) =>
+              q.eq("storeId", args.storeId).eq("productId", item.productId)
+            )
+            .first();
+          if (!productByStore) return;
+          await ctx.db.patch(productByStore._id, {
+            quantity: productByStore.quantity + item.quantity,
+            updatedAt: now,
+          });
+        })
+      );
+    }
+
+    if (!identity) {
+      const orderItems = await ctx.db
+        .query("orderItems")
+        .withIndex("byOrder", (q) => q.eq("orderId", args.orderId))
+        .collect();
+
+      await Promise.all(
+        orderItems.map(async (item) => {
+          const productByStore = await ctx.db
+            .query("productsByStore")
+            .withIndex("byStoreAndProduct", (q) =>
+              q.eq("storeId", args.storeId).eq("productId", item.productId)
+            )
+            .first();
+          if (!productByStore) return;
+          await ctx.db.patch(productByStore._id, {
+            quantity: productByStore.quantity + item.quantity,
+            updatedAt: now,
+          });
+        })
+      );
+
+    }
+  },
+});
+
+
+

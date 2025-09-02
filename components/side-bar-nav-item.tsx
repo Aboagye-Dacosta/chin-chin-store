@@ -5,24 +5,21 @@ import { Button } from "@/components/ui/button";
 import { usePathname } from "next/navigation";
 
 export default function SideBarItem({
-  href,
-  icon,
-  label,
+  url,
+  children,
 }: Readonly<{
-  href: string;
-  icon: React.ComponentType<{ className?: string }>;
-  label: string;
+  url: string;
+  children: React.ReactNode;
 }>) {
   const pathname = usePathname();
-  const Icon = icon;
-  let isActive = pathname?.startsWith(href);
+  let isActive = pathname?.startsWith(url);
 
-  if (pathname !== "/admin" && href === "/admin") {
+  if (pathname !== "/dashboard" && url === "/dashboard") {
     isActive = false;
   }
   return (
     <Link
-      href={href}
+      href={url}
       className="flex w-full items-center justify-start "
     >
       <Button
@@ -31,8 +28,7 @@ export default function SideBarItem({
         className="flex items-center justify-start w-full gap-2 px-3"
         asChild
       >
-        <Icon className="h-5 w-5" />
-        {label}
+       {children}
       </Button>
     </Link>
   );

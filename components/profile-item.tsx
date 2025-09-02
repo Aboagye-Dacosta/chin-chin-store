@@ -2,7 +2,7 @@
 import { Button } from "@/components/ui/button";
 import { BookUser, LogOut, Package, Shield } from "lucide-react";
 import { ROLES } from "@/constants/roles";
-import { memo, useCallback, useState, useTransition } from "react";
+import { memo, useCallback, useState } from "react";
 import {
   Dialog,
   DialogContent,
@@ -17,24 +17,33 @@ import { useAuth, UserButton } from "@clerk/nextjs";
 import { useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import ProfileManagement from "./profile-management";
+import { usePathname } from "next/navigation";
+import { handleStatus } from "@/lib/handle-status";
 
 export const ProfileItem = memo(() => {
   const [openSignOutDialog, setOpenSignOutDialog] = useState(false);
-  const [isPending, startTransition] = useTransition();
+  const [isPending, setIsPending] = useState(false);
   const { syncServerToCart } = useCart();
   const { store } = useStoreStore();
   const { signOut } = useAuth();
   const user = useQuery(api.users.getCurrentUser);
   const iconStyle = "size-4";
+  const pathname = usePathname();
 
-  const handleSyncCart = useCallback(() => {
-    startTransition(
-      async () =>
-        await syncServerToCart(store?._id ?? "").finally(() => {
-          signOut();
-        })
-    );
+  const handleSyncCart = useCallback(async () => {
+    try {
+      setIsPending(true);
+      await syncServerToCart(store?._id ?? "").finally(() => {
+        signOut();
+      });
+    } catch (error) {
+      handleStatus({ error });
+    } finally {
+      setIsPending(false);
+    }
   }, [store?._id, syncServerToCart, signOut]);
+
+  const isPathDashboard = pathname?.startsWith("/dashboard");
 
   return (
     <>
@@ -53,11 +62,11 @@ export const ProfileItem = memo(() => {
             label="Orders"
             href="/orders"
           />
-          {user?.role !== ROLES.USER && (
+          {user?.role !== ROLES.USER && !isPathDashboard && (
             <UserButton.Link
               labelIcon={<Shield className={iconStyle} />}
-              label="Admin Dashboard"
-              href="/admin"
+              label="Dashboard"
+              href="/dashboard"
             />
           )}
           <UserButton.Action
@@ -68,7 +77,7 @@ export const ProfileItem = memo(() => {
         </UserButton.MenuItems>
         <UserButton.UserProfilePage
           label="Delivery Address"
-          labelIcon={<BookUser className={iconStyle}/>}
+          labelIcon={<BookUser className={iconStyle} />}
           url="/delivery-address"
         >
           <ProfileManagement />

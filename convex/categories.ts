@@ -1,6 +1,14 @@
+/**
+ * Functions for managing product categories.
+ */
 import { mutation, query } from "./_generated/server";
-import { v } from "convex/values";
+import { v, ConvexError } from "convex/values";
 
+/**
+ * Retrieves all product categories.
+ *
+ * @returns {Array<object>} An array of category objects.
+ */
 export const getCategories = query({
   handler: async (ctx) => {
     const categories = await ctx.db.query("categories").collect();
@@ -8,6 +16,15 @@ export const getCategories = query({
   },
 });
 
+/**
+ * Adds a new product category.
+ *
+ * @param {object} args - The arguments for the mutation.
+ * @param {string} args.name - The name of the category.
+ * @param {string} [args.color] - The color of the category.
+ * @returns {string} The ID of the new category.
+ * @throws {ConvexError} If a category with the same name already exists.
+ */
 export const addCategory = mutation({
   args: {
     name: v.string(),
@@ -19,73 +36,51 @@ export const addCategory = mutation({
       .withIndex("byName", (q) => q.eq("name", args.name))
       .first();
     if (existingCategory) {
-      return {
-        success: false,
-        message: "Category already exists",
-      };
+      throw new ConvexError("Category already exists");
     }
-    try {
-      const category = await ctx.db.insert("categories", {
+    
+    const now = new Date().toISOString();
+    return await ctx.db.insert("categories", {
         name: args.name,
         color: args.color,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-      });
-      return {
-        success: true,
-        message: "Category added successfully",
-        category,
-      };
-    } catch {
-      return {
-        success: false,
-        message: "Failed to add category",
-      };
-    }
+        createdAt: now,
+        updatedAt: now,
+    });
   },
 });
 
+/**
+ * Updates the color of a product category.
+ *
+ * @param {object} args - The arguments for the mutation.
+ * @param {string} args.id - The ID of the category to update.
+ * @param {string} [args.color] - The new color of the category.
+ */
 export const updateCategory = mutation({
   args: {
     id: v.id("categories"),
     color: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
-    try {
-      const category = await ctx.db.patch(args.id, {
+    const now = new Date().toISOString();
+    await ctx.db.patch(args.id, {
         color: args.color,
-        updatedAt: new Date().toISOString(),
-      });
-      return {
-        success: true,
-        message: "Category updated successfully",
-        category,
-      };
-    } catch {
-      return {
-        success: false,
-        message: "Failed to update category",
-      };
-    }
+        updatedAt: now,
+    });
   },
 });
 
+/**
+ * Deletes a product category.
+ *
+ * @param {object} args - The arguments for the mutation.
+ * @param {string} args.id - The ID of the category to delete.
+ */
 export const deleteCategory = mutation({
   args: {
     id: v.id("categories"),
   },
   handler: async (ctx, args) => {
-    try {
-      await ctx.db.delete(args.id);
-      return {
-        success: true,
-        message: "Category deleted successfully",
-      };
-    } catch {
-      return {
-        success: false,
-        message: "Failed to delete category",
-      };
-    }
+    await ctx.db.delete(args.id);
   },
 });

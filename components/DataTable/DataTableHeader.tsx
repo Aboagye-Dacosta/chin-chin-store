@@ -12,7 +12,7 @@ export function DataTableHeader<T extends Record<string, unknown>>({
 }: Readonly<DataTableHeaderProps<T>>) {
   return (
     <thead>
-      <tr className="border-b border-neutral-200">
+      <tr className="border-b ">
         {showCheckboxes && (
           <th className="text-left py-3 px-4 font-medium text-gray-700 w-12">
             <Checkbox

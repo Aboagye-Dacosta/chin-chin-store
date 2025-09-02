@@ -8,6 +8,7 @@ import { useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { CardHeaderFilters } from "../card-header-with-filters";
 import { useState } from "react";
+import { PAYMENT_STATUSES } from "@/constants/order-statuses";
 
 export function PaymentManagement() {
   const [filters, setFilters] = useState<Record<string, string>>({
@@ -19,7 +20,7 @@ export function PaymentManagement() {
   const vendors = useQuery(api.users.getUserByRole, { role: "VENDOR" });
 
   return (
-    <Flex direction="col" gap="lg" className="w-full">
+    <Flex direction="col" gap="lg" className="w-full p-7">
       <Flex direction="row" justify="between" align="center" className="w-full">
         <Flex direction="col" gap="xl" className="w-full">
           <h1 className="text-3xl font-bold">Payment Management</h1>
@@ -47,16 +48,10 @@ export function PaymentManagement() {
                 {
                   key: "status",
                   label: "Status",
-                  options: [
-                    { value: "PENDING", label: "Pending" },
-                    { value: "PAID", label: "Paid" },
-                    { value: "FAILED", label: "Failed" },
-                    { value: "REFUNDED", label: "Refunded" },
-                    {
-                      value: "AWAITING_CONFIRMATION",
-                      label: "Awaiting Confirmation",
-                    },
-                  ],
+                  options: PAYMENT_STATUSES.map((status) => ({
+                    value: status,
+                    label: status,
+                  })),
                 },
               ]}
               onFilterChange={(filters) => setFilters(filters)}
@@ -64,7 +59,6 @@ export function PaymentManagement() {
             />
             <CardContent>
               <DataTable
-                showCheckboxes={true}
                 data={payments ?? []}
                 columns={PaymentColumns}
                 filterBy={filters}

@@ -32,13 +32,14 @@ import {
   paymentGatewaySettingsSchema,
   type PaymentGatewaySettings,
 } from "@/schema/payment-settings-schema";
-import { memo, useEffect, useTransition } from "react";
+import { memo, useEffect, useState } from "react";
 import { useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { toast } from "sonner";
 import { Flex } from "../ui/flex";
 import { Switch } from "../ui/switch";
 import { Id } from "@/convex/_generated/dataModel";
+import { handleStatus } from "@/lib/handle-status";
 
 const PAYMENT_METHODS = [
   { id: "MOBILE_MONEY", label: "Mobile Money" },
@@ -58,7 +59,7 @@ interface PaymentGatewayFormProps {
 
 export const PaymentGatewayForm = memo(
   ({ initialData, id }: PaymentGatewayFormProps) => {
-    const [isPending, startTransition] = useTransition();
+    const [isPending, setIsPending] = useState(false);
     const addPaymentSettings = useMutation(
       api.paymentGateway.createPaymentGatewaySetting
     );
@@ -81,43 +82,38 @@ export const PaymentGatewayForm = memo(
     });
 
     const handleSubmit = async (data: PaymentGatewaySettings) => {
-      if (initialData) {
-        startTransition(async () => {
-          try {
-            await updatePaymentSettings({
-              id: id as Id<"paymentGatewaySettings">,
-              name: data.name,
-              environment: data.environment,
-              apiKey: data.apiKey,
-              apiSecret: data.apiSecret,
-              webhookSecret: data.webhookSecret || "",
-              supportedMethods: data.supportedMethods || [],
-              supportedNetworks: data.supportedNetworks || [],
-              isActive: data.isActive,
-            });
-            toast.success("Payment gateway settings updated successfully");
-          } catch (error) {
-            toast.error((error as Error)?.message);
-          }
-        });
-      } else {
-        startTransition(async () => {
-          try {
-            await addPaymentSettings({
-              name: data.name,
-              environment: data.environment,
-              apiKey: data.apiKey,
-              apiSecret: data.apiSecret,
-              webhookSecret: data.webhookSecret || "",
-              supportedMethods: data.supportedMethods || [],
-              supportedNetworks: data.supportedNetworks || [],
-              isActive: true,
-            });
-            toast.success("Payment gateway settings added successfully");
-          } catch (error) {
-            toast.error((error as Error)?.message);
-          }
-        });
+      try {
+        setIsPending(true);
+        if (initialData) {
+          await updatePaymentSettings({
+            id: id as Id<"paymentGatewaySettings">,
+            name: data.name,
+            environment: data.environment,
+            apiKey: data.apiKey,
+            apiSecret: data.apiSecret,
+            webhookSecret: data.webhookSecret || "",
+            supportedMethods: data.supportedMethods || [],
+            supportedNetworks: data.supportedNetworks || [],
+            isActive: data.isActive,
+          });
+          toast.success("Payment gateway settings updated successfully");
+        } else {
+          await addPaymentSettings({
+            name: data.name,
+            environment: data.environment,
+            apiKey: data.apiKey,
+            apiSecret: data.apiSecret,
+            webhookSecret: data.webhookSecret || "",
+            supportedMethods: data.supportedMethods || [],
+            supportedNetworks: data.supportedNetworks || [],
+            isActive: true,
+          });
+          toast.success("Payment gateway settings added successfully");
+        }
+      } catch (error) {
+        handleStatus({ error });
+      } finally {
+        setIsPending(false);
       }
     };
 

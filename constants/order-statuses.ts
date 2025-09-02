@@ -1,0 +1,16 @@
+export const ORDER_STATUSES = [
+    "PENDING",
+    "PROCESSING",
+    "DELIVERED",
+    "CANCELLED"
+]
+
+export const PAYMENT_STATUSES = [
+    "PENDING",
+    "PAID",
+    "FAILED",
+    "REFUNDED",
+    "REFUND_REQUESTED",
+    "CANCELLED",
+    "AWAITING_CONFIRMATION"
+] as const;

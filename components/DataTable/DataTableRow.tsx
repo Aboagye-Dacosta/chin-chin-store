@@ -16,7 +16,7 @@ export function DataTableRow<T extends Record<string, unknown>>({
   return (
     <tr
       key={rowId}
-      className="border-b border-neutral-100 hover:bg-gray-50 transition-colors"
+      className="border-b hover:bg-accent transition-colors"
     >
       {showCheckboxes && (
         <td className="py-3 px-4">

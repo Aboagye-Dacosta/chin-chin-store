@@ -22,16 +22,18 @@ import {
 } from "./ui/form";
 import { Textarea } from "./ui/textarea";
 import { Container } from "./ui/contaner";
-import { useEffect, useTransition } from "react";
+import { useEffect, useState } from "react";
 import { useMutation, useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { Switch } from "./ui/switch";
 import { Separator } from "./ui/separator";
+import { handleStatus } from "@/lib/handle-status";
+import { toast } from "sonner";
 
 export default function ProfileManagement() {
   const user = useQuery(api.users.getUserAddresses);
   const addAddress = useMutation(api.users.addAddress);
-  const [isPending, startTransition] = useTransition();
+  const [isPending, setIsPending] = useState(false);
 
   const form = useForm<ProfileSchema>({
     resolver: zodResolver(profileSchema),
@@ -42,7 +44,7 @@ export default function ProfileManagement() {
     },
   });
 
-  const onSubmit = (data: ProfileSchema) => {
+  const onSubmit = async (data: ProfileSchema) => {
     if (
       !form.formState.isDirty ||
       JSON.stringify(data) ===
@@ -51,12 +53,17 @@ export default function ProfileManagement() {
           deliveryAddressNote: user?.deliveryAddressNote,
           isDefault: user?.isDefault,
         })
-    )
-      return;
-
-    startTransition(async () => {
-      await addAddress(data);
-    });
+    ) {
+      try {
+        setIsPending(true);
+        await addAddress(data);
+        toast.success("Address added successfully");
+      } catch (error) {
+        handleStatus({ error });
+      } finally {
+        setIsPending(false);
+      }
+    }
   };
 
   useEffect(() => {

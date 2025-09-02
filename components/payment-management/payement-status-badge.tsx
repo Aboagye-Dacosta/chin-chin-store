@@ -22,10 +22,14 @@ export const PaymentStatusBadge = ({
   status,
   paymentId,
 }: PaymentStatusBadgeProps) => {
-  const variant: Record<string, "pending" | "default" | "destructive" | "processing"> = {
+  const variant: Record<
+    string,
+    "pending" | "default" | "destructive" | "processing"
+  > = {
     PENDING: "pending",
     PAID: "default",
     FAILED: "destructive",
+    REFUND_REQUESTED: "destructive",
     REFUNDED: "destructive",
     AWAITING_CONFIRMATION: "processing",
   };
@@ -39,7 +43,7 @@ export const PaymentStatusBadge = ({
         status: value as PaymentStatusBadgeProps["status"],
       });
       toast.success("Payment status updated successfully");
-    } catch  {
+    } catch {
       toast.error("Could not update payment status");
     }
   };
@@ -49,7 +53,7 @@ export const PaymentStatusBadge = ({
       value={status}
       onValueChange={(value) => handleUpdatePayment(value)}
     >
-      <SelectTrigger className="border-none shadow-none p-0">
+      <SelectTrigger>
         <Badge variant={variant[status]}>
           <SelectValue placeholder="Select a status" />
         </Badge>
@@ -59,6 +63,7 @@ export const PaymentStatusBadge = ({
         <SelectItem value="PAID">Paid</SelectItem>
         <SelectItem value="FAILED">Failed</SelectItem>
         <SelectItem value="REFUNDED">Refunded</SelectItem>
+        <SelectItem value="REFUND_REQUESTED">Refund Requested</SelectItem>
         <SelectItem value="AWAITING_CONFIRMATION">
           Awaiting Confirmation
         </SelectItem>

@@ -18,7 +18,7 @@ import {
   FormMessage,
 } from "./ui/form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useMemo, useTransition } from "react";
+import { useMemo, useState } from "react";
 import { productSchema, ProductSchema } from "@/schema/product-schema";
 import { cn } from "@/lib/utils";
 import { Product } from "@/types/convex-types";
@@ -27,6 +27,7 @@ import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
 import { handleStatus } from "@/lib/handle-status";
 import ProductImageModelPickerDialog from "./product-image-model-picker";
+import { toast } from "sonner";
 
 interface CreateProductFormProps {
   defaultProduct?: Product;
@@ -38,7 +39,7 @@ export function CreateProductForm({
   const categories = useQuery(api.categories.getCategories);
   const addProduct = useMutation(api.products.addProduct);
   const updateProduct = useMutation(api.products.updateProduct);
-  const [isPending, startTransition] = useTransition();
+  const [isPending, setIsPending] = useState(false);
 
   const hasDefaultProduct = useMemo(
     () => Boolean(defaultProduct),
@@ -76,44 +77,41 @@ export function CreateProductForm({
   });
 
   const onSubmit = async (data: ProductSchema) => {
-    startTransition(async () => {
+    try {
+      setIsPending(true);
       if (defaultProduct) {
-        const response = await updateProduct({
+        await updateProduct({
           productId: defaultProduct._id,
           title: data.title,
           description: data.description,
           price: data.price,
-          image: data.image,
-          model: data.model,
+          image: data.image as Id<"assets">,
+          model: data.model as Id<"assets">,
           status: data.status,
           packaging: data.packaging,
           categoryId: data.categoryId as Id<"categories">,
         });
 
-        if (response.success) {
-          form.reset();
-        }
-
-        handleStatus(response);
+        toast.success("Product updated successfully");
       } else {
-        const response = await addProduct({
+        await addProduct({
           title: data.title,
           description: data.description,
           price: data.price,
-          image: data.image,
-          model: data.model,
+          image: data.image as Id<"assets">,
+          model: data.model as Id<"assets">,
           status: data.status,
           packaging: data.packaging,
           categoryId: data.categoryId as Id<"categories">,
         });
 
-        if (response.success) {
-          form.reset();
-        }
-
-        handleStatus(response);
+        toast.success("Product added successfully");
       }
-    });
+    } catch (error) {
+      handleStatus({ error });
+    } finally {
+      setIsPending(false);
+    }
   };
 
   return (

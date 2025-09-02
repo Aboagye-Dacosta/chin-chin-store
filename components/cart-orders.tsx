@@ -193,7 +193,7 @@ export function OrdersPage() {
                 <ArrowLeft className="mr-2 h-4 w-4" />
                 Back to Cart
               </Button>
-              <h1 className="text-3xl font-bold text-gray-900">
+              <h1 className="text-3xl font-bold">
                 Complete Your Order
               </h1>
               <p className="mt-2 text-gray-600">

@@ -61,13 +61,13 @@ export const OrderSummary = memo(
             </div>
 
             <Tooltip>
-              <TooltipTrigger className="w-full">
+              <TooltipTrigger className="w-full" onClick={handleProceedToCheckout}>
                 <Button
                   className="w-full"
                   disabled={
                     isAnyInactive || isAnyOutOfStock || isAnyMoreThanStock
                   }
-                  onClick={handleProceedToCheckout}
+                  asChild
                 >
                   Proceed to Checkout
                 </Button>

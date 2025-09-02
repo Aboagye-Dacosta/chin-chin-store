@@ -4,6 +4,8 @@ import { Vendor } from "@/types/convex-types";
 import { DisplayStore } from "../display-store";
 import { DisplayOrderCount } from "../display-order-field";
 import { DisplayUserField } from "../display-user-field";
+import { VendorTableActions } from "./vendor-table-actions";
+import { VendorStatusUpdateSelect } from "../vendor-status-update-select";
 
 interface TableVendor extends Vendor {
   store?: string;
@@ -12,6 +14,7 @@ interface TableVendor extends Vendor {
   email?: string;
   phoneNumber?: string;
   provider?: string;
+  actions?: string;
 }
 
 export const VendorColumns: Column<TableVendor>[] = [
@@ -46,8 +49,18 @@ export const VendorColumns: Column<TableVendor>[] = [
     render: (_v, row) => <DisplayOrderCount vendorId={row._id} />,
   },
   {
+    key: "status",
+    header: "Status",
+    render: (_v,row) => <VendorStatusUpdateSelect id={row._id} initialValue={row.status} />
+  },
+  {
     key: "createdAt",
     header: "Created At",
     render: (_v, row) => getFormattedTime(row.createdAt.toString()),
+  },
+  {
+    key: "actions",
+    header: "",
+    render: (_v, row) => <VendorTableActions vendor={row} />,
   },
 ];
