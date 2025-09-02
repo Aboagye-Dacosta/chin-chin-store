@@ -11,7 +11,10 @@ import { decryptSecret } from "../paymentGateway";
  */
 export const paymentSettings = query({
   handler: async (ctx) => {
-    const ident;
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) return null;
+    const user = await ctx.db.query("users").withIndex("byClerkId", (q) => q.eq("clerkId", identity?.subject)).first()
+    if (user?.role !== "SUPER_ADMIN") throw new Error("you are not authorized to access this data")
     const settings = await ctx.db.query("paymentGatewaySettings").first();
 
     if (!settings) {
@@ -30,9 +33,9 @@ export const paymentSettings = query({
 
     const decryptedWebhookSecret = settings.webhookSecret
       ? await decryptSecret(
-          settings.webhookSecret,
-          `${settings.name}:${settings.environment}`
-        )
+        settings.webhookSecret,
+        `${settings.name}:${settings.environment}`
+      )
       : undefined;
 
     return {
