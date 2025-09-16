@@ -187,7 +187,7 @@ export const getUserByRole = query({
 export const getUserAddresses = query({
   handler: async (ctx) => {
     const identity = await ctx.auth.getUserIdentity();
-    if (!identity) throw new ConvexError("Not authenticated");
+    if (!identity) return null;
     const clerkId = identity.subject;
     const user = await ctx.db
       .query("users")
