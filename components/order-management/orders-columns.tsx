@@ -18,7 +18,7 @@ export const OrderColumns: Column<OrderWithUserAndStore>[] = [
   {
     key: "userId",
     header: "User",
-    render: (_value, row) => row.user?.name ?? "Unknown",
+    render: (_value, row) => row.user?.name ?? row?.name ?? "Unknown",
   },
   {
     key: "deliveryAddressLabel",
